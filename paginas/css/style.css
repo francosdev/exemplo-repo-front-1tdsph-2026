@@ -1,0 +1,30 @@
+
+header{
+    background-color: #1a1a1c;
+    padding: 1%;
+    color: silver;
+    width: 95%;
+    margin: auto;
+}
+
+header h1{
+    font-size: 2.5em;
+    text-align: center;
+    margin: 0;
+}
+
+header nav{
+    list-style: none;
+    background-color: black;
+    padding: 0%;
+
+}
+header nav ul li{
+    display: inline-block;
+    margin: 0 10px;
+}
+header nav ul li a{
+    color: silver;
+    text-decoration: none;
+
+}
