@@ -8,10 +8,26 @@
         }
         header {
             background-color: #000000;
-            color: #ffffff;
+            color: silver;
             padding: 20px;
             text-align: center;
         }
+        header img {
+    display: block;
+    margin: 0 auto;    /* ← essa regra ainda vale para imgs sem classe */
+}
+
+.logo {
+    width: 600px;
+}
+
+.gif {
+    width: 300px;
+}
+
+
+        
+        
         nav ul {
             list-style-type: none;
             padding: 0;
