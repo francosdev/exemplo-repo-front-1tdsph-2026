@@ -65,156 +65,298 @@ function PixelStarField() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   WELCOME SCREEN — Final Fantasy "New Game" style
+   CHARACTER CREATOR — Final Fantasy + WoW style
 ═══════════════════════════════════════════════════════════ */
-function WelcomeScreen({ onStart }) {
-  const [fase,   setFase]  = useState("title");   // "title" | "nome"
+const FRACAO_COR = { "Aliança": "#4898f0", "Horda": "#e04040", "Neutro": "#c8a000" };
+
+function WelcomeScreen({ onStart, personagemExistente }) {
+  const [fase,   setFase]  = useState(personagemExistente ? "title" : "title");
+  const [cursor, setCursor]= useState(0);
   const [nome,   setNome]  = useState("");
-  const [cursor, setCursor]= useState(0);          // 0=Nova Aventura 1=Continuar
+  const [raca,   setRaca]  = useState(null);
+  const [classe, setClasse]= useState(null);
+  const [racaHover, setRacaHover]   = useState(null);
+  const [classeHover, setClasseHover] = useState(null);
 
-  const opcoes = ["▶ NOVA AVENTURA", "  CONTINUAR"];
+  const opcoes = personagemExistente
+    ? ["▶ CONTINUAR AVENTURA", "  NOVO PERSONAGEM"]
+    : ["▶ NOVA AVENTURA"];
 
+  /* navegação por teclado na tela de título */
   useEffect(() => {
     const onKey = (e) => {
       if (fase === "title") {
         if (e.key === "ArrowUp")   setCursor(p => (p - 1 + opcoes.length) % opcoes.length);
         if (e.key === "ArrowDown") setCursor(p => (p + 1) % opcoes.length);
         if (e.key === "Enter") {
-          if (cursor === 0) setFase("nome");
-          else onStart("");
+          if (personagemExistente && cursor === 0) onStart(personagemExistente);
+          else setFase("nome");
         }
-      }
-      if (fase === "nome" && e.key === "Enter" && nome.trim()) {
-        onStart(nome.trim());
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [fase, cursor, nome, onStart, opcoes.length]);
+  }, [fase, cursor, opcoes.length, personagemExistente, onStart]);
 
-  return (
-    <div style={{
-      position:"fixed", inset:0,
-      background:"#06080f",
-      display:"flex", flexDirection:"column",
-      alignItems:"center", justifyContent:"center",
-      zIndex:1000, fontFamily:"'Press Start 2P',monospace",
-    }}>
-      {/* estrelas de fundo */}
+  const ffBox = (borderColor, extra = {}) => ({
+    background:"#0c1630",
+    border:`3px solid ${borderColor}`,
+    boxShadow:`0 0 0 1px #06080f, 0 0 0 4px ${borderColor}44, inset 0 0 0 2px ${borderColor}44, 0 0 30px ${borderColor}22`,
+    ...extra,
+  });
+
+  const racaSel   = RACAS.find(r => r.id === raca);
+  const classeSel = CLASSES.find(c => c.id === classe);
+
+  /* ── Tela de Título ── */
+  if (fase === "title") return (
+    <div style={{ position:"fixed", inset:0, background:"#06080f", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
       <PixelStarField />
-
-      <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:"0", width:"100%", maxWidth:"480px", padding:"24px" }}>
-
-        {/* Logo FF-style */}
+      <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", width:"100%", maxWidth:"480px", padding:"24px" }}>
         <div style={{ textAlign:"center", marginBottom:"40px" }}>
-          <div style={{
-            fontSize:"10px", color:"#2a4880", letterSpacing:".3em",
-            marginBottom:"12px",
-          }}>
-            ✦ ✦ ✦
-          </div>
-          <div style={{
-            fontSize:"clamp(16px,4vw,28px)", color:"#f0c030",
-            textShadow:"0 0 20px rgba(200,160,0,.7), 0 0 40px rgba(200,160,0,.3)",
-            letterSpacing:".1em", lineHeight:1.4,
-            animation:"pxGlow 2s ease-in-out infinite",
-          }}>
+          <div style={{ fontSize:"9px", color:"#2a4880", letterSpacing:".3em", marginBottom:"12px" }}>✦ ✦ ✦</div>
+          <div className="px-font" style={{ fontSize:"clamp(14px,3.5vw,24px)", color:"#f0c030", textShadow:"0 0 20px rgba(200,160,0,.7)", letterSpacing:".1em", animation:"pxGlow 2s ease-in-out infinite" }}>
             MYLOG RPG
           </div>
-          <div style={{ fontSize:"7px", color:"#3060b8", marginTop:"10px", letterSpacing:".2em" }}>
-            FIAP · QUEST TRACKER
-          </div>
-          <div style={{ fontSize:"7px", color:"#1a3060", marginTop:"6px", letterSpacing:".15em" }}>
-            TÉCNICO EM DESENVOLVIMENTO DE SISTEMAS
-          </div>
+          <div className="px-font" style={{ fontSize:"6px", color:"#3060b8", marginTop:"10px", letterSpacing:".2em" }}>FIAP · QUEST TRACKER</div>
         </div>
-
-        {/* Janela FF */}
-        {fase === "title" && (
-          <div style={{
-            background:"#0c1630",
-            border:"3px solid #3060b8",
-            boxShadow:"0 0 0 1px #06080f, 0 0 0 4px #1a3870, inset 0 0 0 2px #1e3e80, 0 0 30px rgba(48,96,184,.2)",
-            padding:"28px 40px",
-            minWidth:"280px", textAlign:"left",
-          }}>
-            {opcoes.map((op, i) => (
-              <div
-                key={i}
-                onClick={() => { setCursor(i); if(i===0) setFase("nome"); else onStart(""); }}
-                style={{
-                  padding:"10px 4px",
-                  color: cursor === i ? "#f0c030" : "#3060b8",
-                  fontSize:"9px", letterSpacing:".08em",
-                  cursor:"pointer",
-                  textShadow: cursor === i ? "0 0 12px rgba(200,160,0,.6)" : "none",
-                  transition:"color .15s",
-                }}
-              >
-                {cursor === i ? op : op.replace("▶", " ")}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {fase === "nome" && (
-          <div style={{
-            background:"#0c1630",
-            border:"3px solid #c8a000",
-            boxShadow:"0 0 0 1px #06080f, 0 0 0 4px #4a3800, inset 0 0 0 2px #8a6800, 0 0 30px rgba(200,160,0,.2)",
-            padding:"28px 32px",
-            minWidth:"320px",
-          }}>
-            <div style={{ fontSize:"8px", color:"#c8a000", marginBottom:"20px", letterSpacing:".1em" }}>
-              ✦ NOME DO HERÓI
+        <div style={{ ...ffBox("#3060b8"), padding:"28px 40px", minWidth:"280px" }}>
+          {opcoes.map((op, i) => (
+            <div key={i} onClick={() => { setCursor(i); if(personagemExistente && i===0) onStart(personagemExistente); else setFase("nome"); }}
+              style={{ padding:"12px 4px", color: cursor===i ? "#f0c030" : "#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor:"pointer", textShadow: cursor===i ? "0 0 12px rgba(200,160,0,.6)" : "none", letterSpacing:".06em", transition:"color .15s" }}>
+              {cursor===i ? op : op.replace("▶","  ")}
             </div>
-            <input
-              autoFocus
-              className="px-input"
-              style={{ marginBottom:"16px", fontSize:"20px", letterSpacing:".08em", textTransform:"uppercase", color:"#f0c030", borderColor:"#c8a000" }}
-              placeholder="> SEU NOME..."
-              maxLength={14}
-              value={nome}
-              onChange={e => setNome(e.target.value.toUpperCase())}
-              onKeyDown={e => e.key==="Enter" && nome.trim() && onStart(nome.trim())}
-            />
-            <div style={{ display:"flex", gap:"10px" }}>
-              <button
-                onClick={() => nome.trim() && onStart(nome.trim())}
-                style={{
-                  flex:1, padding:"12px", background:"#201400",
-                  border:"3px solid #c8a000", color:"#f0c030",
-                  fontFamily:"'Press Start 2P',monospace", fontSize:"8px",
-                  cursor:"pointer", letterSpacing:".08em",
-                  boxShadow:"3px 3px 0 #4a3000",
-                  opacity: nome.trim() ? 1 : 0.4,
-                }}
-              >
-                ▶ COMEÇAR
-              </button>
-              <button
-                onClick={() => setFase("title")}
-                style={{
-                  padding:"12px 16px", background:"#0c1428",
-                  border:"3px solid #1e3060", color:"#3060b8",
-                  fontFamily:"'Press Start 2P',monospace", fontSize:"8px",
-                  cursor:"pointer",
-                  boxShadow:"3px 3px 0 #060c18",
-                }}
-              >
-                ◀
-              </button>
-            </div>
-          </div>
-        )}
+          ))}
+        </div>
+        <div className="px-blink px-font" style={{ marginTop:"28px", fontSize:"6px", color:"#1e3060", letterSpacing:".15em" }}>↑↓ MOVER · ENTER CONFIRMAR</div>
+      </div>
+    </div>
+  );
 
-        <div className="px-blink" style={{ marginTop:"32px", fontSize:"7px", color:"#1e3060", letterSpacing:".15em" }}>
-          {fase === "title" ? "↑↓ MOVER · ENTER CONFIRMAR" : "ENTER PARA CONFIRMAR"}
+  /* ── Passo: Nome ── */
+  if (fase === "nome") return (
+    <div style={{ position:"fixed", inset:0, background:"#06080f", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
+      <PixelStarField />
+      <div style={{ position:"relative", zIndex:1, width:"100%", maxWidth:"440px", padding:"24px" }}>
+        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"20px", textAlign:"center" }}>PASSO 1 DE 3 · NOME DO HERÓI</div>
+        <div style={{ ...ffBox("#c8a000"), padding:"28px 28px" }}>
+          <div className="px-font" style={{ fontSize:"8px", color:"#f0c030", marginBottom:"16px" }}>✦ COMO DESEJA SER CHAMADO?</div>
+          <input autoFocus className="px-input"
+            style={{ marginBottom:"16px", fontSize:"22px", letterSpacing:".1em", textTransform:"uppercase", color:"#f0c030", borderColor:"#c8a000" }}
+            placeholder="> SEU NOME..."
+            maxLength={14}
+            value={nome}
+            onChange={e => setNome(e.target.value.toUpperCase())}
+            onKeyDown={e => e.key==="Enter" && nome.trim() && setFase("raca")}
+          />
+          <div style={{ display:"flex", gap:"10px" }}>
+            <button onClick={() => nome.trim() && setFase("raca")} disabled={!nome.trim()}
+              style={{ flex:1, padding:"12px", background:"#201400", border:"3px solid #c8a000", color: nome.trim()?"#f0c030":"#4a3000", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: nome.trim()?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000", transition:"all .15s" }}>
+              PRÓXIMO ▶
+            </button>
+            <button onClick={() => setFase("title")}
+              style={{ padding:"12px 16px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
+              ◀
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
+
+  /* ── Passo: Raça ── */
+  if (fase === "raca") return (
+    <div style={{ position:"fixed", inset:0, background:"#06080f", overflowY:"auto", zIndex:1000 }}>
+      <PixelStarField />
+      <div style={{ position:"relative", zIndex:1, maxWidth:"860px", margin:"0 auto", padding:"24px 16px" }}>
+        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"8px", textAlign:"center" }}>PASSO 2 DE 3 · ESCOLHA SUA RAÇA</div>
+        <div className="px-font" style={{ fontSize:"10px", color:"#f0c030", textAlign:"center", marginBottom:"20px", textShadow:"0 0 12px rgba(200,160,0,.5)" }}>{nome}</div>
+
+        {/* Painel de preview */}
+        {(racaHover || racaSel) && (() => { const r = RACAS.find(x=>x.id===(racaHover||raca)); return r ? (
+          <div style={{ ...ffBox(FRACAO_COR[r.fracao]||"#3060b8"), padding:"14px 18px", marginBottom:"16px", display:"flex", gap:"16px", alignItems:"center" }}>
+            <div style={{ fontSize:"44px", flexShrink:0 }}>{r.icone}</div>
+            <div style={{ flex:1 }}>
+              <div className="px-font" style={{ fontSize:"8px", color: FRACAO_COR[r.fracao]||"#80b4ff", marginBottom:"4px" }}>{r.nome} <span style={{ fontSize:"6px", color:FRACAO_COR[r.fracao]+"88" }}>· {r.fracao}</span></div>
+              <div className="px-body" style={{ fontSize:"16px", color:"#6898c8", marginBottom:"4px" }}>{r.desc}</div>
+              <div className="px-font" style={{ fontSize:"6px", color:r.cor }}>{r.bonus}</div>
+            </div>
+          </div>
+        ) : null; })()}
+
+        {/* Grade de raças por facção */}
+        {["Aliança","Horda","Neutro"].map(fracao => {
+          const lista = RACAS.filter(r => r.fracao === fracao);
+          if (!lista.length) return null;
+          return (
+            <div key={fracao} style={{ marginBottom:"16px" }}>
+              <div className="px-font" style={{ fontSize:"6px", color:FRACAO_COR[fracao], marginBottom:"8px", letterSpacing:".15em" }}>
+                {fracao === "Aliança" ? "⚔️" : fracao === "Horda" ? "💀" : "⚖️"} {fracao.toUpperCase()}
+              </div>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))", gap:"8px" }}>
+                {lista.map(r => (
+                  <div key={r.id}
+                    onClick={() => setRaca(r.id)}
+                    onMouseEnter={() => setRacaHover(r.id)}
+                    onMouseLeave={() => setRacaHover(null)}
+                    style={{
+                      padding:"12px 8px", textAlign:"center", cursor:"pointer",
+                      border:`2px solid ${raca===r.id ? r.cor : "#1e3060"}`,
+                      background: raca===r.id ? r.cor+"18" : "#0c1630",
+                      boxShadow: raca===r.id ? `0 0 10px ${r.cor}44` : "none",
+                      transition:"all .15s",
+                    }}>
+                    <div style={{ fontSize:"28px", marginBottom:"4px" }}>{r.icone}</div>
+                    <div className="px-font" style={{ fontSize:"5px", color: raca===r.id ? r.cor : "#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{r.nome}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
+        <div style={{ display:"flex", gap:"10px", marginTop:"8px" }}>
+          <button onClick={() => raca && setFase("classe")} disabled={!raca}
+            style={{ flex:1, padding:"14px", background: raca?"#201400":"#0c1428", border:`3px solid ${raca?"#c8a000":"#1e3060"}`, color: raca?"#f0c030":"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: raca?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000" }}>
+            PRÓXIMO ▶
+          </button>
+          <button onClick={() => setFase("nome")}
+            style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
+            ◀
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* ── Passo: Classe ── */
+  if (fase === "classe") return (
+    <div style={{ position:"fixed", inset:0, background:"#06080f", overflowY:"auto", zIndex:1000 }}>
+      <PixelStarField />
+      <div style={{ position:"relative", zIndex:1, maxWidth:"860px", margin:"0 auto", padding:"24px 16px" }}>
+        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"8px", textAlign:"center" }}>PASSO 3 DE 3 · ESCOLHA SUA CLASSE</div>
+        <div className="px-font" style={{ fontSize:"10px", color:"#f0c030", textAlign:"center", marginBottom:"4px" }}>{nome}</div>
+        <div className="px-font" style={{ fontSize:"6px", color: FRACAO_COR[racaSel?.fracao]||"#3060b8", textAlign:"center", marginBottom:"20px" }}>{racaSel?.icone} {racaSel?.nome}</div>
+
+        {/* preview de classe */}
+        {(classeHover || classeSel) && (() => { const c = CLASSES.find(x=>x.id===(classeHover||classe)); return c ? (
+          <div style={{ ...ffBox(c.cor), padding:"14px 18px", marginBottom:"16px", display:"flex", gap:"16px", alignItems:"center" }}>
+            <div style={{ fontSize:"44px", flexShrink:0 }}>{c.icone}</div>
+            <div style={{ flex:1 }}>
+              <div className="px-font" style={{ fontSize:"8px", color:c.cor, marginBottom:"4px" }}>{c.nome}</div>
+              <div className="px-body" style={{ fontSize:"16px", color:"#6898c8", marginBottom:"4px" }}>{c.desc}</div>
+              <div className="px-font" style={{ fontSize:"6px", color:c.cor+"bb" }}>Atributo Principal: {c.atributo}</div>
+            </div>
+          </div>
+        ) : null; })()}
+
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))", gap:"8px", marginBottom:"16px" }}>
+          {CLASSES.map(c => (
+            <div key={c.id}
+              onClick={() => setClasse(c.id)}
+              onMouseEnter={() => setClasseHover(c.id)}
+              onMouseLeave={() => setClasseHover(null)}
+              style={{
+                padding:"14px 8px", textAlign:"center", cursor:"pointer",
+                border:`2px solid ${classe===c.id ? c.cor : "#1e3060"}`,
+                background: classe===c.id ? c.cor+"18" : "#0c1630",
+                boxShadow: classe===c.id ? `0 0 10px ${c.cor}44` : "none",
+                transition:"all .15s",
+              }}>
+              <div style={{ fontSize:"26px", marginBottom:"4px" }}>{c.icone}</div>
+              <div className="px-font" style={{ fontSize:"5px", color: classe===c.id ? c.cor : "#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{c.nome}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display:"flex", gap:"10px" }}>
+          <button onClick={() => classe && setFase("confirmar")} disabled={!classe}
+            style={{ flex:1, padding:"14px", background: classe?"#201400":"#0c1428", border:`3px solid ${classe?"#c8a000":"#1e3060"}`, color: classe?"#f0c030":"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: classe?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000" }}>
+            PRÓXIMO ▶
+          </button>
+          <button onClick={() => setFase("raca")}
+            style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
+            ◀
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* ── Confirmação ── */
+  if (fase === "confirmar") return (
+    <div style={{ position:"fixed", inset:0, background:"#06080f", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
+      <PixelStarField />
+      <div style={{ position:"relative", zIndex:1, width:"100%", maxWidth:"460px", padding:"24px" }}>
+        <div style={{ ...ffBox("#c8a000"), padding:"28px 28px" }}>
+          <div className="px-font" style={{ fontSize:"9px", color:"#f0c030", textAlign:"center", marginBottom:"24px", textShadow:"0 0 12px rgba(200,160,0,.5)" }}>
+            ✦ SEU PERSONAGEM ✦
+          </div>
+          <div style={{ display:"flex", gap:"20px", alignItems:"center", marginBottom:"20px" }}>
+            <div style={{ fontSize:"60px", textAlign:"center", filter:`drop-shadow(0 0 10px ${classeSel?.cor||"#f0c030"})` }}>
+              {racaSel?.icone}
+            </div>
+            <div>
+              <div className="px-font" style={{ fontSize:"12px", color:"#f0c030", marginBottom:"6px" }}>{nome}</div>
+              <div className="px-font" style={{ fontSize:"7px", color:classeSel?.cor, marginBottom:"4px" }}>{classeSel?.icone} {classeSel?.nome}</div>
+              <div className="px-font" style={{ fontSize:"6px", color: FRACAO_COR[racaSel?.fracao]||"#80b4ff" }}>{racaSel?.icone} {racaSel?.nome} · {racaSel?.fracao}</div>
+            </div>
+          </div>
+
+          <div style={{ background:"#060814", border:"2px solid #1e3060", padding:"12px", marginBottom:"20px" }}>
+            <div className="px-body" style={{ fontSize:"16px", color:"#6898c8", marginBottom:"6px" }}>{classeSel?.desc}</div>
+            <div className="px-font" style={{ fontSize:"6px", color:racaSel?.cor }}>{racaSel?.bonus}</div>
+          </div>
+
+          <button onClick={() => onStart({ nome, racaId: raca, classeId: classe })}
+            style={{ width:"100%", padding:"16px", background:"linear-gradient(135deg,#201400,#3a2800)", border:"3px solid #c8a000", color:"#f0c030", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor:"pointer", boxShadow:"0 0 20px rgba(200,160,0,.3), 3px 3px 0 #4a3000", letterSpacing:".08em" }}>
+            ⚔ COMEÇAR AVENTURA
+          </button>
+          <button onClick={() => setFase("classe")}
+            style={{ width:"100%", marginTop:"8px", padding:"10px", background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"7px", cursor:"pointer" }}>
+            ◀ VOLTAR
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return null;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   RAÇAS E CLASSES — World of Warcraft inspired
+═══════════════════════════════════════════════════════════ */
+const RACAS = [
+  { id:"humano",       nome:"Humano",             icone:"👤", fracao:"Aliança",  cor:"#c8d8f0", desc:"Versáteis e determinados. Bônus em aprendizado de todas as habilidades.", bonus:"✦ +10% XP em todas as áreas" },
+  { id:"elfo_noite",   nome:"Elfo da Noite",       icone:"🧝‍♀️", fracao:"Aliança",  cor:"#8060c0", desc:"Ágeis e sábios, guardiões das florestas ancestrais.", bonus:"⚡ +Agilidade · +Furtividade" },
+  { id:"anao",         nome:"Anão",                icone:"⛏️", fracao:"Aliança",  cor:"#a07840", desc:"Resistentes e determinados. Mestres da engenharia e da sobrevivência.", bonus:"🛡️ +Resistência · +Sorte" },
+  { id:"gnomo",        nome:"Gnomo",               icone:"🔭", fracao:"Aliança",  cor:"#e090c0", desc:"Inventivos e brilhantes. Inteligência acima da média, baixa estatura.", bonus:"🧠 +Inteligência · +Tecnologia" },
+  { id:"draenei",      nome:"Draenei",             icone:"💙", fracao:"Aliança",  cor:"#60b0e0", desc:"Seres de luz exilados. Sábios e conectados ao sagrado.", bonus:"✨ +Sabedoria · +Sagrado" },
+  { id:"worgen",       nome:"Worgen",              icone:"🐺", fracao:"Aliança",  cor:"#808080", desc:"Humanos amaldiçoados com a forma do lobisomem. Ferocidade e controle.", bonus:"🐾 +Força · +Velocidade" },
+  { id:"orc",          nome:"Orc",                 icone:"💪", fracao:"Horda",    cor:"#60a040", desc:"Guerreiros honrados da Horda. Força bruta e determinação inabalável.", bonus:"⚔️ +Força · +Resistência" },
+  { id:"tauren",       nome:"Tauren",              icone:"🐂", fracao:"Horda",    cor:"#c07030", desc:"Guardiões da natureza. Imponentes e espirituais, ligados à terra.", bonus:"🌿 +Força · +Espírito da Natureza" },
+  { id:"morto_vivo",   nome:"Morto-vivo",          icone:"💀", fracao:"Horda",    cor:"#90a070", desc:"Os Renegados. Libertos da Lich King, buscam sua própria vingança.", bonus:"☠️ +Resistência · +Magia Sombria" },
+  { id:"elfo_sangue",  nome:"Elfo de Sangue",      icone:"🌹", fracao:"Horda",    cor:"#e04060", desc:"Elfos marcados pelo fel. Consumidos pelo arcano, elegantes e perigosos.", bonus:"🔮 +Inteligência · +Arcano" },
+  { id:"troll",        nome:"Troll",               icone:"🌀", fracao:"Horda",    cor:"#40c0a0", desc:"Shamanistas instintivos. Regeneração acelerada e ligação com os espíritos.", bonus:"⚡ +Velocidade · +Regeneração" },
+  { id:"pandaren",     nome:"Pandaren",            icone:"🐼", fracao:"Neutro",   cor:"#e0c080", desc:"Mestres do equilíbrio e da sabedoria. Nem Aliança nem Horda os definem.", bonus:"🍵 +Sabedoria · +Espírito" },
+];
+
+const CLASSES = [
+  { id:"mago",           nome:"Mago",                icone:"🔥", cor:"#80b0ff", desc:"Mestre do arcano, gelo e fogo. Destrói com feitiços e controla batalhas.", atributo:"Inteligência" },
+  { id:"guerreiro",      nome:"Guerreiro",            icone:"⚔️", cor:"#c0a060", desc:"O bastião da linha de frente. Absorve dano e protege os aliados com força bruta.", atributo:"Força" },
+  { id:"druida",         nome:"Druida",               icone:"🌿", cor:"#40c060", desc:"Forma de animais, cura natural, equilíbrio entre ataque e suporte.", atributo:"Versatilidade" },
+  { id:"ladino",         nome:"Ladino",               icone:"🗡️", cor:"#ffe060", desc:"Veloz e letal nas sombras. Golpes precisos e fuga quando necessário.", atributo:"Agilidade" },
+  { id:"paladino",       nome:"Paladino",             icone:"🛡️", cor:"#f0d080", desc:"Guerreiro sagrado. Cura, tanque e dano em um só — o mais versátil da Aliança.", atributo:"Força + Sagrado" },
+  { id:"cacador",        nome:"Caçador",              icone:"🏹", cor:"#80c040", desc:"Arqueiro e mestre de animais selvagens. Dano à distância incomparável.", atributo:"Agilidade + Precisão" },
+  { id:"xama",           nome:"Xamã",                 icone:"⚡", cor:"#4898f0", desc:"Chama os elementos: terra, fogo, água, ar. Cura, dano e suporte elemental.", atributo:"Espírito" },
+  { id:"sacerdote",      nome:"Sacerdote",            icone:"✨", cor:"#e0e8ff", desc:"Curandeiro sagrado ou mestre das sombras. Dois caminhos, um poder enorme.", atributo:"Espírito + Inteligência" },
+  { id:"bruxo",          nome:"Bruxo",                icone:"👁️", cor:"#a060e0", desc:"Conjura demônios e usa magia proibida. Drena vida, espalha maldições.", atributo:"Inteligência Sombria" },
+  { id:"monge",          nome:"Monge",                icone:"👊", cor:"#40c0c0", desc:"Mestre das artes marciais e do chi. Equilibra ataque, cura e mobilidade.", atributo:"Agilidade + Chi" },
+  { id:"cav_morte",      nome:"Cavaleiro da Morte",   icone:"☠️", cor:"#8090b0", desc:"Ex-servos da Lich King. Usam runas e morte para devastar inimigos.", atributo:"Força + Runa" },
+  { id:"cac_demonios",   nome:"Caçador de Demônios",  icone:"😈", cor:"#c040e0", desc:"Consumiram energia demoníaca para combatê-la. Ágeis e implacáveis.", atributo:"Agilidade + Fel" },
+  { id:"evocador",       nome:"Evocador",             icone:"🐉", cor:"#40e0a0", desc:"Meio-dragão descendente dos Dracthyr. Controla magia dracônica.", atributo:"Inteligência Dracônica" },
+];
 
 /* ═══════════════════════════════════════════════════════════
    PIXEL BAR — segmented like classic RPG HP bars
@@ -2120,7 +2262,7 @@ function CalendarioModule() {
 export default function App() {
   usePixelStyles();
 
-  const [nomeHeroi, setNomeHeroi] = useLS("mylog_heroi_nome", "");
+  const [personagem, setPersonagem] = useLS("mylog_personagem", null);
   const [tab,    setTab]    = useState("dashboard");
   const [diary,  setDiary]  = useLS("meudiario_diary",  {});
   const [tasks,  setTasks]  = useLS("meudiario_tasks",  []);
@@ -2128,10 +2270,19 @@ export default function App() {
   const [notes,  setNotes]  = useLS("meudiario_notes",  []);
   const [apiKey, setApiKey] = useLS("meudiario_apikey", "");
 
-  // Primeira vez: mostrar tela de boas-vindas
-  if (!nomeHeroi) {
-    return <WelcomeScreen onStart={(nome) => setNomeHeroi(nome || "HERÓI")} />;
+  // Primeira vez: mostrar criador de personagem
+  if (!personagem || !personagem.nome) {
+    return (
+      <WelcomeScreen
+        personagemExistente={personagem}
+        onStart={(p) => setPersonagem(p || { nome:"HERÓI", racaId:null, classeId:null })}
+      />
+    );
   }
+
+  const nomeHeroi  = personagem.nome;
+  const racaDados  = RACAS.find(r => r.id === personagem.racaId);
+  const classeDados= CLASSES.find(c => c.id === personagem.classeId);
 
   const xp    = calcXP(tasks,diary,goals);
   const lv    = calcLevel(xp);
@@ -2172,6 +2323,13 @@ export default function App() {
             <div className="px-font" style={{ fontSize:"6px", color:"#2a4880", marginTop:"4px" }}>
               {nomeHeroi} · LVL {lv} · {getTitle(lv)}
             </div>
+            {(classeDados || racaDados) && (
+              <div className="px-font" style={{ fontSize:"5px", color:"#1e3860", marginTop:"2px" }}>
+                {classeDados ? `${classeDados.icone} ${classeDados.nome}` : ""}
+                {classeDados && racaDados ? " · " : ""}
+                {racaDados ? `${racaDados.icone} ${racaDados.nome}` : ""}
+              </div>
+            )}
           </div>
 
           <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"6px", minWidth:"240px" }}>
@@ -2188,11 +2346,11 @@ export default function App() {
             ))}
           </div>
 
-          {/* botão trocar nome */}
+          {/* botão trocar personagem */}
           <button
-            onClick={() => { if(window.confirm("Trocar nome do herói? (os dados não serão perdidos)")) setNomeHeroi(""); }}
+            onClick={() => { if(window.confirm("Criar novo personagem? (os dados de progresso não serão perdidos)")) setPersonagem(null); }}
             style={{ background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"6px 8px", cursor:"pointer" }}
-            title="Trocar herói"
+            title="Trocar personagem"
           >⚙</button>
         </div>
       </header>
@@ -2208,14 +2366,14 @@ export default function App() {
 
       {/* ══ MAIN ══ */}
       <main style={{ maxWidth:"980px", margin:"0 auto", padding:"24px 20px", position:"relative", zIndex:1 }}>
-        {tab==="dashboard"  && <DashboardModule diary={diary} tasks={tasks} goals={goals} nomeHeroi={nomeHeroi} />}
+        {tab==="dashboard"  && <DashboardModule diary={diary} tasks={tasks} goals={goals} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} />}
         {tab==="diary"      && <DiaryModule data={diary} setData={setDiary} />}
         {tab==="tasks"      && <QuestLogModule tasks={tasks} setTasks={setTasks} />}
         {tab==="goals"      && <FacanhasModule goals={goals} setGoals={setGoals} />}
         {tab==="notes"      && <GrimorioModule notes={notes} setNotes={setNotes} />}
         {tab==="calendario" && <CalendarioModule />}
         {tab==="skilltree"  && <SkillTreeModule />}
-        {tab==="ai"         && <OracleModule diary={diary} tasks={tasks} goals={goals} notes={notes} apiKey={apiKey} setApiKey={setApiKey} nomeHeroi={nomeHeroi} />}
+        {tab==="ai"         && <OracleModule diary={diary} tasks={tasks} goals={goals} notes={notes} apiKey={apiKey} setApiKey={setApiKey} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} />}
       </main>
     </div>
   );
