@@ -1,0 +1,31 @@
+{
+  "short_name": "MyLog RPG",
+  "name": "MyLog RPG — FIAP Quest Tracker",
+  "description": "Rastreador de quests e árvore de habilidades FIAP — estilo RPG pixel art",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#02071a",
+  "background_color": "#02071a",
+  "categories": ["education", "productivity"],
+  "lang": "pt-BR"
+}
