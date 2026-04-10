@@ -65,6 +65,158 @@ function PixelStarField() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   WELCOME SCREEN — Final Fantasy "New Game" style
+═══════════════════════════════════════════════════════════ */
+function WelcomeScreen({ onStart }) {
+  const [fase,   setFase]  = useState("title");   // "title" | "nome"
+  const [nome,   setNome]  = useState("");
+  const [cursor, setCursor]= useState(0);          // 0=Nova Aventura 1=Continuar
+
+  const opcoes = ["▶ NOVA AVENTURA", "  CONTINUAR"];
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (fase === "title") {
+        if (e.key === "ArrowUp")   setCursor(p => (p - 1 + opcoes.length) % opcoes.length);
+        if (e.key === "ArrowDown") setCursor(p => (p + 1) % opcoes.length);
+        if (e.key === "Enter") {
+          if (cursor === 0) setFase("nome");
+          else onStart("");
+        }
+      }
+      if (fase === "nome" && e.key === "Enter" && nome.trim()) {
+        onStart(nome.trim());
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fase, cursor, nome, onStart, opcoes.length]);
+
+  return (
+    <div style={{
+      position:"fixed", inset:0,
+      background:"#06080f",
+      display:"flex", flexDirection:"column",
+      alignItems:"center", justifyContent:"center",
+      zIndex:1000, fontFamily:"'Press Start 2P',monospace",
+    }}>
+      {/* estrelas de fundo */}
+      <PixelStarField />
+
+      <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:"0", width:"100%", maxWidth:"480px", padding:"24px" }}>
+
+        {/* Logo FF-style */}
+        <div style={{ textAlign:"center", marginBottom:"40px" }}>
+          <div style={{
+            fontSize:"10px", color:"#2a4880", letterSpacing:".3em",
+            marginBottom:"12px",
+          }}>
+            ✦ ✦ ✦
+          </div>
+          <div style={{
+            fontSize:"clamp(16px,4vw,28px)", color:"#f0c030",
+            textShadow:"0 0 20px rgba(200,160,0,.7), 0 0 40px rgba(200,160,0,.3)",
+            letterSpacing:".1em", lineHeight:1.4,
+            animation:"pxGlow 2s ease-in-out infinite",
+          }}>
+            MYLOG RPG
+          </div>
+          <div style={{ fontSize:"7px", color:"#3060b8", marginTop:"10px", letterSpacing:".2em" }}>
+            FIAP · QUEST TRACKER
+          </div>
+          <div style={{ fontSize:"7px", color:"#1a3060", marginTop:"6px", letterSpacing:".15em" }}>
+            TÉCNICO EM DESENVOLVIMENTO DE SISTEMAS
+          </div>
+        </div>
+
+        {/* Janela FF */}
+        {fase === "title" && (
+          <div style={{
+            background:"#0c1630",
+            border:"3px solid #3060b8",
+            boxShadow:"0 0 0 1px #06080f, 0 0 0 4px #1a3870, inset 0 0 0 2px #1e3e80, 0 0 30px rgba(48,96,184,.2)",
+            padding:"28px 40px",
+            minWidth:"280px", textAlign:"left",
+          }}>
+            {opcoes.map((op, i) => (
+              <div
+                key={i}
+                onClick={() => { setCursor(i); if(i===0) setFase("nome"); else onStart(""); }}
+                style={{
+                  padding:"10px 4px",
+                  color: cursor === i ? "#f0c030" : "#3060b8",
+                  fontSize:"9px", letterSpacing:".08em",
+                  cursor:"pointer",
+                  textShadow: cursor === i ? "0 0 12px rgba(200,160,0,.6)" : "none",
+                  transition:"color .15s",
+                }}
+              >
+                {cursor === i ? op : op.replace("▶", " ")}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {fase === "nome" && (
+          <div style={{
+            background:"#0c1630",
+            border:"3px solid #c8a000",
+            boxShadow:"0 0 0 1px #06080f, 0 0 0 4px #4a3800, inset 0 0 0 2px #8a6800, 0 0 30px rgba(200,160,0,.2)",
+            padding:"28px 32px",
+            minWidth:"320px",
+          }}>
+            <div style={{ fontSize:"8px", color:"#c8a000", marginBottom:"20px", letterSpacing:".1em" }}>
+              ✦ NOME DO HERÓI
+            </div>
+            <input
+              autoFocus
+              className="px-input"
+              style={{ marginBottom:"16px", fontSize:"20px", letterSpacing:".08em", textTransform:"uppercase", color:"#f0c030", borderColor:"#c8a000" }}
+              placeholder="> SEU NOME..."
+              maxLength={14}
+              value={nome}
+              onChange={e => setNome(e.target.value.toUpperCase())}
+              onKeyDown={e => e.key==="Enter" && nome.trim() && onStart(nome.trim())}
+            />
+            <div style={{ display:"flex", gap:"10px" }}>
+              <button
+                onClick={() => nome.trim() && onStart(nome.trim())}
+                style={{
+                  flex:1, padding:"12px", background:"#201400",
+                  border:"3px solid #c8a000", color:"#f0c030",
+                  fontFamily:"'Press Start 2P',monospace", fontSize:"8px",
+                  cursor:"pointer", letterSpacing:".08em",
+                  boxShadow:"3px 3px 0 #4a3000",
+                  opacity: nome.trim() ? 1 : 0.4,
+                }}
+              >
+                ▶ COMEÇAR
+              </button>
+              <button
+                onClick={() => setFase("title")}
+                style={{
+                  padding:"12px 16px", background:"#0c1428",
+                  border:"3px solid #1e3060", color:"#3060b8",
+                  fontFamily:"'Press Start 2P',monospace", fontSize:"8px",
+                  cursor:"pointer",
+                  boxShadow:"3px 3px 0 #060c18",
+                }}
+              >
+                ◀
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="px-blink" style={{ marginTop:"32px", fontSize:"7px", color:"#1e3060", letterSpacing:".15em" }}>
+          {fase === "title" ? "↑↓ MOVER · ENTER CONFIRMAR" : "ENTER PARA CONFIRMAR"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    PIXEL BAR — segmented like classic RPG HP bars
 ═══════════════════════════════════════════════════════════ */
 function PixelBar({ value, max = 100, color = "#39ff14", segments = 24 }) {
@@ -100,27 +252,28 @@ function usePixelStyles() {
     style.id = "pixel-arcane-styles";
     style.textContent = `
       *, *::before, *::after { box-sizing: border-box; image-rendering: pixelated; }
-      html, body { margin: 0; padding: 0; background: #02071a; }
+      html, body { margin: 0; padding: 0; background: #06080f; }
 
       ::-webkit-scrollbar { width: 8px; }
-      ::-webkit-scrollbar-track { background: #020a1e; border-left: 2px solid #0a1840; }
-      ::-webkit-scrollbar-thumb { background: #1a4080; border: 2px solid #020a1e; }
-      ::-webkit-scrollbar-thumb:hover { background: #00d4ff; }
+      ::-webkit-scrollbar-track { background: #080c1a; border-left: 2px solid #1a2860; }
+      ::-webkit-scrollbar-thumb { background: #2a4a90; border: 2px solid #06080f; }
+      ::-webkit-scrollbar-thumb:hover { background: #80b4ff; }
 
       .px-font   { font-family: 'Press Start 2P', monospace; }
       .px-body   { font-family: 'VT323', monospace; letter-spacing: 0.02em; }
 
-      /* ── PIXEL DIALOG PANEL — classic SNES RPG border ── */
+      /* ══════════════════════════════════════════
+         FF WINDOW — classic Final Fantasy panel
+      ══════════════════════════════════════════ */
       .px-panel {
         position: relative;
-        background: #070d22;
-        border: 4px solid #00d4ff;
+        background: #0c1630;
+        border: 3px solid #3060b8;
         box-shadow:
-          0 0 0 4px #020a1e,
-          0 0 0 7px #0d2860,
-          inset 0 0 0 2px #0a1840,
-          0 0 20px rgba(0,212,255,0.1),
-          0 0 40px rgba(0,212,255,0.05);
+          0 0 0 1px #06080f,
+          0 0 0 4px #1a3870,
+          inset 0 0 0 2px #1e3e80,
+          0 0 16px rgba(48,96,184,0.15);
         padding: 20px;
         margin-bottom: 16px;
         border-radius: 0;
@@ -129,61 +282,63 @@ function usePixelStyles() {
       /* ── GOLD HERO PANEL ── */
       .px-panel-hero {
         position: relative;
-        background: #060c20;
-        border: 4px solid #ffd700;
+        background: #100e00;
+        border: 3px solid #c8a000;
         box-shadow:
-          0 0 0 4px #020a1e,
-          0 0 0 7px #3a2800,
-          inset 0 0 0 2px #1a1000,
-          0 0 24px rgba(255,215,0,0.15),
-          0 0 50px rgba(255,215,0,0.05);
+          0 0 0 1px #06080f,
+          0 0 0 4px #4a3800,
+          inset 0 0 0 2px #8a6800,
+          0 0 20px rgba(200,160,0,0.18),
+          0 0 40px rgba(200,160,0,0.06);
         padding: 20px;
         margin-bottom: 16px;
         border-radius: 0;
       }
 
-      /* ── ARCANE PURPLE PANEL ── */
+      /* ── CRYSTAL PANEL (antigo arcane) ── */
       .px-panel-arcane {
         position: relative;
-        background: #080516;
-        border: 4px solid #bb86fc;
+        background: #081428;
+        border: 3px solid #4898f0;
         box-shadow:
-          0 0 0 4px #020a1e,
-          0 0 0 7px #200050,
-          inset 0 0 0 2px #1a0040,
-          0 0 24px rgba(187,134,252,0.15),
-          0 0 50px rgba(187,134,252,0.06);
+          0 0 0 1px #06080f,
+          0 0 0 4px #0e2860,
+          inset 0 0 0 2px #1a4898,
+          0 0 20px rgba(72,152,240,0.15),
+          0 0 40px rgba(72,152,240,0.06);
         padding: 20px;
         margin-bottom: 16px;
         border-radius: 0;
       }
 
-      /* pixel corner gems */
+      /* FF corner gems — diamond pixel */
       .px-panel::before, .px-panel-hero::before, .px-panel-arcane::before {
         content: '';
         position: absolute;
-        top: -6px; left: -6px;
-        width: 8px; height: 8px;
-        background: #020a1e;
-        border: 2px solid #00d4ff;
+        top: -5px; left: -5px;
+        width: 7px; height: 7px;
+        background: #3060b8;
+        border: 2px solid #80b4ff;
         z-index: 2;
+        transform: rotate(45deg);
       }
       .px-panel::after, .px-panel-hero::after, .px-panel-arcane::after {
         content: '';
         position: absolute;
-        bottom: -6px; right: -6px;
-        width: 8px; height: 8px;
-        background: #020a1e;
-        border: 2px solid #00d4ff;
+        bottom: -5px; right: -5px;
+        width: 7px; height: 7px;
+        background: #3060b8;
+        border: 2px solid #80b4ff;
         z-index: 2;
+        transform: rotate(45deg);
       }
       .px-panel-hero::before, .px-panel-hero::after {
-        border-color: #ffd700;
-        background: #020a1e;
+        background: #c8a000;
+        border-color: #ffe060;
       }
       .px-panel-arcane::before, .px-panel-arcane::after {
-        border-color: #bb86fc;
-        background: #020a1e;
+        background: #4898f0;
+        border-color: #a0d0ff;
       }
 
       /* ── BUTTONS ── */
@@ -200,92 +355,93 @@ function usePixelStyles() {
         position: relative;
         image-rendering: pixelated;
       }
-      .px-btn:hover  { filter: brightness(1.25); transform: translateY(-1px); }
-      .px-btn:active { transform: translateY(1px); filter: brightness(0.9); }
+      .px-btn:hover  { filter: brightness(1.3); transform: translateY(-1px); }
+      .px-btn:active { transform: translateY(1px); filter: brightness(0.85); }
 
       .px-btn-cyan {
-        background: #0a2a50;
-        color: #00d4ff;
-        border: 3px solid #00d4ff;
-        box-shadow: 3px 3px 0 #003a60, inset 1px 1px 0 #00d4ff44;
+        background: #0e2050;
+        color: #80b4ff;
+        border: 3px solid #4080d0;
+        box-shadow: 3px 3px 0 #061030, inset 1px 1px 0 #4080d044;
       }
       .px-btn-gold {
-        background: #2a1a00;
-        color: #ffd700;
-        border: 3px solid #ffd700;
-        box-shadow: 3px 3px 0 #5a3a00, inset 1px 1px 0 #ffd70044;
+        background: #201400;
+        color: #f0c030;
+        border: 3px solid #c8a000;
+        box-shadow: 3px 3px 0 #4a3000, inset 1px 1px 0 #c8a00044;
       }
       .px-btn-purple {
-        background: #1a0a30;
-        color: #bb86fc;
-        border: 3px solid #bb86fc;
-        box-shadow: 3px 3px 0 #4a1a80, inset 1px 1px 0 #bb86fc44;
+        background: #081428;
+        color: #a0c8ff;
+        border: 3px solid #4898f0;
+        box-shadow: 3px 3px 0 #0a1840, inset 1px 1px 0 #4898f044;
       }
       .px-btn-ghost {
-        background: #0a1228;
-        color: #4fc3f7;
-        border: 3px solid #1a3060;
-        box-shadow: 3px 3px 0 #071020;
+        background: #0c1428;
+        color: #6898c8;
+        border: 3px solid #1e3060;
+        box-shadow: 3px 3px 0 #060c18;
       }
       .px-btn-danger {
-        background: #200808;
-        color: #ff5555;
-        border: 3px solid #ff5555;
-        box-shadow: 3px 3px 0 #600000;
+        background: #1a0808;
+        color: #e04040;
+        border: 3px solid #c03030;
+        box-shadow: 3px 3px 0 #500000;
       }
 
       /* ── INPUTS ── */
       .px-input {
-        width: 100%; background: #04091a;
-        border: 3px solid #0d2860;
-        border-radius: 0; color: #c0e8ff;
+        width: 100%; background: #080e20;
+        border: 2px solid #1e3870;
+        border-radius: 0; color: #e0eeff;
         font-family: 'VT323', monospace;
         font-size: 18px; padding: 8px 12px;
         outline: none;
         transition: border-color 0.15s, box-shadow 0.15s;
-        box-shadow: inset 2px 2px 0 #020a1e;
+        box-shadow: inset 2px 2px 0 #04080f;
       }
       .px-input:focus {
-        border-color: #00d4ff;
-        box-shadow: inset 2px 2px 0 #020a1e, 0 0 0 2px rgba(0,212,255,.25);
+        border-color: #4898f0;
+        box-shadow: inset 2px 2px 0 #04080f, 0 0 0 2px rgba(72,152,240,.25);
       }
-      .px-input::placeholder { color: #1a3a60; }
+      .px-input::placeholder { color: #1e3860; }
 
       .px-textarea {
-        width: 100%; background: #04091a;
-        border: 3px solid #0d2860;
-        border-radius: 0; color: #c0e8ff;
+        width: 100%; background: #080e20;
+        border: 2px solid #1e3870;
+        border-radius: 0; color: #e0eeff;
         font-family: 'VT323', monospace;
         font-size: 18px; padding: 10px 12px;
         resize: vertical; min-height: 120px; line-height: 1.6;
         outline: none;
         transition: border-color .15s;
-        box-shadow: inset 2px 2px 0 #020a1e;
+        box-shadow: inset 2px 2px 0 #04080f;
       }
       .px-textarea:focus {
-        border-color: #00d4ff;
-        box-shadow: inset 2px 2px 0 #020a1e, 0 0 0 2px rgba(0,212,255,.25);
+        border-color: #4898f0;
+        box-shadow: inset 2px 2px 0 #04080f, 0 0 0 2px rgba(72,152,240,.25);
       }
-      .px-textarea::placeholder { color: #1a3a60; }
+      .px-textarea::placeholder { color: #1e3860; }
 
-      select.px-input option { background: #04091a; color: #c0e8ff; }
+      select.px-input option { background: #080e20; color: #e0eeff; }
 
-      /* ── NAV ── */
+      /* ── NAV FF-style ── */
       .px-nav-btn {
         padding: 12px 16px;
-        border: none; border-bottom: 4px solid transparent;
+        border: none; border-bottom: 3px solid transparent;
         background: none; cursor: pointer;
         font-family: 'Press Start 2P', monospace;
-        font-size: 8px; letter-spacing: 0.06em;
+        font-size: 7px; letter-spacing: 0.05em;
         white-space: nowrap; text-transform: uppercase;
-        transition: color .15s, border-color .15s;
-        color: #1a4070;
+        transition: color .15s, border-color .15s, background .15s;
+        color: #2a4880;
       }
-      .px-nav-btn:hover { color: #4fc3f7; }
+      .px-nav-btn:hover { color: #80b4ff; background: rgba(48,96,184,.08); }
       .px-nav-btn.active {
-        color: #00d4ff !important;
-        border-bottom-color: #00d4ff;
-        text-shadow: 0 0 10px rgba(0,212,255,0.7), 0 0 20px rgba(0,212,255,0.3);
+        color: #f0c030 !important;
+        border-bottom-color: #c8a000;
+        background: rgba(200,160,0,.08);
+        text-shadow: 0 0 10px rgba(200,160,0,0.6), 0 0 20px rgba(200,160,0,0.2);
       }
 
       /* ── BADGE ── */
@@ -300,13 +456,13 @@ function usePixelStyles() {
       /* ── DIVIDER ── */
       .px-divider {
         border: none; height: 2px;
-        background: linear-gradient(90deg, transparent, #0d2860 20%, #00d4ff44 50%, #0d2860 80%, transparent);
+        background: linear-gradient(90deg, transparent, #1e3870 20%, #3060b844 50%, #1e3870 80%, transparent);
         margin: 14px 0;
       }
 
       /* ── ANIMATIONS ── */
       @keyframes pxBlink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
-      @keyframes pxGlow  { 0%,100%{text-shadow:0 0 8px #00d4ff66} 50%{text-shadow:0 0 18px #00d4ffcc, 0 0 30px #00d4ff44} }
+      @keyframes pxGlow  { 0%,100%{text-shadow:0 0 8px #c8a00066} 50%{text-shadow:0 0 18px #f0c030cc, 0 0 30px #c8a00044} }
       @keyframes pxFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
       @keyframes pxScan  {
         0%   { background-position: 0 -100%; }
@@ -421,7 +577,7 @@ const PxBadge = ({ color, children }) => (
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD
 ═══════════════════════════════════════════════════════════ */
-function DashboardModule({ diary, tasks, goals }) {
+function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI" }) {
   const now    = new Date();
   const wa     = new Date(now - 7*86400000);
   const moods  = Object.entries(diary).filter(([k])=>new Date(k)>=wa).map(([,e])=>e.mood).filter(Boolean);
@@ -452,8 +608,8 @@ function DashboardModule({ diary, tasks, goals }) {
             <div className="px-font" style={{ fontSize:"7px", color:"#ffd70088", letterSpacing:".2em", marginBottom:"6px" }}>
               ✦ SALÃO DO HERÓI · REINO ARCANO ✦
             </div>
-            <div className="px-font px-glow-cx" style={{ fontSize:"18px", color:"#ffd700", lineHeight:1.2, marginBottom:"4px", textShadow:"0 0 20px rgba(255,215,0,.6)" }}>
-              CARLOS
+            <div className="px-font px-glow-cx" style={{ fontSize:"18px", color:"#f0c030", lineHeight:1.2, marginBottom:"4px", textShadow:"0 0 20px rgba(200,160,0,.6)" }}>
+              {nomeHeroi}
             </div>
             <div className="px-body" style={{ fontSize:"20px", color:"#00d4ff", marginBottom:"2px" }}>
               {cls.icon} {cls.title}
@@ -947,11 +1103,51 @@ function FacanhasModule({ goals, setGoals }) {
 /* ═══════════════════════════════════════════════════════════
    ORACLE (AI)
 ═══════════════════════════════════════════════════════════ */
-function OracleModule({ diary, tasks, goals, notes, apiKey, setApiKey }) {
+function OracleModule({ diary, tasks, goals, notes, apiKey, setApiKey, nomeHeroi = "HERÓI" }) {
+  const [modo,    setModo]    = useState("revelacoes"); // "revelacoes" | "companion"
   const [analysis,setAnalysis]= useState("");
   const [loading,setLoading]  = useState(false);
   const [error,setError]      = useState("");
   const [type,setType]        = useState("semanal");
+
+  /* ── COMPANION CHAT ── */
+  const [chatMsgs,  setChatMsgs]  = useLS("mylog_companion_chat", []);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoad,  setChatLoad]  = useState(false);
+  const chatEndRef = useCallback(el => el?.scrollIntoView({ behavior:"smooth" }), []);
+
+  const sendChat = async () => {
+    const msg = chatInput.trim();
+    if (!msg || !apiKey.trim()) return;
+    const userMsg = { role:"user", content: msg, ts: Date.now() };
+    const history = [...chatMsgs, userMsg];
+    setChatMsgs(history);
+    setChatInput("");
+    setChatLoad(true);
+
+    const sysPrompt = `Você é Ignis, um Mago Oráculo ancião de um mundo de fantasia no estilo Final Fantasy. Você é o companheiro fiel de ${nomeHeroi}, um jovem aventureiro estudante de Tecnologia na FIAP.
+Responda SEMPRE em português, com linguagem levemente épica mas clara, direta e amigável — como um mestre sábio conversando com seu aprendiz.
+Você sabe que ${nomeHeroi} está aprendendo: Python, Java, JavaScript, FrontEnd, Banco de Dados, Business Model e Chat Bot IA (Watson).
+Ajude com dúvidas de programação, motivação, organização e qualquer pergunta. Seja conciso: máximo 4 parágrafos curtos.
+Nunca quebre o personagem. Use termos como "jovem aventureiro", "herói", "a jornada" quando apropriado, mas sem exagerar.`;
+
+    const messages = history.map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.content }));
+
+    try {
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method:"POST",
+        headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body: JSON.stringify({ model:"claude-opus-4-6", max_tokens:800, system: sysPrompt, messages }),
+      });
+      if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || `Erro ${r.status}`); }
+      const d = await r.json();
+      setChatMsgs(prev => [...prev, { role:"assistant", content: d.content[0].text, ts: Date.now() }]);
+    } catch(e) {
+      setChatMsgs(prev => [...prev, { role:"assistant", content:`⚠ Ignis não conseguiu responder: ${e.message}`, ts: Date.now() }]);
+    } finally {
+      setChatLoad(false);
+    }
+  };
 
   const buildCtx = useCallback(()=>{
     const wa=new Date(Date.now()-7*86400000);
@@ -1024,12 +1220,133 @@ Forneça:
 
   return (
     <div>
+      {/* ── Abas de modo ── */}
+      <div style={{ display:"flex", gap:"0", marginBottom:"16px", borderBottom:"3px solid #1e3060" }}>
+        {[
+          { id:"revelacoes", icon:"🔮", label:"REVELAÇÕES" },
+          { id:"companion",  icon:"🧙", label:"IGNIS — COMPANHEIRO" },
+        ].map(m => (
+          <button key={m.id} onClick={() => setModo(m.id)} style={{
+            padding:"10px 16px", background:"none", border:"none",
+            borderBottom: modo === m.id ? "3px solid #4898f0" : "3px solid transparent",
+            marginBottom:"-3px",
+            color: modo === m.id ? "#80b4ff" : "#2a4880",
+            fontFamily:"'Press Start 2P',monospace", fontSize:"7px",
+            cursor:"pointer", letterSpacing:".05em",
+            textShadow: modo === m.id ? "0 0 10px rgba(72,152,240,.5)" : "none",
+            transition:"all .15s",
+          }}>
+            {m.icon} {m.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ────────── COMPANION CHAT ────────── */}
+      {modo === "companion" && (
+        <div>
+          {!apiKey.trim() && (
+            <div className="px-panel-arcane" style={{ marginBottom:"12px" }}>
+              <PxLabel color="#4898f0">CHAVE ARCANA · ANTHROPIC API KEY</PxLabel>
+              <input type="password" className="px-input" style={{ borderColor:"#4898f044", marginBottom:"6px" }} placeholder="> sk-ant-api03-..." value={apiKey} onChange={e=>setApiKey(e.target.value)} />
+              <p className="px-body" style={{ fontSize:"14px", color:"#1e3870" }}>
+                [CHAVE SALVA LOCALMENTE · <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" style={{ color:"#4898f0" }}>console.anthropic.com</a>]
+              </p>
+            </div>
+          )}
+
+          {/* janela de chat */}
+          <div className="px-panel-arcane" style={{ padding:"0", overflow:"hidden" }}>
+            {/* cabeçalho do companion */}
+            <div style={{ padding:"14px 18px", borderBottom:"2px solid #1e3870", display:"flex", alignItems:"center", gap:"12px" }}>
+              <div className="px-float" style={{ fontSize:"32px" }}>🧙</div>
+              <div>
+                <div className="px-font" style={{ fontSize:"8px", color:"#80b4ff" }}>IGNIS — MAGO ORÁCULO</div>
+                <div className="px-body" style={{ fontSize:"14px", color:"#1e4080" }}>Seu companheiro de aventura · FIAP</div>
+              </div>
+              {apiKey.trim() && (
+                <button onClick={() => setChatMsgs([])} style={{ marginLeft:"auto", background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"5px 8px", cursor:"pointer" }}>
+                  LIMPAR
+                </button>
+              )}
+            </div>
+
+            {/* mensagens */}
+            <div style={{ height:"380px", overflowY:"auto", padding:"14px 16px", display:"flex", flexDirection:"column", gap:"12px" }}>
+              {chatMsgs.length === 0 && (
+                <div style={{ textAlign:"center", marginTop:"60px" }}>
+                  <div className="px-float" style={{ fontSize:"48px", display:"block", marginBottom:"12px" }}>🧙</div>
+                  <div className="px-font" style={{ fontSize:"7px", color:"#1e3870", lineHeight:2 }}>
+                    Saudações, {nomeHeroi}!<br/>
+                    Sou Ignis, seu guia nessa jornada.<br/>
+                    Pergunte-me qualquer coisa.
+                  </div>
+                </div>
+              )}
+              {chatMsgs.map((m, i) => (
+                <div key={i} style={{
+                  display:"flex", gap:"10px",
+                  flexDirection: m.role === "user" ? "row-reverse" : "row",
+                  alignItems:"flex-end",
+                }}>
+                  <div style={{ fontSize:"20px", flexShrink:0 }}>
+                    {m.role === "user" ? "⚔️" : "🧙"}
+                  </div>
+                  <div style={{
+                    maxWidth:"75%", padding:"10px 14px",
+                    background: m.role === "user" ? "#102040" : "#081428",
+                    border:`2px solid ${m.role === "user" ? "#3060b8" : "#4898f0"}`,
+                    borderRadius: "0",
+                  }}>
+                    <div className="px-body" style={{ fontSize:"17px", color: m.role === "user" ? "#c8deff" : "#a0c8ff", lineHeight:1.6, whiteSpace:"pre-wrap" }}>
+                      {m.content}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {chatLoad && (
+                <div style={{ display:"flex", gap:"10px", alignItems:"flex-end" }}>
+                  <div style={{ fontSize:"20px" }}>🧙</div>
+                  <div style={{ padding:"10px 14px", background:"#081428", border:"2px solid #4898f0" }}>
+                    <span className="px-blink px-font" style={{ fontSize:"8px", color:"#4898f0" }}>▌▌▌</span>
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* input */}
+            <div style={{ padding:"12px 16px", borderTop:"2px solid #1e3870", display:"flex", gap:"8px" }}>
+              <input
+                className="px-input"
+                style={{ flex:1, fontSize:"17px" }}
+                placeholder="> Fale com Ignis..."
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendChat()}
+                disabled={chatLoad || !apiKey.trim()}
+              />
+              <button
+                className="px-btn px-btn-purple"
+                style={{ padding:"8px 14px", fontSize:"12px", flexShrink:0 }}
+                onClick={sendChat}
+                disabled={chatLoad || !apiKey.trim() || !chatInput.trim()}
+              >
+                ▶
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ────────── REVELAÇÕES (modo original) ────────── */}
+      {modo === "revelacoes" && (
+      <>
       <div className="px-panel-arcane">
         <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #bb86fc", zIndex:2 }} />
         <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #bb86fc", zIndex:2 }} />
-        <PxTitle icon="🔮" color="#bb86fc">CÂMARA DO ORÁCULO</PxTitle>
+        <PxTitle icon="🔮" color="#4898f0">CÂMARA DO ORÁCULO</PxTitle>
 
-        <PxLabel color="#bb86fc">CHAVE ARCANA · ANTHROPIC API KEY</PxLabel>
+        <PxLabel color="#4898f0">CHAVE ARCANA · ANTHROPIC API KEY</PxLabel>
         <input type="password" className="px-input" style={{ borderColor:"#bb86fc44", marginBottom:"6px" }} placeholder="> sk-ant-api03-..." value={apiKey} onChange={e=>setApiKey(e.target.value)} />
         <p className="px-body" style={{ fontSize:"15px", color:"#1a4070", marginBottom:"16px", fontStyle:"italic" }}>
           [CHAVE SALVA LOCALMENTE · OBTENHA A SUA EM{" "}
@@ -1079,17 +1396,19 @@ Forneça:
 
       {analysis && (
         <div className="px-panel-arcane">
-          <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #bb86fc", zIndex:2 }} />
-          <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #bb86fc", zIndex:2 }} />
+          <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #4898f0", zIndex:2 }} />
+          <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #4898f0", zIndex:2 }} />
           <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"18px" }}>
             <div className="px-float" style={{ fontSize:"40px", display:"block" }}>🔮</div>
             <div>
-              <div className="px-font" style={{ fontSize:"9px", color:"#bb86fc", textShadow:"0 0 10px rgba(187,134,252,.7)" }}>REVELAÇÃO DO ORÁCULO</div>
-              <div className="px-body" style={{ fontSize:"14px", color:"#4a1a80" }}>{new Date().toLocaleString("pt-BR")}</div>
+              <div className="px-font" style={{ fontSize:"9px", color:"#80b4ff", textShadow:"0 0 10px rgba(72,152,240,.7)" }}>REVELAÇÃO DO ORÁCULO</div>
+              <div className="px-body" style={{ fontSize:"14px", color:"#1e4080" }}>{new Date().toLocaleString("pt-BR")}</div>
             </div>
           </div>
-          <div className="px-body" style={{ fontSize:"18px", color:"#c0e8ff", lineHeight:1.8, whiteSpace:"pre-wrap" }}>{analysis}</div>
+          <div className="px-body" style={{ fontSize:"18px", color:"#c8deff", lineHeight:1.8, whiteSpace:"pre-wrap" }}>{analysis}</div>
         </div>
+      )}
+      </>
       )}
     </div>
   );
@@ -1801,12 +2120,18 @@ function CalendarioModule() {
 export default function App() {
   usePixelStyles();
 
+  const [nomeHeroi, setNomeHeroi] = useLS("mylog_heroi_nome", "");
   const [tab,    setTab]    = useState("dashboard");
   const [diary,  setDiary]  = useLS("meudiario_diary",  {});
   const [tasks,  setTasks]  = useLS("meudiario_tasks",  []);
   const [goals,  setGoals]  = useLS("meudiario_goals",  []);
   const [notes,  setNotes]  = useLS("meudiario_notes",  []);
   const [apiKey, setApiKey] = useLS("meudiario_apikey", "");
+
+  // Primeira vez: mostrar tela de boas-vindas
+  if (!nomeHeroi) {
+    return <WelcomeScreen onStart={(nome) => setNomeHeroi(nome || "HERÓI")} />;
+  }
 
   const xp    = calcXP(tasks,diary,goals);
   const lv    = calcLevel(xp);
@@ -1828,32 +2153,32 @@ export default function App() {
   ];
 
   return (
-    <div className="px-crt" style={{ minHeight:"100vh", background:"#02071a", color:"#c0e8ff", fontFamily:"'VT323',monospace", position:"relative" }}>
+    <div className="px-crt" style={{ minHeight:"100vh", background:"#06080f", color:"#c8deff", fontFamily:"'VT323',monospace", position:"relative" }}>
       <PixelStarField />
 
-      {/* ══ HEADER ══ */}
+      {/* ══ HEADER FF-style ══ */}
       <header style={{
-        background:"#030b1e",
-        borderBottom:"4px solid #0d2860",
-        boxShadow:"0 4px 0 #020a1e, 0 8px 20px rgba(0,0,0,.6), 0 2px 20px rgba(0,212,255,.07)",
+        background:"#080c1a",
+        borderBottom:"3px solid #1a3060",
+        boxShadow:"0 3px 0 #06080f, 0 6px 20px rgba(0,0,0,.7), 0 2px 16px rgba(48,96,184,.08)",
         padding:"10px 24px",
         position:"sticky", top:0, zIndex:100,
       }}>
         <div style={{ maxWidth:"980px", margin:"0 auto", display:"flex", alignItems:"center", gap:"20px", flexWrap:"wrap" }}>
           <div style={{ flex:"0 0 auto" }}>
-            <div className="px-font px-glow-cx" style={{ fontSize:"13px", color:"#00d4ff", letterSpacing:".06em" }}>
+            <div className="px-font px-glow-cx" style={{ fontSize:"11px", color:"#f0c030", letterSpacing:".06em" }}>
               ✦ MYLOG RPG ✦
             </div>
-            <div className="px-font" style={{ fontSize:"7px", color:"#0d2860", marginTop:"3px" }}>
-              LVL {lv} · {getTitle(lv)} · {xp.toLocaleString()} XP
+            <div className="px-font" style={{ fontSize:"6px", color:"#2a4880", marginTop:"4px" }}>
+              {nomeHeroi} · LVL {lv} · {getTitle(lv)}
             </div>
           </div>
 
           <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"6px", minWidth:"240px" }}>
             {[
-              {label:"❤ HP",  val:`${hp}/100`,       pct:hp,    color:"#39ff14"},
-              {label:"✦ MP",  val:`${mana}/100`,      pct:mana,  color:"#4fc3f7"},
-              {label:"★ XP",  val:`${xpCur}/${xpNeed}`,pct:Math.min((xpCur/Math.max(xpNeed,1))*100,100),color:"#ffd700"},
+              {label:"❤ HP",  val:`${hp}/100`,         pct:hp,    color:"#40c060"},
+              {label:"✦ MP",  val:`${mana}/100`,        pct:mana,  color:"#4898f0"},
+              {label:"★ XP",  val:`${xpCur}/${xpNeed}`, pct:Math.min((xpCur/Math.max(xpNeed,1))*100,100), color:"#f0c030"},
             ].map(s=>(
               <div key={s.label} style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                 <span className="px-font" style={{ fontSize:"6px", color:s.color, minWidth:"36px" }}>{s.label}</span>
@@ -1862,11 +2187,18 @@ export default function App() {
               </div>
             ))}
           </div>
+
+          {/* botão trocar nome */}
+          <button
+            onClick={() => { if(window.confirm("Trocar nome do herói? (os dados não serão perdidos)")) setNomeHeroi(""); }}
+            style={{ background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"6px 8px", cursor:"pointer" }}
+            title="Trocar herói"
+          >⚙</button>
         </div>
       </header>
 
       {/* ══ NAV ══ */}
-      <nav style={{ background:"#020a1e", borderBottom:"4px solid #0d2860", boxShadow:"0 4px 0 #020000", display:"flex", overflowX:"auto", paddingLeft:"8px" }}>
+      <nav style={{ background:"#06080f", borderBottom:"3px solid #1a3060", boxShadow:"0 3px 0 #04060a", display:"flex", overflowX:"auto", paddingLeft:"8px" }}>
         <div style={{ maxWidth:"980px", margin:"0 auto", display:"flex", width:"100%" }}>
           {TABS.map(t=>(
             <button key={t.id} className={`px-nav-btn${tab===t.id?" active":""}`} onClick={()=>setTab(t.id)}>{t.label}</button>
@@ -1876,14 +2208,14 @@ export default function App() {
 
       {/* ══ MAIN ══ */}
       <main style={{ maxWidth:"980px", margin:"0 auto", padding:"24px 20px", position:"relative", zIndex:1 }}>
-        {tab==="dashboard" && <DashboardModule diary={diary} tasks={tasks} goals={goals} />}
-        {tab==="diary"     && <DiaryModule data={diary} setData={setDiary} />}
-        {tab==="tasks"     && <QuestLogModule tasks={tasks} setTasks={setTasks} />}
-        {tab==="goals"     && <FacanhasModule goals={goals} setGoals={setGoals} />}
-        {tab==="notes"     && <GrimorioModule notes={notes} setNotes={setNotes} />}
+        {tab==="dashboard"  && <DashboardModule diary={diary} tasks={tasks} goals={goals} nomeHeroi={nomeHeroi} />}
+        {tab==="diary"      && <DiaryModule data={diary} setData={setDiary} />}
+        {tab==="tasks"      && <QuestLogModule tasks={tasks} setTasks={setTasks} />}
+        {tab==="goals"      && <FacanhasModule goals={goals} setGoals={setGoals} />}
+        {tab==="notes"      && <GrimorioModule notes={notes} setNotes={setNotes} />}
         {tab==="calendario" && <CalendarioModule />}
         {tab==="skilltree"  && <SkillTreeModule />}
-        {tab==="ai"        && <OracleModule diary={diary} tasks={tasks} goals={goals} notes={notes} apiKey={apiKey} setApiKey={setApiKey} />}
+        {tab==="ai"         && <OracleModule diary={diary} tasks={tasks} goals={goals} notes={notes} apiKey={apiKey} setApiKey={setApiKey} nomeHeroi={nomeHeroi} />}
       </main>
     </div>
   );
