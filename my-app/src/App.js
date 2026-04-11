@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 /* ═══════════════════════════════════════════════════════════
    PIXEL STAR FIELD — 16-bit canvas stars
@@ -631,83 +631,179 @@ function PixelBar({ value, max = 100, color = "#39ff14", segments = 24 }) {
    AVATAR DISPLAY — CSS pixel-art character portrait
 ═══════════════════════════════════════════════════════════ */
 function AvatarDisplay({ avatar = {}, size = 64 }) {
-  const skin  = SKIN_TONES.find(s => s.id === avatar.skin)        || SKIN_TONES[1];
-  const hSty  = HAIR_STYLES.find(h => h.id === avatar.hairStyle)  || HAIR_STYLES[0];
-  const hCol  = HAIR_COLORS.find(c => c.id === avatar.hairColor)  || HAIR_COLORS[0];
-  const eCol  = EYE_COLORS.find(e => e.id === avatar.eyeColor)    || EYE_COLORS[0];
-  const mSty  = MOUTH_STYLES.find(m => m.id === avatar.mouthStyle)|| MOUTH_STYLES[0];
-  const acc   = ACCESSORIES.find(a => a.id === avatar.accessory)  || ACCESSORIES[0];
+  const canvasRef = useRef(null);
 
-  const s        = size;
-  const headSize = Math.round(s * 0.72);
-  const headTop  = Math.round(s * 0.24);
-  const headLeft = Math.round((s - headSize) / 2);
+  useEffect(() => {
+    const cv = canvasRef.current;
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, 16, 16);
 
-  const hairRadius = {
-    curto:"50% 50% 20% 20%", longo:"50% 50% 0 0",
-    spike:"30% 30% 0 0",     coque:"50%",
-    careca:null,              franja:"50% 50% 20% 20%",
-    afro:"50%",               tranca:"40% 40% 0 0",
-  }[hSty.id] || "50% 50% 20% 20%";
+    /* ── Palette resolution ── */
+    const skinD = SKIN_TONES.find(s => s.id === avatar.skin)         || SKIN_TONES[1];
+    const hairS = HAIR_STYLES.find(h => h.id === avatar.hairStyle)   || HAIR_STYLES[0];
+    const hairC = HAIR_COLORS.find(c => c.id === avatar.hairColor)   || HAIR_COLORS[0];
+    const eyeC  = EYE_COLORS.find(e => e.id === avatar.eyeColor)     || EYE_COLORS[0];
+    const mthS  = MOUTH_STYLES.find(m => m.id === avatar.mouthStyle) || MOUTH_STYLES[0];
 
-  const hairH = hSty.id === "afro"
-    ? headSize * 1.05
-    : hSty.id === "coque"
-    ? headSize * 0.5
-    : headSize * 0.58;
+    /* Color math */
+    const toRgb = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+    const adj   = (h, d) => { const [r,g,b]=toRgb(h); return `rgb(${Math.max(0,Math.min(255,r+d))},${Math.max(0,Math.min(255,g+d))},${Math.max(0,Math.min(255,b+d))})` };
+
+    const SK  = skinD.color;
+    const SKD = adj(SK, -40);   // skin shadow
+    const HR  = hairC.color;
+    const HRD = adj(HR, -55);   // hair shadow
+    const HRL = adj(HR,  35);   // hair highlight
+    const EY  = eyeC.color;
+    const EYD = adj(EY, -65);   // pupil
+    const OL  = '#120a04';      // dark outline
+    const EW  = '#f2f2ff';      // eye white
+    const ML  = '#c84040';      // mouth
+    const MD  = '#872020';      // mouth inner dark
+    const GT  = '#f0f0f0';      // teeth
+
+    /* Drawing helpers */
+    const px = (x, y, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, 1, 1); };
+    const dg  = (rows, x0, y0, cm) =>
+      rows.forEach((row, dy) =>
+        [...row].forEach((ch, dx) => { const c = cm[ch]; if (c) px(x0+dx, y0+dy, c); })
+      );
+
+    const hm = { H: HR, A: HRD, L: HRL, O: OL };
+
+    /* ── LAYER 1: Hair back (behind face) ─────────────────── */
+    const HAIR_BACK = {
+      curto: [
+        '..OOOOOOOOOOO...',
+        '..OHHHHHHHHHAO..',
+        '..OHHHHHHHHHAO..',
+        '..AHHHHHHHHHAA..',
+      ],
+      longo: [
+        '..OOOOOOOOOOO...',
+        '..OHHHHHHHHHAO..',
+        '..OHHHHHHHHHAO..',
+        '..AHHHHHHHHHAA..',
+        'OAH..........HAO',
+        'OAH..........HAO',
+        'OAH..........HAO',
+        'OAH..........HAO',
+        '.OAHHHHHHHHHAAO.',
+      ],
+      spike: [
+        '.OOHOO.OHOO.O...',
+        '..OHHHHHHHHHAO..',
+        '..OHHHHHHHHHAO..',
+        '..AHHHHHHHHHAA..',
+      ],
+      coque: [
+        '....OOOHHOO.....',
+        '...OHHHHHHHAO...',
+        '..OHHHHHHHHHAO..',
+        '..AHHHHHHHHHAA..',
+      ],
+      careca: [],
+      franja: [
+        '..OOOOOOOOOOO...',
+        '..OHHHHHHHHHAO..',
+        '..OHHHHHHHHHAO..',
+        '..AHHHHHHHHHAA..',
+      ],
+      afro: [
+        '.OOOOOOOOOOOOOO.',
+        '.OHHHHHHHHHHHO..',
+        '.OHHHHHHHHHHHO..',
+        '.OHHHHHHHHHHHO..',
+        '.OHHHHHHHHHHHO..',
+        '.OAHHHHHHHHHAAO.',
+      ],
+      tranca: [
+        '..OOOOOOOOOOO...',
+        '..OHHHHHHHHHAO..',
+        '..OHHHHHHHHHAO..',
+        '..AHHHHHHHHHAA..',
+        'OAH..........HAO',
+        'OAH..........HAO',
+      ],
+    };
+    const hb = HAIR_BACK[hairS.id] || HAIR_BACK.curto;
+    hb.forEach((row, i) => dg([row], 0, i, hm));
+
+    /* ── LAYER 2: Face base ────────────────────────────────── */
+    dg([
+      '....OOOOOOOO....',  // y=3  top outline
+      '...OSSSSSSSSO...',  // y=4
+      '..OSSSSSSSSSSO..',  // y=5
+      '..OSSSSSSSSSSO..',  // y=6  eyes
+      '..OSSSSSSSSSSO..',  // y=7  eyes
+      '..OSSSSSSSSSSO..',  // y=8  cheeks
+      '..OSSSSSSSSSDO..',  // y=9  nose/upper mouth
+      '..OSSSSSSSSSDO..',  // y=10 mouth
+      '..OSSSSSSSSDDO..',  // y=11 mouth lower
+      '...OSSSSSSDOO...',  // y=12 chin
+      '....OOOOOOOO....',  // y=13 bottom outline
+    ], 0, 3, { O: OL, S: SK, D: SKD });
+
+    /* ── LAYER 3: Eyes ─────────────────────────────────────── */
+    const eyeVariant = mthS.id === 'serio'
+      ? { l: ['OOO','OEP'], r: ['OOO','PEO'] }
+      : mthS.id === 'surpreso'
+      ? { l: ['OWW','OEW'], r: ['WWO','WEO'] }  // wide-open
+      : { l: ['OWW','OEP'], r: ['WWO','PEO'] };  // normal
+
+    const em = { O: OL, W: EW, E: EY, P: EYD };
+    dg(eyeVariant.l, 4, 6, em);
+    dg(eyeVariant.r, 9, 6, em);
+
+    /* ── LAYER 4: Cheeks ───────────────────────────────────── */
+    ctx.globalAlpha = 0.40;
+    ctx.fillStyle = '#e08070';
+    ctx.fillRect(3, 8, 2, 1);
+    ctx.fillRect(11, 8, 2, 1);
+    ctx.globalAlpha = 1;
+
+    /* ── LAYER 5: Nose ─────────────────────────────────────── */
+    px(7, 9, SKD);
+
+    /* ── LAYER 6: Mouth ────────────────────────────────────── */
+    const mouths = {
+      sorriso:  () => dg(['.MMMM.','.NNNN.'], 5, 10, { M:ML, N:MD }),
+      grin:     () => dg(['MMMMMM','MGGGGM'], 5, 9,  { M:ML, G:GT }),
+      neutro:   () => dg(['OOOOOO'], 5, 10, { O:OL }),
+      serio:    () => { dg(['OOOOOO'], 5, 11, { O:OL }); },
+      surpreso: () => dg(['.OO.','.MM.','.MM.','.OO.'], 6, 9, { O:OL, M:'#aaaaaa' }),
+    };
+    (mouths[mthS.id] || mouths.sorriso)();
+
+    /* ── LAYER 7: Hair front / fringe (over face top) ──────── */
+    const HAIR_FRONT = {
+      franja: ['..OHHHHHHHHHO...', '..OHHHHHHHHHO...'],
+      afro:   ['.OHHHHHHHHHHHO..'],
+      tranca: ['....HHHHHHHH....'],
+    };
+    const hf = HAIR_FRONT[hairS.id];
+    if (hf) hf.forEach((row, i) => dg([row], 0, 3+i, hm));
+
+    /* ── LAYER 8: Accessory emoji (drawn as text) ──────────── */
+    const accD = ACCESSORIES.find(a => a.id === avatar.accessory);
+    if (accD?.emoji) {
+      ctx.font = 'bold 5px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(accD.emoji, 8, 0);
+    }
+  }, [avatar]);
 
   return (
-    <div style={{ width:s, height:s, position:"relative", display:"inline-block", imageRendering:"pixelated", flexShrink:0 }}>
-      {/* Accessory top */}
-      {acc.id !== "nenhum" && (
-        <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", fontSize:Math.round(s*0.3), lineHeight:1, zIndex:5, textAlign:"center" }}>
-          {acc.emoji}
-        </div>
-      )}
-      {/* Hair back */}
-      {hSty.id !== "careca" && (
-        <div style={{
-          position:"absolute",
-          top: headTop - Math.round(s * 0.04),
-          left: headLeft - Math.round(s * 0.03),
-          width: headSize + Math.round(s * 0.06),
-          height: hairH,
-          background: hCol.color,
-          borderRadius: hairRadius,
-          zIndex:1,
-        }} />
-      )}
-      {/* Face */}
-      <div style={{
-        position:"absolute", top:headTop, left:headLeft,
-        width:headSize, height:headSize,
-        background:skin.color,
-        borderRadius:"45% 45% 42% 42%",
-        zIndex:2, overflow:"hidden",
-        display:"flex", flexDirection:"column", alignItems:"center",
-      }}>
-        {/* Eyes */}
-        <div style={{ display:"flex", gap:Math.round(headSize*0.20), marginTop:Math.round(headSize*0.30) }}>
-          <div style={{ width:Math.round(s*0.09), height:Math.round(s*0.09), background:eCol.color, borderRadius:"50%" }} />
-          <div style={{ width:Math.round(s*0.09), height:Math.round(s*0.09), background:eCol.color, borderRadius:"50%" }} />
-        </div>
-        {/* Mouth */}
-        <div style={{ fontSize:Math.round(s*0.19), lineHeight:1, marginTop:Math.round(s*0.04) }}>{mSty.emoji}</div>
-      </div>
-      {/* Hair fringe (front layer) */}
-      {(hSty.id === "franja" || hSty.id === "tranca") && (
-        <div style={{
-          position:"absolute",
-          top: headTop + Math.round(headSize * 0.01),
-          left: headLeft + Math.round(headSize * 0.12),
-          width: headSize * 0.76,
-          height: headSize * 0.20,
-          background: hCol.color,
-          borderRadius:"0 0 50% 50%",
-          zIndex:3,
-        }} />
-      )}
-    </div>
+    <canvas
+      ref={canvasRef}
+      width={16}
+      height={16}
+      style={{ width: size, height: size, imageRendering: 'pixelated', display: 'block', flexShrink: 0 }}
+    />
   );
 }
 
