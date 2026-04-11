@@ -70,11 +70,12 @@ function PixelStarField() {
 const FRACAO_COR = { "Aliança": "#4898f0", "Horda": "#e04040", "Neutro": "#c8a000" };
 
 function WelcomeScreen({ onStart, personagemExistente }) {
-  const [fase,   setFase]  = useState(personagemExistente ? "title" : "title");
+  const [fase,   setFase]  = useState("title");
   const [cursor, setCursor]= useState(0);
   const [nome,   setNome]  = useState("");
   const [raca,   setRaca]  = useState(null);
   const [classe, setClasse]= useState(null);
+  const [avatar, setAvatar]= useState({});
   const [racaHover, setRacaHover]   = useState(null);
   const [classeHover, setClasseHover] = useState(null);
 
@@ -270,7 +271,7 @@ function WelcomeScreen({ onStart, personagemExistente }) {
         </div>
 
         <div style={{ display:"flex", gap:"10px" }}>
-          <button onClick={() => classe && setFase("confirmar")} disabled={!classe}
+          <button onClick={() => classe && setFase("avatar")} disabled={!classe}
             style={{ flex:1, padding:"14px", background: classe?"#201400":"#0c1428", border:`3px solid ${classe?"#c8a000":"#1e3060"}`, color: classe?"#f0c030":"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: classe?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000" }}>
             PRÓXIMO ▶
           </button>
@@ -283,19 +284,48 @@ function WelcomeScreen({ onStart, personagemExistente }) {
     </div>
   );
 
+  /* ── Passo: Avatar ── */
+  if (fase === "avatar") return (
+    <div style={{ position:"fixed", inset:0, background:"#06080f", overflowY:"auto", zIndex:1000 }}>
+      <PixelStarField />
+      <div style={{ position:"relative", zIndex:1, maxWidth:"620px", margin:"0 auto", padding:"24px 16px" }}>
+        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"8px", textAlign:"center" }}>PASSO 4 DE 4 · CRIE SEU AVATAR</div>
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:"20px", gap:"20px", alignItems:"center" }}>
+          <AvatarDisplay avatar={avatar} size={90} />
+          <div>
+            <div className="px-font" style={{ fontSize:"10px", color:"#f0c030" }}>{nome}</div>
+            <div className="px-font" style={{ fontSize:"6px", color: FRACAO_COR[racaSel?.fracao]||"#3060b8", marginTop:"6px" }}>{racaSel?.icone} {racaSel?.nome}</div>
+            <div className="px-font" style={{ fontSize:"6px", color:classeSel?.cor, marginTop:"4px" }}>{classeSel?.icone} {classeSel?.nome}</div>
+          </div>
+        </div>
+        <div style={{ background:"#0c1630", border:"3px solid #3060b8", padding:"20px", marginBottom:"16px" }}>
+          <AvatarCreator avatar={avatar} onChange={setAvatar} />
+        </div>
+        <div style={{ display:"flex", gap:"10px" }}>
+          <button onClick={() => setFase("confirmar")}
+            style={{ flex:1, padding:"14px", background:"#201400", border:"3px solid #c8a000", color:"#f0c030", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer", boxShadow:"3px 3px 0 #4a3000" }}>
+            PRÓXIMO ▶
+          </button>
+          <button onClick={() => setFase("classe")}
+            style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
+            ◀
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   /* ── Confirmação ── */
   if (fase === "confirmar") return (
     <div style={{ position:"fixed", inset:0, background:"#06080f", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
       <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, width:"100%", maxWidth:"460px", padding:"24px" }}>
+      <div style={{ position:"relative", zIndex:1, width:"100%", maxWidth:"480px", padding:"24px" }}>
         <div style={{ ...ffBox("#c8a000"), padding:"28px 28px" }}>
           <div className="px-font" style={{ fontSize:"9px", color:"#f0c030", textAlign:"center", marginBottom:"24px", textShadow:"0 0 12px rgba(200,160,0,.5)" }}>
             ✦ SEU PERSONAGEM ✦
           </div>
           <div style={{ display:"flex", gap:"20px", alignItems:"center", marginBottom:"20px" }}>
-            <div style={{ fontSize:"60px", textAlign:"center", filter:`drop-shadow(0 0 10px ${classeSel?.cor||"#f0c030"})` }}>
-              {racaSel?.icone}
-            </div>
+            <AvatarDisplay avatar={avatar} size={80} />
             <div>
               <div className="px-font" style={{ fontSize:"12px", color:"#f0c030", marginBottom:"6px" }}>{nome}</div>
               <div className="px-font" style={{ fontSize:"7px", color:classeSel?.cor, marginBottom:"4px" }}>{classeSel?.icone} {classeSel?.nome}</div>
@@ -308,11 +338,11 @@ function WelcomeScreen({ onStart, personagemExistente }) {
             <div className="px-font" style={{ fontSize:"6px", color:racaSel?.cor }}>{racaSel?.bonus}</div>
           </div>
 
-          <button onClick={() => onStart({ nome, racaId: raca, classeId: classe })}
+          <button onClick={() => onStart({ nome, racaId: raca, classeId: classe, avatar })}
             style={{ width:"100%", padding:"16px", background:"linear-gradient(135deg,#201400,#3a2800)", border:"3px solid #c8a000", color:"#f0c030", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor:"pointer", boxShadow:"0 0 20px rgba(200,160,0,.3), 3px 3px 0 #4a3000", letterSpacing:".08em" }}>
             ⚔ COMEÇAR AVENTURA
           </button>
-          <button onClick={() => setFase("classe")}
+          <button onClick={() => setFase("avatar")}
             style={{ width:"100%", marginTop:"8px", padding:"10px", background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"7px", cursor:"pointer" }}>
             ◀ VOLTAR
           </button>
@@ -322,6 +352,156 @@ function WelcomeScreen({ onStart, personagemExistente }) {
   );
 
   return null;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PERSONAGEM MODAL — edit character anytime
+═══════════════════════════════════════════════════════════ */
+function PersonagemModal({ personagem, onSave, onClose }) {
+  const [nome,     setNome]     = useState(personagem?.nome || "");
+  const [racaId,   setRacaId]   = useState(personagem?.racaId || null);
+  const [classeId, setClasseId] = useState(personagem?.classeId || null);
+  const [avatar,   setAvatar]   = useState(personagem?.avatar || {});
+  const [aba,      setAba]      = useState("avatar");
+
+  const racaDados   = RACAS.find(r => r.id === racaId);
+  const classeDados = CLASSES.find(c => c.id === classeId);
+
+  const ABAS = [
+    { id:"avatar",     icon:"👤", label:"AVATAR"    },
+    { id:"identidade", icon:"✦",  label:"NOME"      },
+    { id:"raca",       icon:"⚔️", label:"RAÇA"      },
+    { id:"classe",     icon:"🔮", label:"CLASSE"    },
+  ];
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"#06080fee", zIndex:800, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px", backdropFilter:"blur(3px)" }}>
+      <div style={{ width:"100%", maxWidth:"660px", maxHeight:"92vh", overflowY:"auto", background:"#0c1630", border:"3px solid #c8a000", boxShadow:"0 0 0 1px #06080f, 0 0 40px rgba(200,160,0,.25)" }}>
+        {/* Header */}
+        <div style={{ padding:"14px 18px", borderBottom:"2px solid #1e3060", display:"flex", alignItems:"center", gap:"14px", position:"sticky", top:0, background:"#0c1630", zIndex:1 }}>
+          <AvatarDisplay avatar={avatar} size={52} />
+          <div style={{ flex:1 }}>
+            <div className="px-font" style={{ fontSize:"9px", color:"#f0c030" }}>{nome || "PERSONAGEM"}</div>
+            <div className="px-font" style={{ fontSize:"5px", color:"#2a4880", marginTop:"4px" }}>
+              {classeDados ? `${classeDados.icone} ${classeDados.nome}` : ""}{classeDados && racaDados ? "  ·  " : ""}{racaDados ? `${racaDados.icone} ${racaDados.nome}` : ""}
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", padding:"8px 12px", cursor:"pointer" }}>✕</button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display:"flex", borderBottom:"2px solid #1e3060" }}>
+          {ABAS.map(a => (
+            <button key={a.id} onClick={() => setAba(a.id)} style={{
+              flex:1, padding:"10px 4px", background:"none", border:"none",
+              borderBottom: aba===a.id ? "3px solid #c8a000" : "3px solid transparent",
+              marginBottom:"-2px",
+              color: aba===a.id ? "#f0c030" : "#2a4880",
+              fontFamily:"'Press Start 2P',monospace", fontSize:"6px",
+              cursor:"pointer", transition:"all .15s",
+            }}>{a.icon} {a.label}</button>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div style={{ padding:"20px" }}>
+          {aba === "avatar" && (
+            <div>
+              <div style={{ display:"flex", justifyContent:"center", marginBottom:"20px" }}>
+                <AvatarDisplay avatar={avatar} size={96} />
+              </div>
+              <AvatarCreator avatar={avatar} onChange={setAvatar} />
+            </div>
+          )}
+
+          {aba === "identidade" && (
+            <div>
+              <div className="px-font" style={{ fontSize:"8px", color:"#f0c030", marginBottom:"12px" }}>✦ NOME DO HERÓI</div>
+              <input className="px-input" maxLength={14}
+                value={nome} onChange={e => setNome(e.target.value.toUpperCase())}
+                placeholder="> SEU NOME..."
+                style={{ fontSize:"20px", letterSpacing:".1em", textTransform:"uppercase", color:"#f0c030", borderColor:"#c8a000", marginBottom:"8px" }}
+              />
+              <div className="px-font" style={{ fontSize:"6px", color:"#1e3060" }}>{nome.length}/14 CARACTERES</div>
+            </div>
+          )}
+
+          {aba === "raca" && (
+            <div>
+              {racaDados && (
+                <div style={{ display:"flex", gap:"12px", alignItems:"center", padding:"12px", background:"#06080f", border:`2px solid ${FRACAO_COR[racaDados.fracao]||"#3060b8"}`, marginBottom:"16px" }}>
+                  <div style={{ fontSize:"32px" }}>{racaDados.icone}</div>
+                  <div>
+                    <div className="px-font" style={{ fontSize:"8px", color:FRACAO_COR[racaDados.fracao]||"#80b4ff" }}>{racaDados.nome}</div>
+                    <div className="px-font" style={{ fontSize:"6px", color:racaDados.cor, marginTop:"4px" }}>{racaDados.bonus}</div>
+                  </div>
+                </div>
+              )}
+              {["Aliança","Horda","Neutro"].map(fracao => (
+                <div key={fracao} style={{ marginBottom:"12px" }}>
+                  <div className="px-font" style={{ fontSize:"6px", color:FRACAO_COR[fracao], marginBottom:"6px", letterSpacing:".1em" }}>
+                    {fracao === "Aliança" ? "⚔️" : fracao === "Horda" ? "💀" : "⚖️"} {fracao.toUpperCase()}
+                  </div>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))", gap:"6px" }}>
+                    {RACAS.filter(r => r.fracao === fracao).map(r => (
+                      <div key={r.id} onClick={() => setRacaId(r.id)} style={{
+                        padding:"10px 6px", textAlign:"center", cursor:"pointer",
+                        border:`2px solid ${racaId===r.id ? r.cor : "#1e3060"}`,
+                        background:racaId===r.id ? r.cor+"18" : "#06080f",
+                        transition:"all .15s",
+                      }}>
+                        <div style={{ fontSize:"22px", marginBottom:"4px" }}>{r.icone}</div>
+                        <div className="px-font" style={{ fontSize:"5px", color:racaId===r.id?r.cor:"#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{r.nome}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {aba === "classe" && (
+            <div>
+              {classeDados && (
+                <div style={{ display:"flex", gap:"12px", alignItems:"center", padding:"12px", background:"#06080f", border:`2px solid ${classeDados.cor}`, marginBottom:"16px" }}>
+                  <div style={{ fontSize:"32px" }}>{classeDados.icone}</div>
+                  <div>
+                    <div className="px-font" style={{ fontSize:"8px", color:classeDados.cor }}>{classeDados.nome}</div>
+                    <div className="px-font" style={{ fontSize:"6px", color:classeDados.cor+"99", marginTop:"4px" }}>Atributo: {classeDados.atributo}</div>
+                  </div>
+                </div>
+              )}
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))", gap:"6px" }}>
+                {CLASSES.map(c => (
+                  <div key={c.id} onClick={() => setClasseId(c.id)} style={{
+                    padding:"12px 6px", textAlign:"center", cursor:"pointer",
+                    border:`2px solid ${classeId===c.id ? c.cor : "#1e3060"}`,
+                    background:classeId===c.id ? c.cor+"18" : "#06080f",
+                    transition:"all .15s",
+                  }}>
+                    <div style={{ fontSize:"22px", marginBottom:"4px" }}>{c.icone}</div>
+                    <div className="px-font" style={{ fontSize:"5px", color:classeId===c.id?c.cor:"#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{c.nome}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding:"14px 18px", borderTop:"2px solid #1e3060", display:"flex", gap:"10px", position:"sticky", bottom:0, background:"#0c1630" }}>
+          <button onClick={() => { if(nome.trim()) onSave({ ...personagem, nome:nome.trim(), racaId, classeId, avatar }); }}
+            disabled={!nome.trim()}
+            style={{ flex:1, padding:"14px", background:"#201400", border:"3px solid #c8a000", color:nome.trim()?"#f0c030":"#4a3000", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:nome.trim()?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000" }}>
+            ✦ SALVAR PERSONAGEM
+          </button>
+          <button onClick={onClose} style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
+            CANCELAR
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -359,6 +539,76 @@ const CLASSES = [
 ];
 
 /* ═══════════════════════════════════════════════════════════
+   AVATAR CUSTOMIZATION
+═══════════════════════════════════════════════════════════ */
+const SKIN_TONES = [
+  { id:"s1", label:"Muito Claro",  color:"#fde8d0" },
+  { id:"s2", label:"Claro",        color:"#f5c9a0" },
+  { id:"s3", label:"Médio",        color:"#e8a878" },
+  { id:"s4", label:"Médio Escuro", color:"#c87040" },
+  { id:"s5", label:"Escuro",       color:"#8b5020" },
+  { id:"s6", label:"Muito Escuro", color:"#4a2810" },
+];
+const HAIR_STYLES = [
+  { id:"curto",  label:"Curto"   },
+  { id:"longo",  label:"Longo"   },
+  { id:"spike",  label:"Espetado"},
+  { id:"coque",  label:"Coque"   },
+  { id:"careca", label:"Careca"  },
+  { id:"franja", label:"Franja"  },
+  { id:"afro",   label:"Afro"    },
+  { id:"tranca", label:"Tranças" },
+];
+const HAIR_COLORS = [
+  { id:"preto",    label:"Preto",    color:"#120c08" },
+  { id:"castanho", label:"Castanho", color:"#6b3a1f" },
+  { id:"loiro",    label:"Loiro",    color:"#d4a820" },
+  { id:"ruivo",    label:"Ruivo",    color:"#b83810" },
+  { id:"cinza",    label:"Grisalho", color:"#8090a0" },
+  { id:"branco",   label:"Branco",   color:"#e8e8f0" },
+  { id:"azul",     label:"Azul",     color:"#2860c8" },
+  { id:"roxo",     label:"Roxo",     color:"#8030c0" },
+  { id:"verde",    label:"Verde",    color:"#20a040" },
+  { id:"rosa",     label:"Rosa",     color:"#e05080" },
+];
+const EYE_COLORS = [
+  { id:"castanho", label:"Castanho", color:"#6b3a1f" },
+  { id:"verde",    label:"Verde",    color:"#20a040" },
+  { id:"azul",     label:"Azul",     color:"#2860c8" },
+  { id:"cinza",    label:"Cinza",    color:"#8090a0" },
+  { id:"preto",    label:"Preto",    color:"#1a1008" },
+  { id:"vermelho", label:"Vermelho", color:"#c02020" },
+  { id:"roxo",     label:"Roxo",     color:"#8030c0" },
+  { id:"dourado",  label:"Dourado",  color:"#c8a000" },
+];
+const MOUTH_STYLES = [
+  { id:"sorriso",  label:"Sorriso",       emoji:"🙂" },
+  { id:"grin",     label:"Sorriso Largo", emoji:"😁" },
+  { id:"neutro",   label:"Neutro",        emoji:"😐" },
+  { id:"serio",    label:"Sério",         emoji:"😤" },
+  { id:"surpreso", label:"Surpreso",      emoji:"😮" },
+];
+const ACCESSORIES = [
+  { id:"nenhum",   label:"Nenhum",        emoji:"" },
+  { id:"oculos",   label:"Óculos",        emoji:"👓" },
+  { id:"sol",      label:"Óculos de Sol", emoji:"🕶️" },
+  { id:"chapeu",   label:"Chapéu",        emoji:"🎩" },
+  { id:"coroa",    label:"Coroa",         emoji:"👑" },
+  { id:"capuz",    label:"Capuz",         emoji:"🧙" },
+  { id:"tiara",    label:"Tiara Arcana",  emoji:"✨" },
+  { id:"capacete", label:"Capacete",      emoji:"⛑️" },
+];
+
+/* DAILY QUEST DEFAULTS */
+const DAILY_QUEST_DEFAULTS = [
+  { id:"dq_estudar",   title:"Estudar 20 minutos",  category:"estudos",  xp:30, icon:"📚" },
+  { id:"dq_exercitar", title:"Ir para a academia",   category:"saude",    xp:40, icon:"💪" },
+  { id:"dq_casa",      title:"Arrumar o quarto",     category:"pessoal",  xp:20, icon:"🧹" },
+  { id:"dq_agua",      title:"Beber 2L de água",     category:"saude",    xp:20, icon:"💧" },
+  { id:"dq_ler",       title:"Ler por 15 minutos",   category:"leitura",  xp:25, icon:"📖" },
+];
+
+/* ═══════════════════════════════════════════════════════════
    PIXEL BAR — segmented like classic RPG HP bars
 ═══════════════════════════════════════════════════════════ */
 function PixelBar({ value, max = 100, color = "#39ff14", segments = 24 }) {
@@ -373,6 +623,149 @@ function PixelBar({ value, max = 100, color = "#39ff14", segments = 24 }) {
           imageRendering: "pixelated",
         }} />
       ))}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AVATAR DISPLAY — CSS pixel-art character portrait
+═══════════════════════════════════════════════════════════ */
+function AvatarDisplay({ avatar = {}, size = 64 }) {
+  const skin  = SKIN_TONES.find(s => s.id === avatar.skin)        || SKIN_TONES[1];
+  const hSty  = HAIR_STYLES.find(h => h.id === avatar.hairStyle)  || HAIR_STYLES[0];
+  const hCol  = HAIR_COLORS.find(c => c.id === avatar.hairColor)  || HAIR_COLORS[0];
+  const eCol  = EYE_COLORS.find(e => e.id === avatar.eyeColor)    || EYE_COLORS[0];
+  const mSty  = MOUTH_STYLES.find(m => m.id === avatar.mouthStyle)|| MOUTH_STYLES[0];
+  const acc   = ACCESSORIES.find(a => a.id === avatar.accessory)  || ACCESSORIES[0];
+
+  const s        = size;
+  const headSize = Math.round(s * 0.72);
+  const headTop  = Math.round(s * 0.24);
+  const headLeft = Math.round((s - headSize) / 2);
+
+  const hairRadius = {
+    curto:"50% 50% 20% 20%", longo:"50% 50% 0 0",
+    spike:"30% 30% 0 0",     coque:"50%",
+    careca:null,              franja:"50% 50% 20% 20%",
+    afro:"50%",               tranca:"40% 40% 0 0",
+  }[hSty.id] || "50% 50% 20% 20%";
+
+  const hairH = hSty.id === "afro"
+    ? headSize * 1.05
+    : hSty.id === "coque"
+    ? headSize * 0.5
+    : headSize * 0.58;
+
+  return (
+    <div style={{ width:s, height:s, position:"relative", display:"inline-block", imageRendering:"pixelated", flexShrink:0 }}>
+      {/* Accessory top */}
+      {acc.id !== "nenhum" && (
+        <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", fontSize:Math.round(s*0.3), lineHeight:1, zIndex:5, textAlign:"center" }}>
+          {acc.emoji}
+        </div>
+      )}
+      {/* Hair back */}
+      {hSty.id !== "careca" && (
+        <div style={{
+          position:"absolute",
+          top: headTop - Math.round(s * 0.04),
+          left: headLeft - Math.round(s * 0.03),
+          width: headSize + Math.round(s * 0.06),
+          height: hairH,
+          background: hCol.color,
+          borderRadius: hairRadius,
+          zIndex:1,
+        }} />
+      )}
+      {/* Face */}
+      <div style={{
+        position:"absolute", top:headTop, left:headLeft,
+        width:headSize, height:headSize,
+        background:skin.color,
+        borderRadius:"45% 45% 42% 42%",
+        zIndex:2, overflow:"hidden",
+        display:"flex", flexDirection:"column", alignItems:"center",
+      }}>
+        {/* Eyes */}
+        <div style={{ display:"flex", gap:Math.round(headSize*0.20), marginTop:Math.round(headSize*0.30) }}>
+          <div style={{ width:Math.round(s*0.09), height:Math.round(s*0.09), background:eCol.color, borderRadius:"50%" }} />
+          <div style={{ width:Math.round(s*0.09), height:Math.round(s*0.09), background:eCol.color, borderRadius:"50%" }} />
+        </div>
+        {/* Mouth */}
+        <div style={{ fontSize:Math.round(s*0.19), lineHeight:1, marginTop:Math.round(s*0.04) }}>{mSty.emoji}</div>
+      </div>
+      {/* Hair fringe (front layer) */}
+      {(hSty.id === "franja" || hSty.id === "tranca") && (
+        <div style={{
+          position:"absolute",
+          top: headTop + Math.round(headSize * 0.01),
+          left: headLeft + Math.round(headSize * 0.12),
+          width: headSize * 0.76,
+          height: headSize * 0.20,
+          background: hCol.color,
+          borderRadius:"0 0 50% 50%",
+          zIndex:3,
+        }} />
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AVATAR CREATOR — palette pickers
+═══════════════════════════════════════════════════════════ */
+function AvatarCreator({ avatar, onChange }) {
+  const av  = avatar || {};
+  const set = (field, val) => onChange({ ...av, [field]: val });
+
+  const Dot = ({ active, color, label, onClick }) => (
+    <button onClick={onClick} title={label} style={{
+      width:"28px", height:"28px", borderRadius:"50%",
+      background:color, flexShrink:0,
+      border:`3px solid ${active?"#f0c030":"#1e3060"}`,
+      cursor:"pointer",
+      boxShadow:active?"0 0 8px #f0c03088":"none",
+      transition:"all .1s",
+    }} />
+  );
+  const Chip = ({ active, onClick, children }) => (
+    <button onClick={onClick} style={{
+      padding:"5px 9px",
+      border:`2px solid ${active?"#f0c030":"#1e3060"}`,
+      background:active?"#f0c03020":"#0c1630",
+      color:active?"#f0c030":"#3060b8",
+      fontFamily:"'Press Start 2P',monospace", fontSize:"5px",
+      cursor:"pointer", transition:"all .1s",
+      boxShadow:active?"0 0 6px #f0c03044":"none",
+    }}>{children}</button>
+  );
+  const Row = ({ label, children }) => (
+    <div style={{ marginBottom:"14px" }}>
+      <div className="px-font" style={{ fontSize:"6px", color:"#3060b8", letterSpacing:".15em", marginBottom:"8px" }}>{label}</div>
+      <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>{children}</div>
+    </div>
+  );
+
+  return (
+    <div>
+      <Row label="TOM DE PELE">
+        {SKIN_TONES.map(s => <Dot key={s.id} active={av.skin===s.id} color={s.color} label={s.label} onClick={()=>set("skin",s.id)} />)}
+      </Row>
+      <Row label="CABELO — ESTILO">
+        {HAIR_STYLES.map(h => <Chip key={h.id} active={av.hairStyle===h.id} onClick={()=>set("hairStyle",h.id)}>{h.label}</Chip>)}
+      </Row>
+      <Row label="CABELO — COR">
+        {HAIR_COLORS.map(c => <Dot key={c.id} active={av.hairColor===c.id} color={c.color} label={c.label} onClick={()=>set("hairColor",c.id)} />)}
+      </Row>
+      <Row label="COR DOS OLHOS">
+        {EYE_COLORS.map(e => <Dot key={e.id} active={av.eyeColor===e.id} color={e.color} label={e.label} onClick={()=>set("eyeColor",e.id)} />)}
+      </Row>
+      <Row label="EXPRESSÃO">
+        {MOUTH_STYLES.map(m => <Chip key={m.id} active={av.mouthStyle===m.id} onClick={()=>set("mouthStyle",m.id)}>{m.emoji} {m.label}</Chip>)}
+      </Row>
+      <Row label="ACESSÓRIO">
+        {ACCESSORIES.map(a => <Chip key={a.id} active={av.accessory===a.id} onClick={()=>set("accessory",a.id)}>{a.emoji ? a.emoji+" " : "— "}{a.label}</Chip>)}
+      </Row>
     </div>
   );
 }
@@ -719,7 +1112,7 @@ const PxBadge = ({ color, children }) => (
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD
 ═══════════════════════════════════════════════════════════ */
-function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI" }) {
+function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados, classeDados, avatar }) {
   const now    = new Date();
   const wa     = new Date(now - 7*86400000);
   const moods  = Object.entries(diary).filter(([k])=>new Date(k)>=wa).map(([,e])=>e.mood).filter(Boolean);
@@ -741,23 +1134,28 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI" }) {
     <div>
       {/* ── Hero Panel ── */}
       <div className="px-panel-hero">
-        {/* top-right corner gem */}
         <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
         <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
 
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:"16px" }}>
-          <div style={{ flex:1 }}>
-            <div className="px-font" style={{ fontSize:"7px", color:"#ffd70088", letterSpacing:".2em", marginBottom:"6px" }}>
-              ✦ SALÃO DO HERÓI · REINO ARCANO ✦
-            </div>
-            <div className="px-font px-glow-cx" style={{ fontSize:"18px", color:"#f0c030", lineHeight:1.2, marginBottom:"4px", textShadow:"0 0 20px rgba(200,160,0,.6)" }}>
-              {nomeHeroi}
-            </div>
-            <div className="px-body" style={{ fontSize:"20px", color:"#00d4ff", marginBottom:"2px" }}>
-              {cls.icon} {cls.title}
-            </div>
-            <div className="px-body" style={{ fontSize:"18px", color:"#4fc3f788" }}>
-              LVL {lv} · {getTitle(lv)}
+          {/* Avatar + name */}
+          <div style={{ display:"flex", gap:"16px", alignItems:"center", flex:1 }}>
+            <AvatarDisplay avatar={avatar} size={76} />
+            <div>
+              <div className="px-font" style={{ fontSize:"7px", color:"#ffd70088", letterSpacing:".2em", marginBottom:"6px" }}>
+                ✦ SALÃO DO HERÓI · REINO ARCANO ✦
+              </div>
+              <div className="px-font px-glow-cx" style={{ fontSize:"16px", color:"#f0c030", lineHeight:1.2, marginBottom:"4px", textShadow:"0 0 20px rgba(200,160,0,.6)" }}>
+                {nomeHeroi}
+              </div>
+              {(classeDados || racaDados) && (
+                <div className="px-font" style={{ fontSize:"6px", color:classeDados?.cor||"#80b4ff", marginBottom:"2px" }}>
+                  {classeDados?.icone} {classeDados?.nome}{racaDados ? ` · ${racaDados.icone} ${racaDados.nome}` : ""}
+                </div>
+              )}
+              <div className="px-body" style={{ fontSize:"18px", color:"#4fc3f788" }}>
+                {cls.icon} {cls.title} · LVL {lv} · {getTitle(lv)}
+              </div>
             </div>
           </div>
           <div style={{ textAlign:"center" }}>
@@ -878,69 +1276,169 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI" }) {
    DIARY
 ═══════════════════════════════════════════════════════════ */
 function DiaryModule({ data, setData }) {
-  const tk    = todayKey();
-  const entry = data[tk]||{text:"",mood:null,activities:""};
-  const upd   = (f,v) => setData(p=>({...p,[tk]:{...(p[tk]||{}),[f]:v}}));
-  const list  = Object.entries(data).sort((a,b)=>b[0].localeCompare(a[0]));
+  const tk = todayKey();
+
+  /* Normalize entry: supports both old { text, mood, activities } and new { mood, entries: [] } */
+  const normEntry = (e) => {
+    if (!e) return { mood:null, entries:[] };
+    if (Array.isArray(e.entries)) return e;
+    // Legacy format — wrap in entries array
+    const entries = (e.text || e.activities)
+      ? [{ id:"legacy", text:e.text||"", activities:e.activities||"", createdAt:tk+"T00:00:00" }]
+      : [];
+    return { mood:e.mood||null, entries };
+  };
+
+  const todayNorm = normEntry(data[tk]);
+  const setMood   = (v) => setData(p => ({ ...p, [tk]: { ...normEntry(p[tk]), mood:v } }));
+
+  /* Add a fresh blank entry for today */
+  const [draft,   setDraft]   = useState({ text:"", activities:"" });
+  const [editing, setEditing] = useState(null); // id of entry being edited
+
+  const addEntry = () => {
+    if (!draft.text.trim() && !draft.activities.trim()) return;
+    const newEntry = { id:uid(), text:draft.text, activities:draft.activities, createdAt:new Date().toISOString() };
+    setData(p => {
+      const norm = normEntry(p[tk]);
+      return { ...p, [tk]: { ...norm, entries:[...norm.entries, newEntry] } };
+    });
+    setDraft({ text:"", activities:"" });
+  };
+
+  const delEntry = (eid) => {
+    setData(p => {
+      const norm = normEntry(p[tk]);
+      return { ...p, [tk]: { ...norm, entries: norm.entries.filter(e=>e.id!==eid) } };
+    });
+    if (editing === eid) setEditing(null);
+  };
+
+  const updEntry = (eid, field, val) => {
+    setData(p => {
+      const norm = normEntry(p[tk]);
+      return { ...p, [tk]: { ...norm, entries: norm.entries.map(e=>e.id===eid?{...e,[field]:val}:e) } };
+    });
+  };
+
+  const list = Object.entries(data)
+    .sort((a,b)=>b[0].localeCompare(a[0]))
+    .filter(([k]) => k !== tk);
 
   return (
     <div>
+      {/* ── Today's entry ── */}
       <div className="px-panel-hero">
         <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
         <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
         <PxTitle icon="📖" color="#ffd700">CRÔNICA — {fmtDate(new Date())}</PxTitle>
 
-        <PxLabel color="#bb86fc">SELECIONE SEU ESTADO DE AURA</PxLabel>
+        <PxLabel color="#bb86fc">ESTADO DE AURA</PxLabel>
         <div style={{ display:"flex", gap:"8px", flexWrap:"wrap", marginBottom:"18px" }}>
           {MOODS.map(m=>(
-            <button key={m.value} onClick={()=>upd("mood",m.value)} style={{
-              padding:"8px 12px", border:`3px solid ${entry.mood===m.value?m.color:m.color+"44"}`,
-              background:entry.mood===m.value?m.color+"22":"#04091a",
+            <button key={m.value} onClick={()=>setMood(m.value)} style={{
+              padding:"8px 12px", border:`3px solid ${todayNorm.mood===m.value?m.color:m.color+"44"}`,
+              background:todayNorm.mood===m.value?m.color+"22":"#04091a",
               cursor:"pointer", display:"flex", alignItems:"center", gap:"6px",
-              boxShadow:entry.mood===m.value?`0 0 12px ${m.color}66, 3px 3px 0 ${m.color}44`:"3px 3px 0 #020a1e",
+              boxShadow:todayNorm.mood===m.value?`0 0 12px ${m.color}66, 3px 3px 0 ${m.color}44`:"3px 3px 0 #020a1e",
               transition:"all .15s",
             }}>
               <span style={{ fontSize:"18px" }}>{m.emoji}</span>
-              <span className="px-font" style={{ fontSize:"7px", color:entry.mood===m.value?m.color:"#1a4070" }}>{m.label}</span>
+              <span className="px-font" style={{ fontSize:"7px", color:todayNorm.mood===m.value?m.color:"#1a4070" }}>{m.label}</span>
             </button>
           ))}
         </div>
 
-        <PxLabel color="#00d4ff">FEITOS DE HOJE</PxLabel>
-        <input className="px-input" style={{ marginBottom:"14px" }}
-          placeholder="> Completei 2 quests, estudei, treinei..."
-          value={entry.activities||""}
-          onChange={e=>upd("activities",e.target.value)}
-        />
+        {/* Existing today entries */}
+        {todayNorm.entries.length > 0 && (
+          <div style={{ marginBottom:"16px" }}>
+            <PxLabel color="#39ff14">ENTRADAS DE HOJE ({todayNorm.entries.length})</PxLabel>
+            <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+              {todayNorm.entries.map((e,i) => (
+                <div key={e.id} style={{ padding:"12px", background:"#04091a", border:"2px solid #1e3860", borderLeft:"4px solid #39ff14" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"8px" }}>
+                    <span className="px-font" style={{ fontSize:"6px", color:"#1a4070" }}>
+                      ENTRADA {i+1} · {new Date(e.createdAt).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}
+                    </span>
+                    <div style={{ display:"flex", gap:"6px" }}>
+                      <button onClick={()=>setEditing(editing===e.id?null:e.id)} style={{ background:"none", border:"1px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"4px 7px", cursor:"pointer" }}>
+                        {editing===e.id?"✕":"✎"}
+                      </button>
+                      <button onClick={()=>delEntry(e.id)} style={{ background:"none", border:"1px solid #c03030", color:"#e04040", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"4px 7px", cursor:"pointer" }}>DEL</button>
+                    </div>
+                  </div>
+                  {editing === e.id ? (
+                    <>
+                      <input className="px-input" style={{ marginBottom:"8px", fontSize:"16px" }}
+                        placeholder="> Feitos..." value={e.activities}
+                        onChange={ev=>updEntry(e.id,"activities",ev.target.value)} />
+                      <textarea className="px-textarea" style={{ minHeight:"80px", fontSize:"16px" }}
+                        placeholder="> Reflexão..."
+                        value={e.text} onChange={ev=>updEntry(e.id,"text",ev.target.value)} />
+                    </>
+                  ) : (
+                    <>
+                      {e.activities && <p className="px-body" style={{ fontSize:"16px", color:"#00d4ff88", margin:"0 0 4px" }}>{'>'} {e.activities}</p>}
+                      {e.text && <p className="px-body" style={{ fontSize:"17px", color:"#4fc3f7", margin:0, lineHeight:1.5 }}>{e.text}</p>}
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-        <PxLabel color="#39ff14">REFLEXÕES DO AVENTUREIRO</PxLabel>
-        <textarea className="px-textarea"
-          placeholder="> Como foi sua jornada hoje? O que seu coração sentiu?"
-          value={entry.text||""}
-          onChange={e=>upd("text",e.target.value)}
+        {/* New entry form */}
+        <PxLabel color="#00d4ff">+ NOVA ENTRADA</PxLabel>
+        <input className="px-input" style={{ marginBottom:"10px" }}
+          placeholder="> Feitos, atividades, conquistas..."
+          value={draft.activities}
+          onChange={e=>setDraft(p=>({...p,activities:e.target.value}))}
         />
-        <div style={{ marginTop:"10px", display:"flex", alignItems:"center", gap:"8px" }}>
-          <span className="px-blink" style={{ color:"#39ff14", fontSize:"12px" }}>■</span>
-          <span className="px-font" style={{ fontSize:"7px", color:"#39ff14" }}>SALVO AUTOMATICAMENTE · +20 XP POR ENTRADA</span>
+        <textarea className="px-textarea" style={{ minHeight:"90px" }}
+          placeholder="> Reflexão, sentimentos, aprendizados do dia..."
+          value={draft.text}
+          onChange={e=>setDraft(p=>({...p,text:e.target.value}))}
+        />
+        <div style={{ marginTop:"10px", display:"flex", gap:"10px", alignItems:"center" }}>
+          <button className="px-btn px-btn-gold" style={{ padding:"10px 18px" }} onClick={addEntry}
+            disabled={!draft.text.trim() && !draft.activities.trim()}>
+            ✦ REGISTRAR ENTRADA
+          </button>
+          <span className="px-font" style={{ fontSize:"6px", color:"#1a4070" }}>+20 XP POR DIA DE REGISTRO</span>
         </div>
       </div>
 
-      {list.length>1 && (
+      {/* Past entries */}
+      {list.length > 0 && (
         <div className="px-panel">
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
           <PxTitle icon="🗓️" color="#4fc3f7">REGISTROS ANTERIORES</PxTitle>
           <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-            {list.slice(1).map(([k,e])=>{
-              const mood=MOODS.find(m=>m.value===e.mood);
+            {list.map(([k,eRaw])=>{
+              const e    = normEntry(eRaw);
+              const mood = MOODS.find(m=>m.value===e.mood);
               return (
                 <div key={k} style={{ padding:"12px", background:"#04091a", border:"2px solid #0d2860", borderLeft:`4px solid ${mood?.color||"#1a4070"}` }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"8px" }}>
                     <span className="px-font" style={{ fontSize:"7px", color:"#1a4070" }}>{fmtDate(k+"T12:00:00")}</span>
-                    {mood && <PxBadge color={mood.color}>{mood.emoji} {mood.label}</PxBadge>}
+                    <div style={{ display:"flex", gap:"8px", alignItems:"center" }}>
+                      {mood && <PxBadge color={mood.color}>{mood.emoji} {mood.label}</PxBadge>}
+                      <span className="px-font" style={{ fontSize:"6px", color:"#1a4070" }}>{e.entries.length} entrada{e.entries.length!==1?"s":""}</span>
+                    </div>
                   </div>
-                  {e.activities && <p className="px-body" style={{ fontSize:"16px", color:"#00d4ff88", margin:"0 0 4px 0" }}>> {e.activities}</p>}
-                  {e.text && <p className="px-body" style={{ fontSize:"17px", color:"#4fc3f7", margin:0, lineHeight:1.5 }}>"{e.text.length>160?e.text.slice(0,160)+"...":e.text}"</p>}
+                  {e.entries.map((en,i) => (
+                    <div key={en.id} style={{ marginBottom:"8px", paddingLeft:"8px", borderLeft:"2px solid #1e3060" }}>
+                      <div className="px-font" style={{ fontSize:"6px", color:"#1a3050", marginBottom:"4px" }}>
+                        {i+1}. {new Date(en.createdAt).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}
+                      </div>
+                      {en.activities && <p className="px-body" style={{ fontSize:"15px", color:"#00d4ff88", margin:"0 0 2px" }}>{'>'} {en.activities}</p>}
+                      {en.text && <p className="px-body" style={{ fontSize:"16px", color:"#4fc3f7", margin:0, lineHeight:1.4 }}>
+                        {en.text.length>180 ? en.text.slice(0,180)+"..." : en.text}
+                      </p>}
+                    </div>
+                  ))}
                 </div>
               );
             })}
@@ -954,9 +1452,30 @@ function DiaryModule({ data, setData }) {
 /* ═══════════════════════════════════════════════════════════
    QUEST LOG
 ═══════════════════════════════════════════════════════════ */
-function QuestLogModule({ tasks, setTasks }) {
+function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCompletions, setDailyCompletions }) {
   const [form,setForm]    = useState({title:"",priority:"normal",dueDate:"",category:""});
   const [filter,setFilter]= useState("all");
+  const [showDailyForm,setShowDailyForm] = useState(false);
+  const [dailyDraft,setDailyDraft] = useState({title:"",category:"estudos",xp:20,icon:"⚡"});
+
+  const tk = todayKey();
+  const todayDone = dailyCompletions[tk] || {};
+
+  const toggleDaily = (id) => {
+    setDailyCompletions(p => {
+      const today = p[tk] || {};
+      return { ...p, [tk]: { ...today, [id]: !today[id] } };
+    });
+  };
+  const addDailyQuest = () => {
+    if (!dailyDraft.title.trim()) return;
+    setDailyQuests(p => [...p, { ...dailyDraft, id: uid() }]);
+    setDailyDraft({ title:"", category:"estudos", xp:20, icon:"⚡" });
+    setShowDailyForm(false);
+  };
+  const delDailyQuest = (id) => setDailyQuests(p => p.filter(q => q.id !== id));
+
+  const dailyDoneCount = dailyQuests.filter(q => todayDone[q.id]).length;
   const now = new Date();
 
   const add = () => { if(!form.title.trim())return; setTasks(p=>[...p,{...form,id:uid(),completed:false,createdAt:new Date().toISOString()}]); setForm({title:"",priority:"normal",dueDate:"",category:""}); };
@@ -969,6 +1488,85 @@ function QuestLogModule({ tasks, setTasks }) {
 
   return (
     <div>
+      {/* ── QUESTS DIÁRIAS ── */}
+      <div className="px-panel-hero" style={{ marginBottom:"16px" }}>
+        <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
+        <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"16px", flexWrap:"wrap", gap:"8px" }}>
+          <PxTitle icon="🌅" color="#f0c030">QUESTS DIÁRIAS</PxTitle>
+          <div style={{ display:"flex", gap:"8px", alignItems:"center" }}>
+            <span className="px-font" style={{ fontSize:"7px", color:"#f0c03088" }}>{dailyDoneCount}/{dailyQuests.length} HOJE</span>
+            <button className="px-btn px-btn-gold" style={{ padding:"7px 12px" }} onClick={()=>setShowDailyForm(p=>!p)}>+ NOVA</button>
+          </div>
+        </div>
+
+        {showDailyForm && (
+          <div style={{ background:"#100e00", border:"2px solid #c8a00044", padding:"14px", marginBottom:"14px" }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:"8px", marginBottom:"8px" }}>
+              <input className="px-input" placeholder="> Nome da quest diária..." value={dailyDraft.title}
+                onChange={e=>setDailyDraft(p=>({...p,title:e.target.value}))}
+                onKeyDown={e=>e.key==="Enter"&&addDailyQuest()} />
+              <input className="px-input" style={{ width:"46px", textAlign:"center" }} placeholder="⚡"
+                value={dailyDraft.icon} onChange={e=>setDailyDraft(p=>({...p,icon:e.target.value}))} />
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr auto auto", gap:"8px" }}>
+              <select className="px-input" value={dailyDraft.category} onChange={e=>setDailyDraft(p=>({...p,category:e.target.value}))}>
+                {GUILDS.map(g=><option key={g.id} value={g.id}>{g.icon} {g.label}</option>)}
+              </select>
+              <input type="number" className="px-input" style={{ width:"70px" }} placeholder="XP" min="5" max="200"
+                value={dailyDraft.xp} onChange={e=>setDailyDraft(p=>({...p,xp:Number(e.target.value)}))} />
+              <button className="px-btn px-btn-gold" style={{ padding:"8px 14px" }} onClick={addDailyQuest}>✓</button>
+            </div>
+          </div>
+        )}
+
+        <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+          {dailyQuests.length === 0 && (
+            <div className="px-body" style={{ textAlign:"center", color:"#4a3000", padding:"16px", fontSize:"17px" }}>
+              Nenhuma quest diária configurada. Clique em + NOVA!
+            </div>
+          )}
+          {dailyQuests.map(q => {
+            const guild = GUILDS.find(g=>g.id===q.category);
+            const done  = !!todayDone[q.id];
+            return (
+              <div key={q.id} style={{
+                display:"flex", alignItems:"center", gap:"12px",
+                padding:"10px 12px", background:"#04091a",
+                border:`2px solid ${done?"#39ff1444":"#c8a00022"}`,
+                borderLeft:`5px solid ${done?"#39ff14":"#c8a000"}`,
+                opacity: done ? 0.7 : 1, transition:"all .15s",
+              }}>
+                <button onClick={()=>toggleDaily(q.id)} style={{
+                  width:"22px", height:"22px", flexShrink:0,
+                  border:`2px solid ${done?"#39ff14":"#c8a00088"}`,
+                  background:done?"#39ff1418":"#04091a",
+                  cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
+                  boxShadow:done?"0 0 8px rgba(57,255,20,.4)":"none",
+                }}>
+                  {done && <span className="px-font" style={{ color:"#39ff14", fontSize:"7px" }}>✓</span>}
+                </button>
+                <span style={{ fontSize:"18px" }}>{q.icon}</span>
+                <div style={{ flex:1 }}>
+                  <div className="px-body" style={{ fontSize:"19px", color:done?"#1a4070":"#f0c030", textDecoration:done?"line-through":"none" }}>{q.title}</div>
+                  <div style={{ display:"flex", gap:"6px", marginTop:"2px" }}>
+                    {guild && <PxBadge color={guild.color}>{guild.icon} {guild.label}</PxBadge>}
+                    <PxBadge color="#f0c030">+{q.xp} XP</PxBadge>
+                  </div>
+                </div>
+                <button onClick={()=>delDailyQuest(q.id)} style={{ background:"none", border:"1px solid #c03030", color:"#e04040", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"5px 8px", cursor:"pointer" }}>DEL</button>
+              </div>
+            );
+          })}
+        </div>
+        {dailyQuests.length > 0 && (
+          <div style={{ marginTop:"12px" }}>
+            <PixelBar value={dailyDoneCount} max={dailyQuests.length} color="#f0c030" segments={dailyQuests.length} />
+          </div>
+        )}
+      </div>
+
+      {/* ── QUESTS NORMAIS ── */}
       <div className="px-panel">
         <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
         <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
@@ -1812,13 +2410,8 @@ function SkillTreeModule() {
     );
   };
 
-  /* ── Seta de dependência ── */
-  const Arrow = ({ color }) => (
-    <div style={{ display:"flex", alignItems:"center", gap:"4px", flex:"0 0 auto", padding:"0 8px" }}>
-      <div style={{ width:"30px", height:"2px", background: color + "66" }} />
-      <div style={{ width:0, height:0, borderTop:"6px solid transparent", borderBottom:"6px solid transparent", borderLeft:`10px solid ${color}66` }} />
-    </div>
-  );
+  /* ── Seta de dependência (reservado para uso futuro) ── */
+  // const Arrow = ({ color }) => (...);
 
   return (
     <div style={{ maxWidth:"900px", margin:"0 auto" }}>
@@ -1890,7 +2483,6 @@ function SkillTreeModule() {
 
         <div style={{ display:"flex", flexDirection:"column", gap:"16px" }}>
           {(curCat?.rows || []).map((row, i) => {
-            const leftSkill = row.left ? SKILL_TREE.find(s => s.id === row.left) : null;
             return (
               <div key={i} style={{ display:"flex", alignItems:"center", gap:"0" }}>
                 <SkillNode skillId={row.left} />
@@ -2262,20 +2854,23 @@ function CalendarioModule() {
 export default function App() {
   usePixelStyles();
 
-  const [personagem, setPersonagem] = useLS("mylog_personagem", null);
-  const [tab,    setTab]    = useState("dashboard");
-  const [diary,  setDiary]  = useLS("meudiario_diary",  {});
-  const [tasks,  setTasks]  = useLS("meudiario_tasks",  []);
-  const [goals,  setGoals]  = useLS("meudiario_goals",  []);
-  const [notes,  setNotes]  = useLS("meudiario_notes",  []);
-  const [apiKey, setApiKey] = useLS("meudiario_apikey", "");
+  const [personagem,         setPersonagem]         = useLS("mylog_personagem",           null);
+  const [tab,                setTab]                = useState("dashboard");
+  const [diary,              setDiary]              = useLS("meudiario_diary",             {});
+  const [tasks,              setTasks]              = useLS("meudiario_tasks",             []);
+  const [goals,              setGoals]              = useLS("meudiario_goals",             []);
+  const [notes,              setNotes]              = useLS("meudiario_notes",             []);
+  const [apiKey,             setApiKey]             = useLS("meudiario_apikey",            "");
+  const [dailyQuests,        setDailyQuests]        = useLS("mylog_daily_quests",          DAILY_QUEST_DEFAULTS);
+  const [dailyCompletions,   setDailyCompletions]   = useLS("mylog_daily_completions",     {});
+  const [showPersonagemModal,setShowPersonagemModal] = useState(false);
 
   // Primeira vez: mostrar criador de personagem
   if (!personagem || !personagem.nome) {
     return (
       <WelcomeScreen
         personagemExistente={personagem}
-        onStart={(p) => setPersonagem(p || { nome:"HERÓI", racaId:null, classeId:null })}
+        onStart={(p) => setPersonagem(p || { nome:"HERÓI", racaId:null, classeId:null, avatar:{} })}
       />
     );
   }
@@ -2283,6 +2878,7 @@ export default function App() {
   const nomeHeroi  = personagem.nome;
   const racaDados  = RACAS.find(r => r.id === personagem.racaId);
   const classeDados= CLASSES.find(c => c.id === personagem.classeId);
+  const avatar     = personagem.avatar || {};
 
   const xp    = calcXP(tasks,diary,goals);
   const lv    = calcLevel(xp);
@@ -2307,20 +2903,34 @@ export default function App() {
     <div className="px-crt" style={{ minHeight:"100vh", background:"#06080f", color:"#c8deff", fontFamily:"'VT323',monospace", position:"relative" }}>
       <PixelStarField />
 
+      {/* ══ PERSONAGEM MODAL ══ */}
+      {showPersonagemModal && (
+        <PersonagemModal
+          personagem={personagem}
+          onSave={(p) => { setPersonagem(p); setShowPersonagemModal(false); }}
+          onClose={() => setShowPersonagemModal(false)}
+        />
+      )}
+
       {/* ══ HEADER FF-style ══ */}
       <header style={{
         background:"#080c1a",
         borderBottom:"3px solid #1a3060",
         boxShadow:"0 3px 0 #06080f, 0 6px 20px rgba(0,0,0,.7), 0 2px 16px rgba(48,96,184,.08)",
-        padding:"10px 24px",
+        padding:"8px 20px",
         position:"sticky", top:0, zIndex:100,
       }}>
-        <div style={{ maxWidth:"980px", margin:"0 auto", display:"flex", alignItems:"center", gap:"20px", flexWrap:"wrap" }}>
+        <div style={{ maxWidth:"980px", margin:"0 auto", display:"flex", alignItems:"center", gap:"16px", flexWrap:"wrap" }}>
+          {/* Avatar mini */}
+          <button onClick={() => setShowPersonagemModal(true)} style={{ background:"none", border:"2px solid #1e3060", padding:"4px", cursor:"pointer", flexShrink:0 }} title="Editar personagem">
+            <AvatarDisplay avatar={avatar} size={44} />
+          </button>
+
           <div style={{ flex:"0 0 auto" }}>
-            <div className="px-font px-glow-cx" style={{ fontSize:"11px", color:"#f0c030", letterSpacing:".06em" }}>
+            <div className="px-font px-glow-cx" style={{ fontSize:"10px", color:"#f0c030", letterSpacing:".06em" }}>
               ✦ MYLOG RPG ✦
             </div>
-            <div className="px-font" style={{ fontSize:"6px", color:"#2a4880", marginTop:"4px" }}>
+            <div className="px-font" style={{ fontSize:"6px", color:"#2a4880", marginTop:"3px" }}>
               {nomeHeroi} · LVL {lv} · {getTitle(lv)}
             </div>
             {(classeDados || racaDados) && (
@@ -2332,26 +2942,26 @@ export default function App() {
             )}
           </div>
 
-          <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"6px", minWidth:"240px" }}>
+          <div style={{ flex:1, display:"flex", flexDirection:"column", gap:"5px", minWidth:"200px" }}>
             {[
-              {label:"❤ HP",  val:`${hp}/100`,         pct:hp,    color:"#40c060"},
-              {label:"✦ MP",  val:`${mana}/100`,        pct:mana,  color:"#4898f0"},
-              {label:"★ XP",  val:`${xpCur}/${xpNeed}`, pct:Math.min((xpCur/Math.max(xpNeed,1))*100,100), color:"#f0c030"},
+              {label:"❤ HP",  val:`${hp}/100`,          pct:hp,    color:"#40c060"},
+              {label:"✦ MP",  val:`${mana}/100`,         pct:mana,  color:"#4898f0"},
+              {label:"★ XP",  val:`${xpCur}/${xpNeed}`,  pct:Math.min((xpCur/Math.max(xpNeed,1))*100,100), color:"#f0c030"},
             ].map(s=>(
               <div key={s.label} style={{ display:"flex", alignItems:"center", gap:"8px" }}>
                 <span className="px-font" style={{ fontSize:"6px", color:s.color, minWidth:"36px" }}>{s.label}</span>
-                <PixelBar value={s.pct} color={s.color} segments={20} />
-                <span className="px-font" style={{ fontSize:"6px", color:s.color, minWidth:"60px", textAlign:"right" }}>{s.val}</span>
+                <PixelBar value={s.pct} color={s.color} segments={18} />
+                <span className="px-font" style={{ fontSize:"6px", color:s.color, minWidth:"56px", textAlign:"right" }}>{s.val}</span>
               </div>
             ))}
           </div>
 
-          {/* botão trocar personagem */}
+          {/* Botão de editar personagem */}
           <button
-            onClick={() => { if(window.confirm("Criar novo personagem? (os dados de progresso não serão perdidos)")) setPersonagem(null); }}
-            style={{ background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"6px 8px", cursor:"pointer" }}
-            title="Trocar personagem"
-          >⚙</button>
+            onClick={() => setShowPersonagemModal(true)}
+            style={{ background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"8px 10px", cursor:"pointer" }}
+            title="Editar personagem"
+          >⚙ PERSONAGEM</button>
         </div>
       </header>
 
@@ -2366,9 +2976,9 @@ export default function App() {
 
       {/* ══ MAIN ══ */}
       <main style={{ maxWidth:"980px", margin:"0 auto", padding:"24px 20px", position:"relative", zIndex:1 }}>
-        {tab==="dashboard"  && <DashboardModule diary={diary} tasks={tasks} goals={goals} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} />}
+        {tab==="dashboard"  && <DashboardModule diary={diary} tasks={tasks} goals={goals} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} avatar={avatar} />}
         {tab==="diary"      && <DiaryModule data={diary} setData={setDiary} />}
-        {tab==="tasks"      && <QuestLogModule tasks={tasks} setTasks={setTasks} />}
+        {tab==="tasks"      && <QuestLogModule tasks={tasks} setTasks={setTasks} dailyQuests={dailyQuests} setDailyQuests={setDailyQuests} dailyCompletions={dailyCompletions} setDailyCompletions={setDailyCompletions} />}
         {tab==="goals"      && <FacanhasModule goals={goals} setGoals={setGoals} />}
         {tab==="notes"      && <GrimorioModule notes={notes} setNotes={setNotes} />}
         {tab==="calendario" && <CalendarioModule />}
