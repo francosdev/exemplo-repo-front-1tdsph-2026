@@ -214,8 +214,8 @@ const DAILY_QUEST_DEFAULTS = [
 ═══════════════════════════════════════════════════════════ */
 const THEMES = [
   { id:"arcane",       label:"ARCANO",         icon:"🔮", desc:"WoW Clássico · Azul & Ouro",       bg:"#06080f", headerBg:"#080c1a" },
-  { id:"darkfantasy",  label:"DARK FANTASY",   icon:"🩸", desc:"Gótico Sombrio · Carmesim",        bg:"#0d0007", headerBg:"#0a0005" },
-  { id:"cyberpunk",    label:"CYBER PUNK",     icon:"⚡", desc:"Neon Futuro · Rosa & Verde Néon",  bg:"#020408", headerBg:"#010208" },
+  { id:"darkfantasy",  label:"DARK FANTASY",   icon:"⚔️", desc:"Berserk · Eclipse · Carmesim & Negro",    bg:"#080000", headerBg:"#0a0100" },
+  { id:"cyberpunk",    label:"CYBER PUNK",     icon:"🔫", desc:"Night City · CP2077 · Amarelo & Ciano",  bg:"#020308", headerBg:"#010206" },
   { id:"fantasia",     label:"FANTASIA",       icon:"🌿", desc:"Floresta Mágica · Verde & Bronze", bg:"#040e04", headerBg:"#030c03" },
   { id:"finalfantasy", label:"FINAL FANTASY",  icon:"💎", desc:"Cristal Eterno · Safira & Prata",  bg:"#030815", headerBg:"#040a18" },
   { id:"stardew",      label:"STARDEW VALLEY", icon:"🌾", desc:"Fazenda Aconchegante · Marrom",    bg:"#1a1008", headerBg:"#160e04" },
@@ -237,26 +237,28 @@ const THEME_ICONS = {
     stats:     { diary:"📖", quests:"⚔️", overdue:"☠️", goals:"🏆" },
   },
   darkfantasy: {
+    /* ── BERSERK: Guts · Dragon Slayer · Eclipse · Godhand ── */
     soundStyle: "dark",
-    tabs:      { hall:"🩸", diary:"🕯️", quests:"💀", goals:"☠️", calendar:"🌑", notes:"📕", skilltree:"🦇", oracle:"🩸", album:"🖼️", raid:"⛧" },
-    deco:      "⛧",
-    dungeon:   "🏚️",
-    companion: "🧟",
-    character: "🧛",
-    questTypes:{ lendaria:"🩸", epica:"☠️", normal:"💀", secundaria:"🦇" },
-    guilds:    { leitura:"📕", estudos:"🕯️", saude:"🩸", financeiro:"💎", pessoal:"🌑", trabalho:"⚰️" },
-    stats:     { diary:"🕯️", quests:"💀", overdue:"⛧", goals:"☠️" },
+    tabs:      { hall:"⚔️", diary:"🩸", quests:"💀", goals:"🔥", calendar:"🌑", notes:"📜", skilltree:"🐺", oracle:"👁️", album:"🖼️", raid:"⛧" },
+    deco:      "✠",
+    dungeon:   "🌑",
+    companion: "🧙‍♀️",
+    character: "⚔️",
+    questTypes:{ lendaria:"🔥", epica:"💀", normal:"🩸", secundaria:"⚔️" },
+    guilds:    { leitura:"📜", estudos:"🔥", saude:"🩸", financeiro:"⚰️", pessoal:"🌑", trabalho:"⚔️" },
+    stats:     { diary:"🩸", quests:"⚔️", overdue:"⛧", goals:"🔥" },
   },
   cyberpunk: {
+    /* ── CYBERPUNK 2077: V · Night City · Arasaka · Johnny Silverhand ── */
     soundStyle: "cyber",
-    tabs:      { hall:"💾", diary:"📡", quests:"🤖", goals:"🔋", calendar:"📆", notes:"💻", skilltree:"🔌", oracle:"📡", album:"📷", raid:"⚡" },
+    tabs:      { hall:"🔫", diary:"💿", quests:"⚡", goals:"🏙️", calendar:"📆", notes:"🧠", skilltree:"🔌", oracle:"👁️", album:"📷", raid:"💀" },
     deco:      "◈",
     dungeon:   "🏙️",
-    companion: "🤖",
-    character: "🤖",
-    questTypes:{ lendaria:"⚡", epica:"💜", normal:"💙", secundaria:"💚" },
-    guilds:    { leitura:"💾", estudos:"🖥️", saude:"💉", financeiro:"💳", pessoal:"🎮", trabalho:"🔧" },
-    stats:     { diary:"📡", quests:"🤖", overdue:"⚠️", goals:"🔋" },
+    companion: "💀",
+    character: "🔫",
+    questTypes:{ lendaria:"💥", epica:"⚡", normal:"🔵", secundaria:"💚" },
+    guilds:    { leitura:"💾", estudos:"🧠", saude:"💊", financeiro:"💳", pessoal:"🎸", trabalho:"🔧" },
+    stats:     { diary:"💿", quests:"⚡", overdue:"⚠️", goals:"🏙️" },
   },
   fantasia: {
     soundStyle: "nature",
@@ -639,70 +641,72 @@ function usePixelStyles() {
       }
 
       /* ══════════════════════════════════════════════
-         THEME: DARK FANTASY — Gótico Sombrio
+         THEME: DARK FANTASY — Berserk · Eclipse · Dragon Slayer
       ══════════════════════════════════════════════ */
       [data-theme="darkfantasy"] .px-panel {
-        background: #14000a; border-color: #7a0030;
-        box-shadow: 0 0 0 1px #0d0007, 0 0 0 4px #3a0015, inset 0 0 0 2px #5a0020, 0 0 16px rgba(122,0,48,0.15);
+        background: #120000; border-color: #8b0000;
+        box-shadow: 0 0 0 1px #080000, 0 0 0 4px #3a0000, inset 0 0 0 2px #5a0000, 0 0 16px rgba(139,0,0,0.2);
       }
       [data-theme="darkfantasy"] .px-panel::before,
-      [data-theme="darkfantasy"] .px-panel::after { background:#7a0030; border-color:#ff4080; }
+      [data-theme="darkfantasy"] .px-panel::after { background:#8b0000; border-color:#ff2200; }
       [data-theme="darkfantasy"] .px-panel-hero {
-        background: #1a0008; border-color: #cc0044;
-        box-shadow: 0 0 0 1px #0d0007, 0 0 0 4px #600020, inset 0 0 0 2px #aa0033, 0 0 20px rgba(204,0,68,0.2);
+        background: #1a0000; border-color: #cc2200;
+        box-shadow: 0 0 0 1px #080000, 0 0 0 4px #5a0a00, inset 0 0 0 2px #aa1500, 0 0 24px rgba(204,34,0,0.25);
       }
       [data-theme="darkfantasy"] .px-panel-hero::before,
-      [data-theme="darkfantasy"] .px-panel-hero::after { background:#cc0044; border-color:#ff80a0; }
+      [data-theme="darkfantasy"] .px-panel-hero::after { background:#cc2200; border-color:#ff5500; }
       [data-theme="darkfantasy"] .px-panel-arcane {
-        background: #100018; border-color: #880088;
-        box-shadow: 0 0 0 1px #0d0007, 0 0 0 4px #400040, inset 0 0 0 2px #660066, 0 0 20px rgba(136,0,136,0.15);
+        background: #100500; border-color: #7a1800;
+        box-shadow: 0 0 0 1px #080000, 0 0 0 4px #3a0800, inset 0 0 0 2px #601000, 0 0 20px rgba(122,24,0,0.18);
       }
       [data-theme="darkfantasy"] .px-panel-arcane::before,
-      [data-theme="darkfantasy"] .px-panel-arcane::after { background:#880088; border-color:#ff80ff; }
-      [data-theme="darkfantasy"] ::-webkit-scrollbar-thumb { background:#7a0030; }
-      [data-theme="darkfantasy"] ::-webkit-scrollbar-track { background:#0d0007; border-left-color:#3a0015; }
-      [data-theme="darkfantasy"] .px-nav-btn { color:#3a1020; }
-      [data-theme="darkfantasy"] .px-nav-btn:hover { color:#ff4060; background:rgba(204,0,68,.08); }
-      [data-theme="darkfantasy"] .px-nav-btn.active { color:#ff8090 !important; border-bottom-color:#cc0044; background:rgba(204,0,68,.08); text-shadow:0 0 10px rgba(204,0,68,0.6); }
-      [data-theme="darkfantasy"] .px-btn-cyan { background:#1a0010; color:#ff8090; border-color:#880040; box-shadow:3px 3px 0 #080008; }
-      [data-theme="darkfantasy"] .px-btn-gold { background:#1a0008; color:#ff9090; border-color:#cc0044; box-shadow:3px 3px 0 #600020; }
-      [data-theme="darkfantasy"] .px-input { background:#0d0007; border-color:#3a0015; }
-      [data-theme="darkfantasy"] .px-input:focus { border-color:#880040; box-shadow:inset 2px 2px 0 #06000a, 0 0 0 2px rgba(136,0,64,.25); }
-      [data-theme="darkfantasy"] .px-textarea { background:#0d0007; border-color:#3a0015; }
-      [data-theme="darkfantasy"] .px-quest:hover { border-color:#cc0044 !important; box-shadow:0 0 8px rgba(204,0,68,0.2) !important; }
+      [data-theme="darkfantasy"] .px-panel-arcane::after { background:#7a1800; border-color:#ff4400; }
+      [data-theme="darkfantasy"] ::-webkit-scrollbar-thumb { background:#8b0000; }
+      [data-theme="darkfantasy"] ::-webkit-scrollbar-track { background:#080000; border-left-color:#3a0000; }
+      [data-theme="darkfantasy"] .px-nav-btn { color:#3a1000; }
+      [data-theme="darkfantasy"] .px-nav-btn:hover { color:#ff3300; background:rgba(204,34,0,.10); }
+      [data-theme="darkfantasy"] .px-nav-btn.active { color:#ff5500 !important; border-bottom-color:#cc2200; background:rgba(204,34,0,.10); text-shadow:0 0 12px rgba(255,80,0,0.8); }
+      [data-theme="darkfantasy"] .px-btn-cyan { background:#180000; color:#ff5500; border-color:#8b0000; box-shadow:3px 3px 0 #0a0000; }
+      [data-theme="darkfantasy"] .px-btn-gold { background:#1a0500; color:#ff8040; border-color:#cc2200; box-shadow:3px 3px 0 #5a0a00; }
+      [data-theme="darkfantasy"] .px-input { background:#0a0000; border-color:#3a0000; }
+      [data-theme="darkfantasy"] .px-input:focus { border-color:#8b0000; box-shadow:inset 2px 2px 0 #060000, 0 0 0 2px rgba(139,0,0,.30); }
+      [data-theme="darkfantasy"] .px-textarea { background:#0a0000; border-color:#3a0000; }
+      [data-theme="darkfantasy"] .px-quest:hover { border-color:#cc2200 !important; box-shadow:0 0 10px rgba(204,34,0,0.3) !important; }
 
       /* ══════════════════════════════════════════════
-         THEME: CYBER PUNK — Neon Futuro
+         THEME: CYBER PUNK — Night City · CP2077
+         Primário: Amarelo elétrico #f0d000
+         Secundário: Ciano #00e5ff
       ══════════════════════════════════════════════ */
       [data-theme="cyberpunk"] .px-panel {
-        background: #080520; border-color: #ff0090;
-        box-shadow: 0 0 0 1px #020408, 0 0 0 4px #600040, inset 0 0 0 2px #a00060, 0 0 16px rgba(255,0,144,0.15);
+        background: #0a0800; border-color: #a08000;
+        box-shadow: 0 0 0 1px #020308, 0 0 0 4px #403000, inset 0 0 0 2px #706000, 0 0 16px rgba(200,160,0,0.15);
       }
       [data-theme="cyberpunk"] .px-panel::before,
-      [data-theme="cyberpunk"] .px-panel::after { background:#ff0090; border-color:#ff80c8; }
+      [data-theme="cyberpunk"] .px-panel::after { background:#a08000; border-color:#f0d000; }
       [data-theme="cyberpunk"] .px-panel-hero {
-        background: #020318; border-color: #00ff9f;
-        box-shadow: 0 0 0 1px #020408, 0 0 0 4px #003a20, inset 0 0 0 2px #00aa60, 0 0 20px rgba(0,255,159,0.2);
+        background: #020810; border-color: #00c8e0;
+        box-shadow: 0 0 0 1px #020308, 0 0 0 4px #003a40, inset 0 0 0 2px #0090a8, 0 0 20px rgba(0,200,224,0.2);
       }
       [data-theme="cyberpunk"] .px-panel-hero::before,
-      [data-theme="cyberpunk"] .px-panel-hero::after { background:#00ff9f; border-color:#80ffd0; }
+      [data-theme="cyberpunk"] .px-panel-hero::after { background:#00c8e0; border-color:#80eeff; }
       [data-theme="cyberpunk"] .px-panel-arcane {
-        background: #060218; border-color: #ff0090;
-        box-shadow: 0 0 0 1px #020408, 0 0 0 4px #600040, inset 0 0 0 2px #a00060, 0 0 20px rgba(255,0,144,0.15);
+        background: #080600; border-color: #f0d000;
+        box-shadow: 0 0 0 1px #020308, 0 0 0 4px #604800, inset 0 0 0 2px #907000, 0 0 20px rgba(240,208,0,0.18);
       }
       [data-theme="cyberpunk"] .px-panel-arcane::before,
-      [data-theme="cyberpunk"] .px-panel-arcane::after { background:#ff0090; border-color:#ff80c8; }
-      [data-theme="cyberpunk"] ::-webkit-scrollbar-thumb { background:#ff0090; }
-      [data-theme="cyberpunk"] ::-webkit-scrollbar-track { background:#020408; border-left-color:#600040; }
-      [data-theme="cyberpunk"] .px-nav-btn { color:#401030; }
-      [data-theme="cyberpunk"] .px-nav-btn:hover { color:#ff0090; background:rgba(255,0,144,.08); }
-      [data-theme="cyberpunk"] .px-nav-btn.active { color:#00ff9f !important; border-bottom-color:#00ff9f; background:rgba(0,255,159,.08); text-shadow:0 0 10px rgba(0,255,159,0.6); }
-      [data-theme="cyberpunk"] .px-btn-cyan { background:#040128; color:#ff0090; border-color:#ff0090; box-shadow:3px 3px 0 #200018; }
-      [data-theme="cyberpunk"] .px-btn-gold { background:#020318; color:#00ff9f; border-color:#00ff9f; box-shadow:3px 3px 0 #003020; }
-      [data-theme="cyberpunk"] .px-input { background:#020408; border-color:#400030; color:#e0ffe8; }
-      [data-theme="cyberpunk"] .px-input:focus { border-color:#ff0090; box-shadow:inset 2px 2px 0 #010204, 0 0 0 2px rgba(255,0,144,.25); }
-      [data-theme="cyberpunk"] .px-textarea { background:#020408; border-color:#400030; color:#e0ffe8; }
-      [data-theme="cyberpunk"] .px-quest:hover { border-color:#ff0090 !important; box-shadow:0 0 8px rgba(255,0,144,0.2) !important; }
+      [data-theme="cyberpunk"] .px-panel-arcane::after { background:#f0d000; border-color:#fff080; }
+      [data-theme="cyberpunk"] ::-webkit-scrollbar-thumb { background:#a08000; }
+      [data-theme="cyberpunk"] ::-webkit-scrollbar-track { background:#020308; border-left-color:#403000; }
+      [data-theme="cyberpunk"] .px-nav-btn { color:#302800; }
+      [data-theme="cyberpunk"] .px-nav-btn:hover { color:#f0d000; background:rgba(240,208,0,.08); }
+      [data-theme="cyberpunk"] .px-nav-btn.active { color:#f0d000 !important; border-bottom-color:#f0d000; background:rgba(240,208,0,.10); text-shadow:0 0 10px rgba(240,208,0,0.8); }
+      [data-theme="cyberpunk"] .px-btn-cyan { background:#050400; color:#f0d000; border-color:#a08000; box-shadow:3px 3px 0 #1a1400; }
+      [data-theme="cyberpunk"] .px-btn-gold { background:#020810; color:#00e5ff; border-color:#00c8e0; box-shadow:3px 3px 0 #003040; }
+      [data-theme="cyberpunk"] .px-input { background:#020308; border-color:#403000; color:#f0e8a0; }
+      [data-theme="cyberpunk"] .px-input:focus { border-color:#f0d000; box-shadow:inset 2px 2px 0 #010204, 0 0 0 2px rgba(240,208,0,.25); }
+      [data-theme="cyberpunk"] .px-textarea { background:#020308; border-color:#403000; color:#f0e8a0; }
+      [data-theme="cyberpunk"] .px-quest:hover { border-color:#f0d000 !important; box-shadow:0 0 10px rgba(240,208,0,0.25) !important; }
 
       /* ══════════════════════════════════════════════
          THEME: FANTASIA — Floresta Mágica
@@ -820,8 +824,8 @@ const fireSound = (sound) =>
 /* Perfis de som por tema — frequências, ondas e escalas */
 const SOUND_PROFILES = {
   rpg:     { wave:"square",   base:440, scale:[1,1.25,1.5,2],     clickFreq:520,  clickDur:0.05 },
-  dark:    { wave:"sawtooth", base:220, scale:[1,1.19,1.41,1.68], clickFreq:180,  clickDur:0.08 },
-  cyber:   { wave:"sawtooth", base:880, scale:[1,1.33,1.78,2.37], clickFreq:880,  clickDur:0.03 },
+  dark:    { wave:"sawtooth", base:110, scale:[1,1.19,1.33,1.5],  clickFreq:130,  clickDur:0.12 }, /* Berserk — ominoso, grave, lento */
+  cyber:   { wave:"square",   base:660, scale:[1,1.5,2,2.67],     clickFreq:720,  clickDur:0.03 }, /* CP2077 — industrial, seco, metálico */
   nature:  { wave:"sine",     base:528, scale:[1,1.12,1.25,1.5],  clickFreq:440,  clickDur:0.09 },
   crystal: { wave:"triangle", base:392, scale:[1,1.25,1.67,2],    clickFreq:392,  clickDur:0.06 },
   cozy:    { wave:"triangle", base:493, scale:[1,1.12,1.33,1.5],  clickFreq:349,  clickDur:0.08 },
