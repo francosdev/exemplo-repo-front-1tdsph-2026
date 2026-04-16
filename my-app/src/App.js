@@ -210,6 +210,51 @@ const DAILY_QUEST_DEFAULTS = [
 ];
 
 /* ═══════════════════════════════════════════════════════════
+   THEMES — Visual palettes
+═══════════════════════════════════════════════════════════ */
+const THEMES = [
+  { id:"arcane",       label:"ARCANO",         icon:"🔮", desc:"WoW Clássico · Azul & Ouro",       bg:"#06080f", headerBg:"#080c1a" },
+  { id:"darkfantasy",  label:"DARK FANTASY",   icon:"🩸", desc:"Gótico Sombrio · Carmesim",        bg:"#0d0007", headerBg:"#0a0005" },
+  { id:"cyberpunk",    label:"CYBER PUNK",     icon:"⚡", desc:"Neon Futuro · Rosa & Verde Néon",  bg:"#020408", headerBg:"#010208" },
+  { id:"fantasia",     label:"FANTASIA",       icon:"🌿", desc:"Floresta Mágica · Verde & Bronze", bg:"#040e04", headerBg:"#030c03" },
+  { id:"finalfantasy", label:"FINAL FANTASY",  icon:"💎", desc:"Cristal Eterno · Safira & Prata",  bg:"#030815", headerBg:"#040a18" },
+  { id:"stardew",      label:"STARDEW VALLEY", icon:"🌾", desc:"Fazenda Aconchegante · Marrom",    bg:"#1a1008", headerBg:"#160e04" },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   RAID FINAL — META SEMESTRAL (defaults)
+═══════════════════════════════════════════════════════════ */
+const RAID_DEFAULTS = {
+  titulo: "RAID FINAL — SEMESTRE ÉPICO",
+  deadline: "",
+  objetivos: [
+    { id:"r1", titulo:"Concluir todas as matérias do semestre",  xp:500, done:false },
+    { id:"r2", titulo:"Zero faltas em todas as aulas",           xp:300, done:false },
+    { id:"r3", titulo:"Média acima de 7 em todas as provas",     xp:400, done:false },
+    { id:"r4", titulo:"Entregar todos os projetos no prazo",     xp:350, done:false },
+    { id:"r5", titulo:"Completar a Árvore de Habilidades FIAP",  xp:600, done:false },
+  ],
+};
+
+/* ═══════════════════════════════════════════════════════════
+   RPG NOTIFICATIONS — mensagens do reino
+═══════════════════════════════════════════════════════════ */
+const RPG_NOTIF_MSGS = [
+  "⚔ Seu reino precisa de você, herói!",
+  "🐉 Um boss apareceu — complete suas quests!",
+  "🔮 O Oráculo aguarda sua consulta...",
+  "📖 A crônica de hoje ainda está em branco!",
+  "⭐ Suas façanhas estão esquecidas, aventureiro!",
+  "💀 Quests atrasadas drenando sua vida...",
+  "🧙 Ignis o aguarda para uma sessão de estudos!",
+  "🏆 O RAID FINAL se aproxima — esteja preparado!",
+  "⚡ Que a magia do conhecimento guie seus passos!",
+  "🛡️ Guerreiro, não abandone sua jornada hoje!",
+  "🌟 O nível seguinte está ao seu alcance!",
+  "🌿 A guilda convoca seus membros para batalha!",
+];
+
+/* ═══════════════════════════════════════════════════════════
    PIXEL BAR — segmented like classic RPG HP bars
 ═══════════════════════════════════════════════════════════ */
 function PixelBar({ value, max = 100, color = "#39ff14", segments = 24 }) {
@@ -517,9 +562,318 @@ function usePixelStyles() {
         border-color: #00d4ff !important;
         box-shadow: 0 0 8px rgba(0,212,255,0.2) !important;
       }
+
+      /* ══════════════════════════════════════════════
+         THEME: DARK FANTASY — Gótico Sombrio
+      ══════════════════════════════════════════════ */
+      [data-theme="darkfantasy"] .px-panel {
+        background: #14000a; border-color: #7a0030;
+        box-shadow: 0 0 0 1px #0d0007, 0 0 0 4px #3a0015, inset 0 0 0 2px #5a0020, 0 0 16px rgba(122,0,48,0.15);
+      }
+      [data-theme="darkfantasy"] .px-panel::before,
+      [data-theme="darkfantasy"] .px-panel::after { background:#7a0030; border-color:#ff4080; }
+      [data-theme="darkfantasy"] .px-panel-hero {
+        background: #1a0008; border-color: #cc0044;
+        box-shadow: 0 0 0 1px #0d0007, 0 0 0 4px #600020, inset 0 0 0 2px #aa0033, 0 0 20px rgba(204,0,68,0.2);
+      }
+      [data-theme="darkfantasy"] .px-panel-hero::before,
+      [data-theme="darkfantasy"] .px-panel-hero::after { background:#cc0044; border-color:#ff80a0; }
+      [data-theme="darkfantasy"] .px-panel-arcane {
+        background: #100018; border-color: #880088;
+        box-shadow: 0 0 0 1px #0d0007, 0 0 0 4px #400040, inset 0 0 0 2px #660066, 0 0 20px rgba(136,0,136,0.15);
+      }
+      [data-theme="darkfantasy"] .px-panel-arcane::before,
+      [data-theme="darkfantasy"] .px-panel-arcane::after { background:#880088; border-color:#ff80ff; }
+      [data-theme="darkfantasy"] ::-webkit-scrollbar-thumb { background:#7a0030; }
+      [data-theme="darkfantasy"] ::-webkit-scrollbar-track { background:#0d0007; border-left-color:#3a0015; }
+      [data-theme="darkfantasy"] .px-nav-btn { color:#3a1020; }
+      [data-theme="darkfantasy"] .px-nav-btn:hover { color:#ff4060; background:rgba(204,0,68,.08); }
+      [data-theme="darkfantasy"] .px-nav-btn.active { color:#ff8090 !important; border-bottom-color:#cc0044; background:rgba(204,0,68,.08); text-shadow:0 0 10px rgba(204,0,68,0.6); }
+      [data-theme="darkfantasy"] .px-btn-cyan { background:#1a0010; color:#ff8090; border-color:#880040; box-shadow:3px 3px 0 #080008; }
+      [data-theme="darkfantasy"] .px-btn-gold { background:#1a0008; color:#ff9090; border-color:#cc0044; box-shadow:3px 3px 0 #600020; }
+      [data-theme="darkfantasy"] .px-input { background:#0d0007; border-color:#3a0015; }
+      [data-theme="darkfantasy"] .px-input:focus { border-color:#880040; box-shadow:inset 2px 2px 0 #06000a, 0 0 0 2px rgba(136,0,64,.25); }
+      [data-theme="darkfantasy"] .px-textarea { background:#0d0007; border-color:#3a0015; }
+      [data-theme="darkfantasy"] .px-quest:hover { border-color:#cc0044 !important; box-shadow:0 0 8px rgba(204,0,68,0.2) !important; }
+
+      /* ══════════════════════════════════════════════
+         THEME: CYBER PUNK — Neon Futuro
+      ══════════════════════════════════════════════ */
+      [data-theme="cyberpunk"] .px-panel {
+        background: #080520; border-color: #ff0090;
+        box-shadow: 0 0 0 1px #020408, 0 0 0 4px #600040, inset 0 0 0 2px #a00060, 0 0 16px rgba(255,0,144,0.15);
+      }
+      [data-theme="cyberpunk"] .px-panel::before,
+      [data-theme="cyberpunk"] .px-panel::after { background:#ff0090; border-color:#ff80c8; }
+      [data-theme="cyberpunk"] .px-panel-hero {
+        background: #020318; border-color: #00ff9f;
+        box-shadow: 0 0 0 1px #020408, 0 0 0 4px #003a20, inset 0 0 0 2px #00aa60, 0 0 20px rgba(0,255,159,0.2);
+      }
+      [data-theme="cyberpunk"] .px-panel-hero::before,
+      [data-theme="cyberpunk"] .px-panel-hero::after { background:#00ff9f; border-color:#80ffd0; }
+      [data-theme="cyberpunk"] .px-panel-arcane {
+        background: #060218; border-color: #ff0090;
+        box-shadow: 0 0 0 1px #020408, 0 0 0 4px #600040, inset 0 0 0 2px #a00060, 0 0 20px rgba(255,0,144,0.15);
+      }
+      [data-theme="cyberpunk"] .px-panel-arcane::before,
+      [data-theme="cyberpunk"] .px-panel-arcane::after { background:#ff0090; border-color:#ff80c8; }
+      [data-theme="cyberpunk"] ::-webkit-scrollbar-thumb { background:#ff0090; }
+      [data-theme="cyberpunk"] ::-webkit-scrollbar-track { background:#020408; border-left-color:#600040; }
+      [data-theme="cyberpunk"] .px-nav-btn { color:#401030; }
+      [data-theme="cyberpunk"] .px-nav-btn:hover { color:#ff0090; background:rgba(255,0,144,.08); }
+      [data-theme="cyberpunk"] .px-nav-btn.active { color:#00ff9f !important; border-bottom-color:#00ff9f; background:rgba(0,255,159,.08); text-shadow:0 0 10px rgba(0,255,159,0.6); }
+      [data-theme="cyberpunk"] .px-btn-cyan { background:#040128; color:#ff0090; border-color:#ff0090; box-shadow:3px 3px 0 #200018; }
+      [data-theme="cyberpunk"] .px-btn-gold { background:#020318; color:#00ff9f; border-color:#00ff9f; box-shadow:3px 3px 0 #003020; }
+      [data-theme="cyberpunk"] .px-input { background:#020408; border-color:#400030; color:#e0ffe8; }
+      [data-theme="cyberpunk"] .px-input:focus { border-color:#ff0090; box-shadow:inset 2px 2px 0 #010204, 0 0 0 2px rgba(255,0,144,.25); }
+      [data-theme="cyberpunk"] .px-textarea { background:#020408; border-color:#400030; color:#e0ffe8; }
+      [data-theme="cyberpunk"] .px-quest:hover { border-color:#ff0090 !important; box-shadow:0 0 8px rgba(255,0,144,0.2) !important; }
+
+      /* ══════════════════════════════════════════════
+         THEME: FANTASIA — Floresta Mágica
+      ══════════════════════════════════════════════ */
+      [data-theme="fantasia"] .px-panel {
+        background: #081408; border-color: #2a7020;
+        box-shadow: 0 0 0 1px #040e04, 0 0 0 4px #103810, inset 0 0 0 2px #1a5018, 0 0 16px rgba(42,112,32,0.15);
+      }
+      [data-theme="fantasia"] .px-panel::before,
+      [data-theme="fantasia"] .px-panel::after { background:#2a7020; border-color:#60c050; }
+      [data-theme="fantasia"] .px-panel-hero {
+        background: #0a1808; border-color: #8a6020;
+        box-shadow: 0 0 0 1px #040e04, 0 0 0 4px #3a2808, inset 0 0 0 2px #6a4818, 0 0 20px rgba(138,96,32,0.18);
+      }
+      [data-theme="fantasia"] .px-panel-hero::before,
+      [data-theme="fantasia"] .px-panel-hero::after { background:#8a6020; border-color:#d4a040; }
+      [data-theme="fantasia"] .px-panel-arcane {
+        background: #060e18; border-color: #2a5090;
+        box-shadow: 0 0 0 1px #040e04, 0 0 0 4px #0e2850, inset 0 0 0 2px #1a4070, 0 0 20px rgba(42,80,144,0.15);
+      }
+      [data-theme="fantasia"] .px-panel-arcane::before,
+      [data-theme="fantasia"] .px-panel-arcane::after { background:#2a5090; border-color:#6090d0; }
+      [data-theme="fantasia"] ::-webkit-scrollbar-thumb { background:#2a7020; }
+      [data-theme="fantasia"] ::-webkit-scrollbar-track { background:#040e04; border-left-color:#103810; }
+      [data-theme="fantasia"] .px-nav-btn { color:#102808; }
+      [data-theme="fantasia"] .px-nav-btn:hover { color:#40c040; background:rgba(42,112,32,.08); }
+      [data-theme="fantasia"] .px-nav-btn.active { color:#c8a040 !important; border-bottom-color:#8a6020; background:rgba(138,96,32,.08); text-shadow:0 0 10px rgba(138,96,32,0.6); }
+      [data-theme="fantasia"] .px-btn-cyan { background:#040e04; color:#60c050; border-color:#2a7020; box-shadow:3px 3px 0 #020804; }
+      [data-theme="fantasia"] .px-btn-gold { background:#0a1808; color:#c8a040; border-color:#8a6020; box-shadow:3px 3px 0 #3a2808; }
+      [data-theme="fantasia"] .px-input { background:#040e04; border-color:#103810; color:#d8ecd0; }
+      [data-theme="fantasia"] .px-input:focus { border-color:#2a7020; box-shadow:inset 2px 2px 0 #020804, 0 0 0 2px rgba(42,112,32,.25); }
+      [data-theme="fantasia"] .px-textarea { background:#040e04; border-color:#103810; color:#d8ecd0; }
+      [data-theme="fantasia"] .px-quest:hover { border-color:#8a6020 !important; box-shadow:0 0 8px rgba(138,96,32,0.2) !important; }
+
+      /* ══════════════════════════════════════════════
+         THEME: FINAL FANTASY — Cristal Eterno
+      ══════════════════════════════════════════════ */
+      [data-theme="finalfantasy"] .px-panel {
+        background: #06102a; border-color: #1840a0;
+        box-shadow: 0 0 0 1px #030815, 0 0 0 4px #0a2060, inset 0 0 0 2px #1230a0, 0 0 16px rgba(24,64,160,0.18);
+      }
+      [data-theme="finalfantasy"] .px-panel::before,
+      [data-theme="finalfantasy"] .px-panel::after { background:#1840a0; border-color:#80b0ff; }
+      [data-theme="finalfantasy"] .px-panel-hero {
+        background: #080620; border-color: #8098e0;
+        box-shadow: 0 0 0 1px #030815, 0 0 0 4px #3040a0, inset 0 0 0 2px #6078c0, 0 0 20px rgba(128,152,224,0.2);
+      }
+      [data-theme="finalfantasy"] .px-panel-hero::before,
+      [data-theme="finalfantasy"] .px-panel-hero::after { background:#8098e0; border-color:#c0d0ff; }
+      [data-theme="finalfantasy"] .px-panel-arcane {
+        background: #050820; border-color: #4080ff;
+        box-shadow: 0 0 0 1px #030815, 0 0 0 4px #1030a0, inset 0 0 0 2px #2060e0, 0 0 20px rgba(64,128,255,0.15);
+      }
+      [data-theme="finalfantasy"] .px-panel-arcane::before,
+      [data-theme="finalfantasy"] .px-panel-arcane::after { background:#4080ff; border-color:#a0c0ff; }
+      [data-theme="finalfantasy"] ::-webkit-scrollbar-thumb { background:#1840a0; }
+      [data-theme="finalfantasy"] ::-webkit-scrollbar-track { background:#030815; border-left-color:#0a2060; }
+      [data-theme="finalfantasy"] .px-nav-btn { color:#102050; }
+      [data-theme="finalfantasy"] .px-nav-btn:hover { color:#6090e0; background:rgba(24,64,160,.08); }
+      [data-theme="finalfantasy"] .px-nav-btn.active { color:#c0d4ff !important; border-bottom-color:#8098e0; background:rgba(128,152,224,.08); text-shadow:0 0 10px rgba(128,152,224,0.5); }
+      [data-theme="finalfantasy"] .px-btn-cyan { background:#06102a; color:#80b0ff; border-color:#1840a0; box-shadow:3px 3px 0 #030815; }
+      [data-theme="finalfantasy"] .px-btn-gold { background:#080620; color:#c0d4ff; border-color:#8098e0; box-shadow:3px 3px 0 #3040a0; }
+      [data-theme="finalfantasy"] .px-input { background:#030815; border-color:#0a2060; color:#d0e8ff; }
+      [data-theme="finalfantasy"] .px-input:focus { border-color:#4080ff; box-shadow:inset 2px 2px 0 #020510, 0 0 0 2px rgba(64,128,255,.25); }
+      [data-theme="finalfantasy"] .px-textarea { background:#030815; border-color:#0a2060; color:#d0e8ff; }
+      [data-theme="finalfantasy"] .px-quest:hover { border-color:#4080ff !important; box-shadow:0 0 8px rgba(64,128,255,0.2) !important; }
+
+      /* ══════════════════════════════════════════════
+         THEME: STARDEW VALLEY — Fazenda Aconchegante
+      ══════════════════════════════════════════════ */
+      [data-theme="stardew"] .px-panel {
+        background: #241a0c; border-color: #6a5030;
+        box-shadow: 0 0 0 1px #1a1008, 0 0 0 4px #3a2808, inset 0 0 0 2px #5a4020, 0 0 16px rgba(106,80,48,0.15);
+      }
+      [data-theme="stardew"] .px-panel::before,
+      [data-theme="stardew"] .px-panel::after { background:#6a5030; border-color:#c8a060; }
+      [data-theme="stardew"] .px-panel-hero {
+        background: #201404; border-color: #c89040;
+        box-shadow: 0 0 0 1px #1a1008, 0 0 0 4px #6a4808, inset 0 0 0 2px #a07828, 0 0 20px rgba(200,144,64,0.18);
+      }
+      [data-theme="stardew"] .px-panel-hero::before,
+      [data-theme="stardew"] .px-panel-hero::after { background:#c89040; border-color:#e8c880; }
+      [data-theme="stardew"] .px-panel-arcane {
+        background: #1e1820; border-color: #806040;
+        box-shadow: 0 0 0 1px #1a1008, 0 0 0 4px #3a2818, inset 0 0 0 2px #604830, 0 0 20px rgba(128,96,64,0.15);
+      }
+      [data-theme="stardew"] .px-panel-arcane::before,
+      [data-theme="stardew"] .px-panel-arcane::after { background:#806040; border-color:#c0a070; }
+      [data-theme="stardew"] ::-webkit-scrollbar-thumb { background:#6a5030; }
+      [data-theme="stardew"] ::-webkit-scrollbar-track { background:#1a1008; border-left-color:#3a2808; }
+      [data-theme="stardew"] .px-nav-btn { color:#3a2808; }
+      [data-theme="stardew"] .px-nav-btn:hover { color:#c89040; background:rgba(200,144,64,.08); }
+      [data-theme="stardew"] .px-nav-btn.active { color:#e8c060 !important; border-bottom-color:#c89040; background:rgba(200,144,64,.08); text-shadow:0 0 10px rgba(200,144,64,0.5); }
+      [data-theme="stardew"] .px-btn-cyan { background:#241a0c; color:#c89040; border-color:#6a5030; box-shadow:3px 3px 0 #0a0804; }
+      [data-theme="stardew"] .px-btn-gold { background:#201404; color:#e8c060; border-color:#c89040; box-shadow:3px 3px 0 #6a4808; }
+      [data-theme="stardew"] .px-input { background:#1a1008; border-color:#3a2808; color:#f0e8d0; }
+      [data-theme="stardew"] .px-input:focus { border-color:#c89040; box-shadow:inset 2px 2px 0 #0e0c04, 0 0 0 2px rgba(200,144,64,.25); }
+      [data-theme="stardew"] .px-textarea { background:#1a1008; border-color:#3a2808; color:#f0e8d0; }
+      [data-theme="stardew"] .px-quest:hover { border-color:#c89040 !important; box-shadow:0 0 8px rgba(200,144,64,0.2) !important; }
+
+      /* ── Dungeon Mode animation ── */
+      @keyframes dungeonPulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+      @keyframes toastSlide { from{transform:translateX(120%);opacity:0} to{transform:translateX(0);opacity:1} }
     `;
     document.head.appendChild(style);
   }, []);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SOUND SYSTEM — Web Audio API 8-bit
+═══════════════════════════════════════════════════════════ */
+const fireSound = (sound) =>
+  window.dispatchEvent(new CustomEvent("rpg-sound", { detail: sound }));
+
+function useSounds(enabled) {
+  const acRef = useRef(null);
+
+  const getAC = useCallback(() => {
+    if (!acRef.current) {
+      try { acRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+    return acRef.current;
+  }, []);
+
+  const beep = useCallback((freq, dur, vol = 0.28, type = "square") => {
+    try {
+      const ctx = getAC(); if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(vol, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + dur);
+    } catch(e) {}
+  }, [getAC]);
+
+  const play = useCallback((sound) => {
+    if (!enabled) return;
+    switch (sound) {
+      case "click":
+        beep(520, 0.05, 0.18); break;
+      case "success":
+        beep(523, 0.09, 0.25);
+        setTimeout(() => beep(659, 0.09, 0.25), 100);
+        setTimeout(() => beep(784, 0.18, 0.3), 200); break;
+      case "levelup":
+        [523, 659, 784, 1047].forEach((f, i) =>
+          setTimeout(() => beep(f, 0.14, 0.32), i * 110));
+        break;
+      case "error":
+        beep(220, 0.11, 0.22); setTimeout(() => beep(180, 0.17, 0.22), 100); break;
+      case "notification":
+        beep(880, 0.07, 0.2); setTimeout(() => beep(1100, 0.14, 0.25), 85); break;
+      case "quest_add":
+        beep(392, 0.07, 0.2); setTimeout(() => beep(523, 0.11, 0.25), 75); break;
+      case "dungeon_enter":
+        beep(110, 0.45, 0.38, "sawtooth");
+        setTimeout(() => beep(147, 0.35, 0.28, "sawtooth"), 280);
+        setTimeout(() => beep(165, 0.55, 0.32, "sawtooth"), 560); break;
+      default: break;
+    }
+  }, [enabled, beep]);
+
+  useEffect(() => {
+    const handler = (e) => play(e.detail);
+    window.addEventListener("rpg-sound", handler);
+    return () => window.removeEventListener("rpg-sound", handler);
+  }, [play]);
+
+  return { play };
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RPG TOAST — notificação in-app estilo RPG
+═══════════════════════════════════════════════════════════ */
+function RPGToast({ message, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 5000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  return (
+    <div style={{
+      position:"fixed", bottom:"24px", right:"24px", zIndex:3000,
+      background:"#0c1630", border:"3px solid #c8a000",
+      boxShadow:"0 0 20px rgba(200,160,0,.4), 4px 4px 0 #4a3000",
+      padding:"14px 16px", maxWidth:"300px",
+      animation:"toastSlide .3s ease-out",
+    }}>
+      <div style={{ display:"flex", alignItems:"flex-start", gap:"10px" }}>
+        <span style={{ fontSize:"24px", flexShrink:0 }}>📯</span>
+        <div style={{ flex:1 }}>
+          <div className="px-font" style={{ fontSize:"7px", color:"#f0c030", marginBottom:"4px" }}>
+            ⚔ MENSAGEM DO REINO
+          </div>
+          <div className="px-body" style={{ fontSize:"16px", color:"#c8deff", lineHeight:1.4 }}>
+            {message}
+          </div>
+        </div>
+        <button onClick={onClose} style={{ background:"none", border:"none", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor:"pointer", flexShrink:0, lineHeight:1 }}>✕</button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   THEME SWITCHER — dropdown de temas
+═══════════════════════════════════════════════════════════ */
+function ThemeSwitcher({ currentThemeId, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const theme = THEMES.find(t => t.id === currentThemeId) || THEMES[0];
+
+  return (
+    <div style={{ position:"relative" }}>
+      <button
+        onClick={() => { setOpen(o => !o); fireSound("click"); }}
+        style={{ background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"8px 10px", cursor:"pointer", whiteSpace:"nowrap" }}
+        title="Mudar tema"
+      >
+        {theme.icon} TEMA
+      </button>
+      {open && (
+        <div style={{
+          position:"absolute", right:0, top:"calc(100% + 4px)", zIndex:500,
+          background:"#0c1630", border:"3px solid #3060b8",
+          boxShadow:"0 8px 32px rgba(0,0,0,.9)", minWidth:"220px",
+        }}>
+          {THEMES.map(t => (
+            <button key={t.id} onClick={() => { onSelect(t.id); setOpen(false); fireSound("click"); }}
+              style={{
+                display:"block", width:"100%", padding:"10px 14px",
+                background: currentThemeId === t.id ? "#1e3060" : "none",
+                border:"none", borderBottom:"1px solid #0a1840",
+                color: currentThemeId === t.id ? "#f0c030" : "#4898f0",
+                fontFamily:"'Press Start 2P',monospace", fontSize:"7px",
+                cursor:"pointer", textAlign:"left", lineHeight:1.6,
+              }}>
+              {t.icon} {t.label}
+              <div style={{ fontSize:"5px", color:"#1a4070", marginTop:"2px" }}>{t.desc}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -2449,6 +2803,354 @@ function AlbumModule({ memorias, setMemorias }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   DUNGEON MODE — Foco total com trilha sonora épica
+═══════════════════════════════════════════════════════════ */
+function DungeonModeOverlay({ onExit, nomeHeroi }) {
+  const [seconds, setSeconds] = useState(0);
+  const [ambientOn, setAmbientOn] = useState(false);
+  const ambientRef = useRef(null);
+  const acRef = useRef(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setSeconds(s => s + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const startAmbient = () => {
+    try {
+      if (!acRef.current) acRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = acRef.current;
+
+      const master = ctx.createGain();
+      master.gain.value = 0.12;
+      master.connect(ctx.destination);
+
+      // Drone grave
+      const drone = ctx.createOscillator();
+      drone.type = "sawtooth"; drone.frequency.value = 55;
+      drone.connect(master); drone.start();
+
+      // LFO de vibrato
+      const lfo = ctx.createOscillator();
+      const lfoG = ctx.createGain();
+      lfo.frequency.value = 0.08; lfoG.gain.value = 2.5;
+      lfo.connect(lfoG); lfoG.connect(drone.frequency); lfo.start();
+
+      // Harmônico médio
+      const mid = ctx.createOscillator();
+      const midG = ctx.createGain();
+      mid.type = "sine"; mid.frequency.value = 110; midG.gain.value = 0.4;
+      mid.connect(midG); midG.connect(master); mid.start();
+
+      // Nota alta suave
+      const high = ctx.createOscillator();
+      const highG = ctx.createGain();
+      high.type = "sine"; high.frequency.value = 220; highG.gain.value = 0.15;
+      high.connect(highG); highG.connect(master); high.start();
+
+      ambientRef.current = { drone, lfo, mid, high, master };
+      setAmbientOn(true);
+    } catch(e) {}
+  };
+
+  const stopAmbient = () => {
+    try {
+      if (ambientRef.current) {
+        const { drone, lfo, mid, high } = ambientRef.current;
+        [drone, lfo, mid, high].forEach(n => { try { n.stop(); } catch(e) {} });
+        ambientRef.current = null;
+      }
+    } catch(e) {}
+    setAmbientOn(false);
+  };
+
+  useEffect(() => () => stopAmbient(), []);
+
+  const fmt = s =>
+    `${String(Math.floor(s / 3600)).padStart(2,"0")}:${String(Math.floor((s%3600)/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+
+  return (
+    <div style={{
+      position:"fixed", inset:0, zIndex:2000,
+      background:"radial-gradient(ellipse at 50% 25%, #0a0a2a 0%, #000006 75%)",
+      display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+    }}>
+      {/* Scan lines sutis */}
+      <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px)", pointerEvents:"none" }} />
+
+      <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"24px" }}>
+        <div className="px-font" style={{ fontSize:"7px", color:"#1e3060", letterSpacing:".3em", marginBottom:"20px" }}>
+          ⚔ MODO DUNGEON ⚔
+        </div>
+
+        {/* Ícone pulsante */}
+        <div style={{ fontSize:"64px", marginBottom:"16px", animation:"dungeonPulse 2s ease-in-out infinite" }}>
+          🏰
+        </div>
+
+        {/* Cronômetro */}
+        <div className="px-font" style={{
+          fontSize:"clamp(28px,7vw,56px)", color:"#c8a000",
+          textShadow:"0 0 30px rgba(200,160,0,.9), 0 0 60px rgba(200,160,0,.3)",
+          letterSpacing:".12em", marginBottom:"12px",
+        }}>
+          {fmt(seconds)}
+        </div>
+
+        <div className="px-font" style={{ fontSize:"7px", color:"#1e3060", marginBottom:"8px", letterSpacing:".12em" }}>
+          FOCO TOTAL
+        </div>
+        <div className="px-body" style={{ fontSize:"18px", color:"#2a4880", marginBottom:"36px" }}>
+          {nomeHeroi} · distrações bloqueadas · concentração máxima
+        </div>
+
+        {/* Trilha sonora */}
+        <div className="px-panel" style={{ width:"100%", maxWidth:"420px", marginBottom:"24px", textAlign:"center" }}>
+          <div className="px-font" style={{ fontSize:"7px", color:"#4898f0", marginBottom:"12px" }}>
+            🎵 TRILHA SONORA ÉPICA
+          </div>
+          <div style={{ display:"flex", gap:"8px", justifyContent:"center" }}>
+            {["🔥 BATALHA", "🌙 DUNGEON", "🌊 FLORESTA"].map((label, i) => (
+              <button key={i}
+                onClick={() => { if (!ambientOn) startAmbient(); else stopAmbient(); }}
+                className="px-btn px-btn-purple"
+                style={{ padding:"8px 10px", fontSize:"6px", background: ambientOn && i===1 ? "#4898f044" : undefined }}>
+                {ambientOn && i===1 ? "▮▮" : "▶"} {label}
+              </button>
+            ))}
+          </div>
+          {ambientOn && (
+            <div className="px-body" style={{ fontSize:"14px", color:"#4898f088", marginTop:"10px" }}>
+              ♪ trilha épica ativa — use fones para melhor experiência ♪
+            </div>
+          )}
+        </div>
+
+        <div style={{ display:"flex", gap:"14px" }}>
+          <button
+            onClick={() => { stopAmbient(); onExit(); }}
+            className="px-btn px-btn-danger"
+            style={{ padding:"14px 28px", fontSize:"9px" }}
+          >
+            ✕ SAIR DA DUNGEON
+          </button>
+        </div>
+
+        <div className="px-font" style={{ fontSize:"5px", color:"#0d1a40", marginTop:"20px", letterSpacing:".1em" }}>
+          PRESSIONE ESC PARA SAIR
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RAID FINAL — META SEMESTRAL (Boss Fight)
+═══════════════════════════════════════════════════════════ */
+function RaidFinalModule({ nomeHeroi }) {
+  const [raid, setRaid]     = useLS("mylog_raid_final", RAID_DEFAULTS);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newObj, setNewObj]  = useState("");
+  const [editTitle, setEditTitle] = useState(false);
+
+  const total   = raid.objetivos.length;
+  const done    = raid.objetivos.filter(o => o.done).length;
+  const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
+  const bossHp  = 100 - pct;
+  const totalXp = raid.objetivos.filter(o => o.done).reduce((s, o) => s + (o.xp || 200), 0);
+  const allDone = pct === 100;
+
+  const toggle = id => {
+    setRaid(p => ({ ...p, objetivos: p.objetivos.map(o => o.id===id ? {...o, done:!o.done} : o) }));
+    fireSound("success");
+  };
+  const delObj = id => setRaid(p => ({ ...p, objetivos: p.objetivos.filter(o => o.id !== id) }));
+  const addObj = () => {
+    if (!newObj.trim()) return;
+    setRaid(p => ({ ...p, objetivos: [...p.objetivos, { id: uid(), titulo: newObj.trim(), xp: 200, done: false }] }));
+    setNewObj(""); setShowAdd(false);
+    fireSound("quest_add");
+  };
+
+  const bossColor = bossHp > 60 ? "#ff2200" : bossHp > 30 ? "#ff8800" : "#ffdd00";
+
+  return (
+    <div style={{ maxWidth:"860px", margin:"0 auto" }}>
+
+      {/* ── BOSS BANNER ── */}
+      <div className="px-panel-hero" style={{ textAlign:"center", padding:"32px 24px", marginBottom:"24px", position:"relative", overflow:"hidden" }}>
+        <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
+        <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
+
+        {/* Splash art do boss */}
+        <div style={{ fontSize:"88px", display:"block", marginBottom:"16px",
+          animation: allDone ? "pxFloat 2s ease-in-out infinite" : "dungeonPulse 1.8s ease-in-out infinite",
+          filter: allDone ? "drop-shadow(0 0 24px #39ff14)" : `drop-shadow(0 0 20px ${bossColor})` }}>
+          {allDone ? "🏆" : bossHp > 60 ? "💀" : bossHp > 30 ? "🩻" : "⚰️"}
+        </div>
+
+        {editTitle ? (
+          <input className="px-input" value={raid.titulo}
+            style={{ textAlign:"center", fontSize:"16px", marginBottom:"12px" }}
+            onChange={e => setRaid(p => ({...p, titulo: e.target.value}))}
+            onBlur={() => setEditTitle(false)} autoFocus />
+        ) : (
+          <div className="px-font" onClick={() => setEditTitle(true)} style={{
+            fontSize:"clamp(7px,2vw,12px)", color: allDone ? "#39ff14" : "#f0c030",
+            letterSpacing:".08em", marginBottom:"10px", cursor:"pointer",
+            textShadow: allDone ? "0 0 16px #39ff1488" : "0 0 10px rgba(200,160,0,.5)",
+          }} title="Clique para editar">
+            {raid.titulo}
+          </div>
+        )}
+
+        <div className="px-font" style={{ fontSize:"8px", color: allDone ? "#39ff14" : bossColor,
+          textShadow:`0 0 16px ${allDone ? "#39ff1466" : bossColor+"66"}`, marginBottom:"16px" }}>
+          {allDone ? "✓ RAID CONCLUÍDO — HERÓI LENDÁRIO!" : `☠ CHEFE DO SEMESTRE · HP ${bossHp}%`}
+        </div>
+
+        {/* Boss HP Bar */}
+        <div style={{ marginBottom:"10px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px" }}>
+            <span className="px-font" style={{ fontSize:"7px", color: allDone ? "#39ff14" : "#ff4444" }}>
+              {allDone ? "✓ DERROTADO" : "☠ BOSS HP"}
+            </span>
+            <span className="px-font" style={{ fontSize:"7px", color: allDone ? "#39ff14" : "#ff4444" }}>
+              {done}/{total} OBJETIVOS CONCLUÍDOS
+            </span>
+          </div>
+          <div style={{ display:"flex", gap:"2px" }}>
+            {Array.from({ length: 25 }, (_, i) => {
+              const seg = 25 - i;
+              const filled = seg <= Math.round((bossHp / 100) * 25);
+              return (
+                <div key={i} style={{
+                  flex:1, height:"14px",
+                  background: filled
+                    ? (bossHp > 60 ? "#ff2200" : bossHp > 30 ? "#ff8800" : "#ffdd00")
+                    : "#001800",
+                  border:`1px solid ${filled ? "#ff000033" : "#0a1040"}`,
+                  transition:"background .4s",
+                }} />
+              );
+            })}
+          </div>
+        </div>
+
+        <div style={{ display:"flex", gap:"16px", justifyContent:"center", flexWrap:"wrap", marginTop:"12px" }}>
+          <div className="px-font" style={{ fontSize:"7px", color:"#4a3000" }}>
+            +{totalXp.toLocaleString("pt-BR")} XP ACUMULADOS
+          </div>
+          {raid.deadline && (
+            <div className="px-font" style={{ fontSize:"7px", color:"#1e3060" }}>
+              ⚔ PRAZO: {new Date(raid.deadline + "T12:00:00").toLocaleDateString("pt-BR")}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── OBJETIVOS ── */}
+      <div className="px-panel" style={{ marginBottom:"24px" }}>
+        <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
+        <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
+
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"16px", flexWrap:"wrap", gap:"12px" }}>
+          <PxTitle icon="⚔" color="#ffd700">OBJETIVOS DO RAID</PxTitle>
+          <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
+              <span className="px-font" style={{ fontSize:"6px", color:"#1a4070" }}>PRAZO:</span>
+              <input type="date" className="px-input"
+                style={{ width:"auto", fontSize:"13px", padding:"4px 8px" }}
+                value={raid.deadline}
+                onChange={e => setRaid(p => ({...p, deadline: e.target.value}))} />
+            </div>
+            <button className="px-btn px-btn-gold" style={{ padding:"8px 14px" }}
+              onClick={() => { setShowAdd(!showAdd); fireSound("click"); }}>
+              + OBJETIVO
+            </button>
+          </div>
+        </div>
+
+        {showAdd && (
+          <div style={{ display:"flex", gap:"8px", marginBottom:"16px" }}>
+            <input className="px-input" style={{ flex:1 }}
+              placeholder="> Novo objetivo do raid..."
+              value={newObj}
+              onChange={e => setNewObj(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && addObj()}
+              autoFocus />
+            <button className="px-btn px-btn-gold" style={{ padding:"8px 14px" }} onClick={addObj}>✓</button>
+            <button className="px-btn px-btn-ghost" style={{ padding:"8px 12px" }} onClick={() => setShowAdd(false)}>✕</button>
+          </div>
+        )}
+
+        <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+          {raid.objetivos.map((o, i) => (
+            <div key={o.id} onClick={() => toggle(o.id)}
+              style={{
+                display:"flex", alignItems:"center", gap:"12px",
+                padding:"12px 14px", cursor:"pointer",
+                background: o.done ? "#001a00" : "#020a1e",
+                border:`2px solid ${o.done ? "#39ff14" : "#1e3060"}`,
+                borderLeft:`4px solid ${o.done ? "#39ff14" : "#c8a000"}`,
+                transition:"all .15s",
+              }}>
+              <div style={{
+                width:16, height:16, flexShrink:0,
+                border:`2px solid ${o.done ? "#39ff14" : "#1e3060"}`,
+                background: o.done ? "#39ff14" : "transparent",
+                display:"flex", alignItems:"center", justifyContent:"center",
+              }}>
+                {o.done && <span style={{ color:"#020a1e", fontSize:"10px", fontWeight:"bold" }}>✓</span>}
+              </div>
+              <div style={{ flex:1 }}>
+                <div className="px-body" style={{
+                  fontSize:"19px", color: o.done ? "#39ff14" : "#c0e8ff",
+                  textDecoration: o.done ? "line-through" : "none",
+                }}>
+                  {String(i + 1).padStart(2,"0")}. {o.titulo}
+                </div>
+              </div>
+              <PxBadge color={o.done ? "#39ff14" : "#c8a000"}>+{o.xp} XP</PxBadge>
+              <button onClick={ev => { ev.stopPropagation(); delObj(o.id); }}
+                style={{ background:"none", border:"1px solid #3a0000", color:"#883030",
+                  fontFamily:"'Press Start 2P',monospace", fontSize:"6px",
+                  padding:"4px 7px", cursor:"pointer" }}>
+                DEL
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {raid.objetivos.length === 0 && (
+          <div style={{ textAlign:"center", padding:"24px" }}>
+            <div className="px-body" style={{ fontSize:"16px", color:"#1a4070" }}>
+              Adicione objetivos para o raid semestral acima
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Recompensa final ── */}
+      {allDone && (
+        <div className="px-panel" style={{ borderColor:"#39ff14", background:"#001800", textAlign:"center", padding:"36px 24px" }}>
+          <div style={{ fontSize:"72px", marginBottom:"16px", animation:"pxFloat 2s ease-in-out infinite" }}>🏆</div>
+          <div className="px-font" style={{ fontSize:"12px", color:"#39ff14", textShadow:"0 0 20px #39ff14aa", marginBottom:"10px" }}>
+            RAID CONCLUÍDO!
+          </div>
+          <div className="px-body" style={{ fontSize:"20px", color:"#80ff80", marginBottom:"8px" }}>
+            {nomeHeroi} tornou-se um herói lendário do semestre!
+          </div>
+          <div className="px-font" style={{ fontSize:"7px", color:"#1a5030" }}>
+            +{totalXp.toLocaleString("pt-BR")} XP GANHOS NESTE RAID
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    MAIN APP
 ═══════════════════════════════════════════════════════════ */
 export default function App() {
@@ -2465,6 +3167,49 @@ export default function App() {
   const [dailyCompletions,   setDailyCompletions]   = useLS("mylog_daily_completions",     {});
   const [memorias,           setMemorias]           = useLS("mylog_memorias",               []);
   const [showPersonagemModal,setShowPersonagemModal] = useState(false);
+  const [themeId,            setThemeId]            = useLS("mylog_theme",                "arcane");
+  const [dungeonMode,        setDungeonMode]        = useState(false);
+  const [soundEnabled,       setSoundEnabled]       = useLS("mylog_sound",                true);
+  const [toast,              setToast]              = useState(null);
+
+  useSounds(soundEnabled);
+
+  // Aplica data-theme no body para CSS vars
+  useEffect(() => {
+    document.body.setAttribute("data-theme", themeId);
+  }, [themeId]);
+
+  // ESC sai do Modo Dungeon
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") setDungeonMode(false); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  // Toast RPG a cada 45 min enquanto o app está aberto
+  useEffect(() => {
+    const t = setInterval(() => {
+      setToast(RPG_NOTIF_MSGS[Math.floor(Math.random() * RPG_NOTIF_MSGS.length)]);
+    }, 45 * 60 * 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Notificações Push do browser (RPG style)
+  useEffect(() => {
+    if (!("Notification" in window) || !personagem?.nome) return;
+    const schedule = async () => {
+      if (Notification.permission === "default") await Notification.requestPermission();
+      if (Notification.permission !== "granted") return;
+      const fire = () => {
+        const msg = RPG_NOTIF_MSGS[Math.floor(Math.random() * RPG_NOTIF_MSGS.length)];
+        try { new Notification(`⚔ ${personagem.nome} — MYLOG RPG`, { body: msg, icon: "/logo192.png" }); } catch(e) {}
+        setTimeout(fire, (2 + Math.random() * 2) * 3600000);
+      };
+      setTimeout(fire, 1800000); // 1ª notificação após 30 min
+    };
+    schedule();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personagem?.nome]);
 
   // Primeira vez: mostrar tela de nome
   if (!personagem || !personagem.nome) {
@@ -2475,10 +3220,11 @@ export default function App() {
     );
   }
 
-  const nomeHeroi  = personagem.nome;
-  const racaDados  = RACAS.find(r => r.id === personagem.racaId);
-  const classeDados= CLASSES.find(c => c.id === personagem.classeId);
-  const fotoUrl    = personagem.fotoUrl || null;
+  const nomeHeroi   = personagem.nome;
+  const racaDados   = RACAS.find(r => r.id === personagem.racaId);
+  const classeDados = CLASSES.find(c => c.id === personagem.classeId);
+  const fotoUrl     = personagem.fotoUrl || null;
+  const curTheme    = THEMES.find(t => t.id === themeId) || THEMES[0];
 
   const xp    = calcXP(tasks,diary,goals);
   const lv    = calcLevel(xp);
@@ -2498,10 +3244,11 @@ export default function App() {
     {id:"skilltree",  label:"🌳 ÁRV. HAB."},
     {id:"ai",         label:"🔮 ORÁCULO"},
     {id:"album",      label:"📸 ÁLBUM"},
+    {id:"raid",       label:"⚔ RAID FINAL"},
   ];
 
   return (
-    <div className="px-crt" style={{ minHeight:"100vh", background:"#06080f", color:"#c8deff", fontFamily:"'VT323',monospace", position:"relative" }}>
+    <div className="px-crt" style={{ minHeight:"100vh", background: curTheme.bg, color:"#c8deff", fontFamily:"'VT323',monospace", position:"relative" }}>
       <PixelStarField />
 
       {/* ══ PERSONAGEM MODAL ══ */}
@@ -2513,9 +3260,20 @@ export default function App() {
         />
       )}
 
+      {/* ══ DUNGEON MODE ══ */}
+      {dungeonMode && (
+        <DungeonModeOverlay
+          onExit={() => setDungeonMode(false)}
+          nomeHeroi={nomeHeroi}
+        />
+      )}
+
+      {/* ══ RPG TOAST ══ */}
+      {toast && <RPGToast message={toast} onClose={() => setToast(null)} />}
+
       {/* ══ HEADER FF-style ══ */}
       <header style={{
-        background:"#080c1a",
+        background: curTheme.headerBg,
         borderBottom:"3px solid #1a3060",
         boxShadow:"0 3px 0 #06080f, 0 6px 20px rgba(0,0,0,.7), 0 2px 16px rgba(48,96,184,.08)",
         padding:"8px 20px",
@@ -2563,11 +3321,50 @@ export default function App() {
             style={{ background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"8px 10px", cursor:"pointer" }}
             title="Editar personagem"
           >⚙ PERSONAGEM</button>
+
+          {/* ── DUNGEON MODE ── */}
+          <button
+            onClick={() => { setDungeonMode(true); fireSound("dungeon_enter"); }}
+            style={{
+              background: dungeonMode ? "#1a0020" : "none",
+              border:`1px solid ${dungeonMode ? "#880088" : "#1e3060"}`,
+              color: dungeonMode ? "#cc00cc" : "#2a4880",
+              fontFamily:"'Press Start 2P',monospace", fontSize:"6px",
+              padding:"8px 10px", cursor:"pointer", whiteSpace:"nowrap",
+            }}
+            title="Modo Dungeon — Foco total"
+          >
+            🏰 DUNGEON
+          </button>
+
+          {/* ── SOM ── */}
+          <button
+            onClick={() => { setSoundEnabled(v => !v); }}
+            style={{
+              background:"none", border:"1px solid #1e3060",
+              color: soundEnabled ? "#39ff14" : "#2a4880",
+              fontFamily:"'Press Start 2P',monospace", fontSize:"8px",
+              padding:"8px 10px", cursor:"pointer",
+            }}
+            title={soundEnabled ? "Som ativado — clique para silenciar" : "Som desativado — clique para ativar"}
+          >
+            {soundEnabled ? "🔊" : "🔇"}
+          </button>
+
+          {/* ── TEMA ── */}
+          <ThemeSwitcher currentThemeId={themeId} onSelect={setThemeId} />
+
+          {/* ── NOTIFICAÇÃO MANUAL ── */}
+          <button
+            onClick={() => setToast(RPG_NOTIF_MSGS[Math.floor(Math.random() * RPG_NOTIF_MSGS.length)])}
+            style={{ background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", padding:"8px 10px", cursor:"pointer" }}
+            title="Mensagem do reino"
+          >📯</button>
         </div>
       </header>
 
       {/* ══ NAV ══ */}
-      <nav style={{ background:"#06080f", borderBottom:"3px solid #1a3060", boxShadow:"0 3px 0 #04060a", display:"flex", overflowX:"auto", paddingLeft:"8px" }}>
+      <nav style={{ background: curTheme.bg, borderBottom:"3px solid #1a3060", boxShadow:"0 3px 0 #04060a", display:"flex", overflowX:"auto", paddingLeft:"8px" }}>
         <div style={{ maxWidth:"980px", margin:"0 auto", display:"flex", width:"100%" }}>
           {TABS.map(t=>(
             <button key={t.id} className={`px-nav-btn${tab===t.id?" active":""}`} onClick={()=>setTab(t.id)}>{t.label}</button>
@@ -2586,6 +3383,7 @@ export default function App() {
         {tab==="skilltree"  && <SkillTreeModule />}
         {tab==="ai"         && <OracleModule diary={diary} tasks={tasks} goals={goals} notes={notes} apiKey={apiKey} setApiKey={setApiKey} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} />}
         {tab==="album"      && <AlbumModule memorias={memorias} setMemorias={setMemorias} />}
+        {tab==="raid"       && <RaidFinalModule nomeHeroi={nomeHeroi} />}
       </main>
     </div>
   );
