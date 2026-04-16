@@ -65,52 +65,17 @@ function PixelStarField() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CHARACTER CREATOR — Final Fantasy + WoW style
+   WELCOME SCREEN — simple name entry
 ═══════════════════════════════════════════════════════════ */
-const FRACAO_COR = { "Aliança": "#4898f0", "Horda": "#e04040", "Neutro": "#c8a000" };
+function WelcomeScreen({ onStart }) {
+  const [nome, setNome] = useState("");
 
-function WelcomeScreen({ onStart, personagemExistente }) {
-  const [fase,   setFase]  = useState("title");
-  const [cursor, setCursor]= useState(0);
-  const [nome,   setNome]  = useState("");
-  const [raca,   setRaca]  = useState(null);
-  const [classe, setClasse]= useState(null);
-  const [avatar, setAvatar]= useState({});
-  const [racaHover, setRacaHover]   = useState(null);
-  const [classeHover, setClasseHover] = useState(null);
+  const iniciar = () => {
+    if (!nome.trim()) return;
+    onStart({ nome: nome.trim(), racaId: "elfo_noite", classeId: "druida", fotoUrl: null });
+  };
 
-  const opcoes = personagemExistente
-    ? ["▶ CONTINUAR AVENTURA", "  NOVO PERSONAGEM"]
-    : ["▶ NOVA AVENTURA"];
-
-  /* navegação por teclado na tela de título */
-  useEffect(() => {
-    const onKey = (e) => {
-      if (fase === "title") {
-        if (e.key === "ArrowUp")   setCursor(p => (p - 1 + opcoes.length) % opcoes.length);
-        if (e.key === "ArrowDown") setCursor(p => (p + 1) % opcoes.length);
-        if (e.key === "Enter") {
-          if (personagemExistente && cursor === 0) onStart(personagemExistente);
-          else setFase("nome");
-        }
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [fase, cursor, opcoes.length, personagemExistente, onStart]);
-
-  const ffBox = (borderColor, extra = {}) => ({
-    background:"#0c1630",
-    border:`3px solid ${borderColor}`,
-    boxShadow:`0 0 0 1px #06080f, 0 0 0 4px ${borderColor}44, inset 0 0 0 2px ${borderColor}44, 0 0 30px ${borderColor}22`,
-    ...extra,
-  });
-
-  const racaSel   = RACAS.find(r => r.id === raca);
-  const classeSel = CLASSES.find(c => c.id === classe);
-
-  /* ── Tela de Título ── */
-  if (fase === "title") return (
+  return (
     <div style={{ position:"fixed", inset:0, background:"#06080f", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
       <PixelStarField />
       <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", width:"100%", maxWidth:"480px", padding:"24px" }}>
@@ -121,379 +86,75 @@ function WelcomeScreen({ onStart, personagemExistente }) {
           </div>
           <div className="px-font" style={{ fontSize:"6px", color:"#3060b8", marginTop:"10px", letterSpacing:".2em" }}>FIAP · QUEST TRACKER</div>
         </div>
-        <div style={{ ...ffBox("#3060b8"), padding:"28px 40px", minWidth:"280px" }}>
-          {opcoes.map((op, i) => (
-            <div key={i} onClick={() => { setCursor(i); if(personagemExistente && i===0) onStart(personagemExistente); else setFase("nome"); }}
-              style={{ padding:"12px 4px", color: cursor===i ? "#f0c030" : "#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor:"pointer", textShadow: cursor===i ? "0 0 12px rgba(200,160,0,.6)" : "none", letterSpacing:".06em", transition:"color .15s" }}>
-              {cursor===i ? op : op.replace("▶","  ")}
-            </div>
-          ))}
-        </div>
-        <div className="px-blink px-font" style={{ marginTop:"28px", fontSize:"6px", color:"#1e3060", letterSpacing:".15em" }}>↑↓ MOVER · ENTER CONFIRMAR</div>
-      </div>
-    </div>
-  );
-
-  /* ── Passo: Nome ── */
-  if (fase === "nome") return (
-    <div style={{ position:"fixed", inset:0, background:"#06080f", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
-      <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, width:"100%", maxWidth:"440px", padding:"24px" }}>
-        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"20px", textAlign:"center" }}>PASSO 1 DE 3 · NOME DO HERÓI</div>
-        <div style={{ ...ffBox("#c8a000"), padding:"28px 28px" }}>
-          <div className="px-font" style={{ fontSize:"8px", color:"#f0c030", marginBottom:"16px" }}>✦ COMO DESEJA SER CHAMADO?</div>
+        <div style={{ background:"#0c1630", border:"3px solid #c8a000", boxShadow:"0 0 0 1px #06080f, 0 0 0 4px #c8a00044, inset 0 0 0 2px #c8a00044, 0 0 30px #c8a00022", padding:"28px 40px", minWidth:"280px", width:"100%" }}>
+          <div className="px-font" style={{ fontSize:"8px", color:"#f0c030", marginBottom:"16px", textAlign:"center" }}>✦ COMO DESEJA SER CHAMADO?</div>
           <input autoFocus className="px-input"
             style={{ marginBottom:"16px", fontSize:"22px", letterSpacing:".1em", textTransform:"uppercase", color:"#f0c030", borderColor:"#c8a000" }}
             placeholder="> SEU NOME..."
             maxLength={14}
             value={nome}
             onChange={e => setNome(e.target.value.toUpperCase())}
-            onKeyDown={e => e.key==="Enter" && nome.trim() && setFase("raca")}
+            onKeyDown={e => e.key === "Enter" && iniciar()}
           />
-          <div style={{ display:"flex", gap:"10px" }}>
-            <button onClick={() => nome.trim() && setFase("raca")} disabled={!nome.trim()}
-              style={{ flex:1, padding:"12px", background:"#201400", border:"3px solid #c8a000", color: nome.trim()?"#f0c030":"#4a3000", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: nome.trim()?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000", transition:"all .15s" }}>
-              PRÓXIMO ▶
-            </button>
-            <button onClick={() => setFase("title")}
-              style={{ padding:"12px 16px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
-              ◀
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  /* ── Passo: Raça ── */
-  if (fase === "raca") return (
-    <div style={{ position:"fixed", inset:0, background:"#06080f", overflowY:"auto", zIndex:1000 }}>
-      <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, maxWidth:"860px", margin:"0 auto", padding:"24px 16px" }}>
-        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"8px", textAlign:"center" }}>PASSO 2 DE 3 · ESCOLHA SUA RAÇA</div>
-        <div className="px-font" style={{ fontSize:"10px", color:"#f0c030", textAlign:"center", marginBottom:"20px", textShadow:"0 0 12px rgba(200,160,0,.5)" }}>{nome}</div>
-
-        {/* Painel de preview */}
-        {(racaHover || racaSel) && (() => { const r = RACAS.find(x=>x.id===(racaHover||raca)); return r ? (
-          <div style={{ ...ffBox(FRACAO_COR[r.fracao]||"#3060b8"), padding:"14px 18px", marginBottom:"16px", display:"flex", gap:"16px", alignItems:"center" }}>
-            <div style={{ fontSize:"44px", flexShrink:0 }}>{r.icone}</div>
-            <div style={{ flex:1 }}>
-              <div className="px-font" style={{ fontSize:"8px", color: FRACAO_COR[r.fracao]||"#80b4ff", marginBottom:"4px" }}>{r.nome} <span style={{ fontSize:"6px", color:FRACAO_COR[r.fracao]+"88" }}>· {r.fracao}</span></div>
-              <div className="px-body" style={{ fontSize:"16px", color:"#6898c8", marginBottom:"4px" }}>{r.desc}</div>
-              <div className="px-font" style={{ fontSize:"6px", color:r.cor }}>{r.bonus}</div>
-            </div>
-          </div>
-        ) : null; })()}
-
-        {/* Grade de raças por facção */}
-        {["Aliança","Horda","Neutro"].map(fracao => {
-          const lista = RACAS.filter(r => r.fracao === fracao);
-          if (!lista.length) return null;
-          return (
-            <div key={fracao} style={{ marginBottom:"16px" }}>
-              <div className="px-font" style={{ fontSize:"6px", color:FRACAO_COR[fracao], marginBottom:"8px", letterSpacing:".15em" }}>
-                {fracao === "Aliança" ? "⚔️" : fracao === "Horda" ? "💀" : "⚖️"} {fracao.toUpperCase()}
-              </div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))", gap:"8px" }}>
-                {lista.map(r => (
-                  <div key={r.id}
-                    onClick={() => setRaca(r.id)}
-                    onMouseEnter={() => setRacaHover(r.id)}
-                    onMouseLeave={() => setRacaHover(null)}
-                    style={{
-                      padding:"12px 8px", textAlign:"center", cursor:"pointer",
-                      border:`2px solid ${raca===r.id ? r.cor : "#1e3060"}`,
-                      background: raca===r.id ? r.cor+"18" : "#0c1630",
-                      boxShadow: raca===r.id ? `0 0 10px ${r.cor}44` : "none",
-                      transition:"all .15s",
-                    }}>
-                    <div style={{ fontSize:"28px", marginBottom:"4px" }}>{r.icone}</div>
-                    <div className="px-font" style={{ fontSize:"5px", color: raca===r.id ? r.cor : "#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{r.nome}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-
-        <div style={{ display:"flex", gap:"10px", marginTop:"8px" }}>
-          <button onClick={() => raca && setFase("classe")} disabled={!raca}
-            style={{ flex:1, padding:"14px", background: raca?"#201400":"#0c1428", border:`3px solid ${raca?"#c8a000":"#1e3060"}`, color: raca?"#f0c030":"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: raca?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000" }}>
-            PRÓXIMO ▶
-          </button>
-          <button onClick={() => setFase("nome")}
-            style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
-            ◀
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  /* ── Passo: Classe ── */
-  if (fase === "classe") return (
-    <div style={{ position:"fixed", inset:0, background:"#06080f", overflowY:"auto", zIndex:1000 }}>
-      <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, maxWidth:"860px", margin:"0 auto", padding:"24px 16px" }}>
-        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"8px", textAlign:"center" }}>PASSO 3 DE 3 · ESCOLHA SUA CLASSE</div>
-        <div className="px-font" style={{ fontSize:"10px", color:"#f0c030", textAlign:"center", marginBottom:"4px" }}>{nome}</div>
-        <div className="px-font" style={{ fontSize:"6px", color: FRACAO_COR[racaSel?.fracao]||"#3060b8", textAlign:"center", marginBottom:"20px" }}>{racaSel?.icone} {racaSel?.nome}</div>
-
-        {/* preview de classe */}
-        {(classeHover || classeSel) && (() => { const c = CLASSES.find(x=>x.id===(classeHover||classe)); return c ? (
-          <div style={{ ...ffBox(c.cor), padding:"14px 18px", marginBottom:"16px", display:"flex", gap:"16px", alignItems:"center" }}>
-            <div style={{ fontSize:"44px", flexShrink:0 }}>{c.icone}</div>
-            <div style={{ flex:1 }}>
-              <div className="px-font" style={{ fontSize:"8px", color:c.cor, marginBottom:"4px" }}>{c.nome}</div>
-              <div className="px-body" style={{ fontSize:"16px", color:"#6898c8", marginBottom:"4px" }}>{c.desc}</div>
-              <div className="px-font" style={{ fontSize:"6px", color:c.cor+"bb" }}>Atributo Principal: {c.atributo}</div>
-            </div>
-          </div>
-        ) : null; })()}
-
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))", gap:"8px", marginBottom:"16px" }}>
-          {CLASSES.map(c => (
-            <div key={c.id}
-              onClick={() => setClasse(c.id)}
-              onMouseEnter={() => setClasseHover(c.id)}
-              onMouseLeave={() => setClasseHover(null)}
-              style={{
-                padding:"14px 8px", textAlign:"center", cursor:"pointer",
-                border:`2px solid ${classe===c.id ? c.cor : "#1e3060"}`,
-                background: classe===c.id ? c.cor+"18" : "#0c1630",
-                boxShadow: classe===c.id ? `0 0 10px ${c.cor}44` : "none",
-                transition:"all .15s",
-              }}>
-              <div style={{ fontSize:"26px", marginBottom:"4px" }}>{c.icone}</div>
-              <div className="px-font" style={{ fontSize:"5px", color: classe===c.id ? c.cor : "#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{c.nome}</div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display:"flex", gap:"10px" }}>
-          <button onClick={() => classe && setFase("avatar")} disabled={!classe}
-            style={{ flex:1, padding:"14px", background: classe?"#201400":"#0c1428", border:`3px solid ${classe?"#c8a000":"#1e3060"}`, color: classe?"#f0c030":"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: classe?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000" }}>
-            PRÓXIMO ▶
-          </button>
-          <button onClick={() => setFase("raca")}
-            style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
-            ◀
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  /* ── Passo: Avatar ── */
-  if (fase === "avatar") return (
-    <div style={{ position:"fixed", inset:0, background:"#06080f", overflowY:"auto", zIndex:1000 }}>
-      <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, maxWidth:"620px", margin:"0 auto", padding:"24px 16px" }}>
-        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"8px", textAlign:"center" }}>PASSO 4 DE 4 · CRIE SEU AVATAR</div>
-        <div style={{ display:"flex", justifyContent:"center", marginBottom:"20px", gap:"20px", alignItems:"center" }}>
-          <AvatarDisplay avatar={avatar} size={90} />
-          <div>
-            <div className="px-font" style={{ fontSize:"10px", color:"#f0c030" }}>{nome}</div>
-            <div className="px-font" style={{ fontSize:"6px", color: FRACAO_COR[racaSel?.fracao]||"#3060b8", marginTop:"6px" }}>{racaSel?.icone} {racaSel?.nome}</div>
-            <div className="px-font" style={{ fontSize:"6px", color:classeSel?.cor, marginTop:"4px" }}>{classeSel?.icone} {classeSel?.nome}</div>
-          </div>
-        </div>
-        <div style={{ background:"#0c1630", border:"3px solid #3060b8", padding:"20px", marginBottom:"16px" }}>
-          <AvatarCreator avatar={avatar} onChange={setAvatar} />
-        </div>
-        <div style={{ display:"flex", gap:"10px" }}>
-          <button onClick={() => setFase("confirmar")}
-            style={{ flex:1, padding:"14px", background:"#201400", border:"3px solid #c8a000", color:"#f0c030", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer", boxShadow:"3px 3px 0 #4a3000" }}>
-            PRÓXIMO ▶
-          </button>
-          <button onClick={() => setFase("classe")}
-            style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
-            ◀
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  /* ── Confirmação ── */
-  if (fase === "confirmar") return (
-    <div style={{ position:"fixed", inset:0, background:"#06080f", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
-      <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, width:"100%", maxWidth:"480px", padding:"24px" }}>
-        <div style={{ ...ffBox("#c8a000"), padding:"28px 28px" }}>
-          <div className="px-font" style={{ fontSize:"9px", color:"#f0c030", textAlign:"center", marginBottom:"24px", textShadow:"0 0 12px rgba(200,160,0,.5)" }}>
-            ✦ SEU PERSONAGEM ✦
-          </div>
-          <div style={{ display:"flex", gap:"20px", alignItems:"center", marginBottom:"20px" }}>
-            <AvatarDisplay avatar={avatar} size={80} />
-            <div>
-              <div className="px-font" style={{ fontSize:"12px", color:"#f0c030", marginBottom:"6px" }}>{nome}</div>
-              <div className="px-font" style={{ fontSize:"7px", color:classeSel?.cor, marginBottom:"4px" }}>{classeSel?.icone} {classeSel?.nome}</div>
-              <div className="px-font" style={{ fontSize:"6px", color: FRACAO_COR[racaSel?.fracao]||"#80b4ff" }}>{racaSel?.icone} {racaSel?.nome} · {racaSel?.fracao}</div>
-            </div>
-          </div>
-
-          <div style={{ background:"#060814", border:"2px solid #1e3060", padding:"12px", marginBottom:"20px" }}>
-            <div className="px-body" style={{ fontSize:"16px", color:"#6898c8", marginBottom:"6px" }}>{classeSel?.desc}</div>
-            <div className="px-font" style={{ fontSize:"6px", color:racaSel?.cor }}>{racaSel?.bonus}</div>
-          </div>
-
-          <button onClick={() => onStart({ nome, racaId: raca, classeId: classe, avatar })}
-            style={{ width:"100%", padding:"16px", background:"linear-gradient(135deg,#201400,#3a2800)", border:"3px solid #c8a000", color:"#f0c030", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor:"pointer", boxShadow:"0 0 20px rgba(200,160,0,.3), 3px 3px 0 #4a3000", letterSpacing:".08em" }}>
+          <button
+            onClick={iniciar}
+            disabled={!nome.trim()}
+            style={{ width:"100%", padding:"16px", background:"linear-gradient(135deg,#201400,#3a2800)", border:"3px solid #c8a000", color: nome.trim()?"#f0c030":"#4a3000", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor: nome.trim()?"pointer":"not-allowed", boxShadow:"0 0 20px rgba(200,160,0,.3), 3px 3px 0 #4a3000", letterSpacing:".08em" }}>
             ⚔ COMEÇAR AVENTURA
           </button>
-          <button onClick={() => setFase("avatar")}
-            style={{ width:"100%", marginTop:"8px", padding:"10px", background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"7px", cursor:"pointer" }}>
-            ◀ VOLTAR
-          </button>
         </div>
+        <div className="px-blink px-font" style={{ marginTop:"28px", fontSize:"6px", color:"#1e3060", letterSpacing:".15em" }}>🧝 ELFO DA NOITE · 🌿 DRUIDA</div>
       </div>
     </div>
   );
 
-  return null;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PERSONAGEM MODAL — edit character anytime
+   PERSONAGEM MODAL — nome + foto apenas
 ═══════════════════════════════════════════════════════════ */
 function PersonagemModal({ personagem, onSave, onClose }) {
-  const [nome,     setNome]     = useState(personagem?.nome || "");
-  const [racaId,   setRacaId]   = useState(personagem?.racaId || null);
-  const [classeId, setClasseId] = useState(personagem?.classeId || null);
-  const [avatar,   setAvatar]   = useState(personagem?.avatar || {});
-  const [aba,      setAba]      = useState("avatar");
+  const [nome,   setNome]   = useState(personagem?.nome || "");
+  const [fotoUrl, setFotoUrl] = useState(personagem?.fotoUrl || null);
+  const fileRef = useRef(null);
 
-  const racaDados   = RACAS.find(r => r.id === racaId);
-  const classeDados = CLASSES.find(c => c.id === classeId);
-
-  const ABAS = [
-    { id:"avatar",     icon:"👤", label:"AVATAR"    },
-    { id:"identidade", icon:"✦",  label:"NOME"      },
-    { id:"raca",       icon:"⚔️", label:"RAÇA"      },
-    { id:"classe",     icon:"🔮", label:"CLASSE"    },
-  ];
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setFotoUrl(ev.target.result);
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div style={{ position:"fixed", inset:0, background:"#06080fee", zIndex:800, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px", backdropFilter:"blur(3px)" }}>
-      <div style={{ width:"100%", maxWidth:"660px", maxHeight:"92vh", overflowY:"auto", background:"#0c1630", border:"3px solid #c8a000", boxShadow:"0 0 0 1px #06080f, 0 0 40px rgba(200,160,0,.25)" }}>
-        {/* Header */}
-        <div style={{ padding:"14px 18px", borderBottom:"2px solid #1e3060", display:"flex", alignItems:"center", gap:"14px", position:"sticky", top:0, background:"#0c1630", zIndex:1 }}>
-          <AvatarDisplay avatar={avatar} size={52} />
-          <div style={{ flex:1 }}>
-            <div className="px-font" style={{ fontSize:"9px", color:"#f0c030" }}>{nome || "PERSONAGEM"}</div>
-            <div className="px-font" style={{ fontSize:"5px", color:"#2a4880", marginTop:"4px" }}>
-              {classeDados ? `${classeDados.icone} ${classeDados.nome}` : ""}{classeDados && racaDados ? "  ·  " : ""}{racaDados ? `${racaDados.icone} ${racaDados.nome}` : ""}
-            </div>
-          </div>
-          <button onClick={onClose} style={{ background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", padding:"8px 12px", cursor:"pointer" }}>✕</button>
+      <div style={{ width:"100%", maxWidth:"400px", background:"#0c1630", border:"3px solid #c8a000", boxShadow:"0 0 0 1px #06080f, 0 0 40px rgba(200,160,0,.25)" }}>
+        <div style={{ padding:"14px 18px", borderBottom:"2px solid #1e3060", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <div className="px-font" style={{ fontSize:"8px", color:"#f0c030" }}>✦ MEU PERSONAGEM</div>
+          <button onClick={onClose} style={{ background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", padding:"6px 10px", cursor:"pointer" }}>✕</button>
         </div>
-
-        {/* Tabs */}
-        <div style={{ display:"flex", borderBottom:"2px solid #1e3060" }}>
-          {ABAS.map(a => (
-            <button key={a.id} onClick={() => setAba(a.id)} style={{
-              flex:1, padding:"10px 4px", background:"none", border:"none",
-              borderBottom: aba===a.id ? "3px solid #c8a000" : "3px solid transparent",
-              marginBottom:"-2px",
-              color: aba===a.id ? "#f0c030" : "#2a4880",
-              fontFamily:"'Press Start 2P',monospace", fontSize:"6px",
-              cursor:"pointer", transition:"all .15s",
-            }}>{a.icon} {a.label}</button>
-          ))}
-        </div>
-
-        {/* Content */}
         <div style={{ padding:"20px" }}>
-          {aba === "avatar" && (
-            <div>
-              <div style={{ display:"flex", justifyContent:"center", marginBottom:"20px" }}>
-                <AvatarDisplay avatar={avatar} size={96} />
-              </div>
-              <AvatarCreator avatar={avatar} onChange={setAvatar} />
-            </div>
-          )}
-
-          {aba === "identidade" && (
-            <div>
-              <div className="px-font" style={{ fontSize:"8px", color:"#f0c030", marginBottom:"12px" }}>✦ NOME DO HERÓI</div>
-              <input className="px-input" maxLength={14}
-                value={nome} onChange={e => setNome(e.target.value.toUpperCase())}
-                placeholder="> SEU NOME..."
-                style={{ fontSize:"20px", letterSpacing:".1em", textTransform:"uppercase", color:"#f0c030", borderColor:"#c8a000", marginBottom:"8px" }}
-              />
-              <div className="px-font" style={{ fontSize:"6px", color:"#1e3060" }}>{nome.length}/14 CARACTERES</div>
-            </div>
-          )}
-
-          {aba === "raca" && (
-            <div>
-              {racaDados && (
-                <div style={{ display:"flex", gap:"12px", alignItems:"center", padding:"12px", background:"#06080f", border:`2px solid ${FRACAO_COR[racaDados.fracao]||"#3060b8"}`, marginBottom:"16px" }}>
-                  <div style={{ fontSize:"32px" }}>{racaDados.icone}</div>
-                  <div>
-                    <div className="px-font" style={{ fontSize:"8px", color:FRACAO_COR[racaDados.fracao]||"#80b4ff" }}>{racaDados.nome}</div>
-                    <div className="px-font" style={{ fontSize:"6px", color:racaDados.cor, marginTop:"4px" }}>{racaDados.bonus}</div>
-                  </div>
-                </div>
-              )}
-              {["Aliança","Horda","Neutro"].map(fracao => (
-                <div key={fracao} style={{ marginBottom:"12px" }}>
-                  <div className="px-font" style={{ fontSize:"6px", color:FRACAO_COR[fracao], marginBottom:"6px", letterSpacing:".1em" }}>
-                    {fracao === "Aliança" ? "⚔️" : fracao === "Horda" ? "💀" : "⚖️"} {fracao.toUpperCase()}
-                  </div>
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))", gap:"6px" }}>
-                    {RACAS.filter(r => r.fracao === fracao).map(r => (
-                      <div key={r.id} onClick={() => setRacaId(r.id)} style={{
-                        padding:"10px 6px", textAlign:"center", cursor:"pointer",
-                        border:`2px solid ${racaId===r.id ? r.cor : "#1e3060"}`,
-                        background:racaId===r.id ? r.cor+"18" : "#06080f",
-                        transition:"all .15s",
-                      }}>
-                        <div style={{ fontSize:"22px", marginBottom:"4px" }}>{r.icone}</div>
-                        <div className="px-font" style={{ fontSize:"5px", color:racaId===r.id?r.cor:"#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{r.nome}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {aba === "classe" && (
-            <div>
-              {classeDados && (
-                <div style={{ display:"flex", gap:"12px", alignItems:"center", padding:"12px", background:"#06080f", border:`2px solid ${classeDados.cor}`, marginBottom:"16px" }}>
-                  <div style={{ fontSize:"32px" }}>{classeDados.icone}</div>
-                  <div>
-                    <div className="px-font" style={{ fontSize:"8px", color:classeDados.cor }}>{classeDados.nome}</div>
-                    <div className="px-font" style={{ fontSize:"6px", color:classeDados.cor+"99", marginTop:"4px" }}>Atributo: {classeDados.atributo}</div>
-                  </div>
-                </div>
-              )}
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))", gap:"6px" }}>
-                {CLASSES.map(c => (
-                  <div key={c.id} onClick={() => setClasseId(c.id)} style={{
-                    padding:"12px 6px", textAlign:"center", cursor:"pointer",
-                    border:`2px solid ${classeId===c.id ? c.cor : "#1e3060"}`,
-                    background:classeId===c.id ? c.cor+"18" : "#06080f",
-                    transition:"all .15s",
-                  }}>
-                    <div style={{ fontSize:"22px", marginBottom:"4px" }}>{c.icone}</div>
-                    <div className="px-font" style={{ fontSize:"5px", color:classeId===c.id?c.cor:"#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{c.nome}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", marginBottom:"20px", gap:"12px" }}>
+            <CharacterPortrait fotoUrl={fotoUrl} size={120} />
+            <button onClick={() => fileRef.current?.click()}
+              style={{ padding:"8px 16px", background:"#0c1428", border:"2px solid #3060b8", color:"#4898f0", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", cursor:"pointer" }}>
+              📷 TROCAR FOTO
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display:"none" }} onChange={handleFile} />
+          </div>
+          <div className="px-font" style={{ fontSize:"6px", color:"#3060b8", marginBottom:"8px", letterSpacing:".15em" }}>NOME DO HERÓI</div>
+          <input className="px-input" maxLength={14}
+            value={nome} onChange={e => setNome(e.target.value.toUpperCase())}
+            placeholder="> SEU NOME..."
+            style={{ fontSize:"20px", letterSpacing:".1em", textTransform:"uppercase", color:"#f0c030", borderColor:"#c8a000", marginBottom:"8px" }}
+          />
+          <div className="px-font" style={{ fontSize:"6px", color:"#1e3060", marginBottom:"20px" }}>🧝 ELFO DA NOITE · 🌿 DRUIDA</div>
         </div>
-
-        {/* Footer */}
-        <div style={{ padding:"14px 18px", borderTop:"2px solid #1e3060", display:"flex", gap:"10px", position:"sticky", bottom:0, background:"#0c1630" }}>
-          <button onClick={() => { if(nome.trim()) onSave({ ...personagem, nome:nome.trim(), racaId, classeId, avatar }); }}
+        <div style={{ padding:"14px 18px", borderTop:"2px solid #1e3060", display:"flex", gap:"10px" }}>
+          <button onClick={() => nome.trim() && onSave({ ...personagem, nome: nome.trim(), fotoUrl })}
             disabled={!nome.trim()}
             style={{ flex:1, padding:"14px", background:"#201400", border:"3px solid #c8a000", color:nome.trim()?"#f0c030":"#4a3000", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:nome.trim()?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000" }}>
-            ✦ SALVAR PERSONAGEM
+            ✦ SALVAR
           </button>
           <button onClick={onClose} style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
             CANCELAR
@@ -538,66 +199,6 @@ const CLASSES = [
   { id:"evocador",       nome:"Evocador",             icone:"🐉", cor:"#40e0a0", desc:"Meio-dragão descendente dos Dracthyr. Controla magia dracônica.", atributo:"Inteligência Dracônica" },
 ];
 
-/* ═══════════════════════════════════════════════════════════
-   AVATAR CUSTOMIZATION
-═══════════════════════════════════════════════════════════ */
-const SKIN_TONES = [
-  { id:"s1", label:"Muito Claro",  color:"#fde8d0" },
-  { id:"s2", label:"Claro",        color:"#f5c9a0" },
-  { id:"s3", label:"Médio",        color:"#e8a878" },
-  { id:"s4", label:"Médio Escuro", color:"#c87040" },
-  { id:"s5", label:"Escuro",       color:"#8b5020" },
-  { id:"s6", label:"Muito Escuro", color:"#4a2810" },
-];
-const HAIR_STYLES = [
-  { id:"curto",  label:"Curto"   },
-  { id:"longo",  label:"Longo"   },
-  { id:"spike",  label:"Espetado"},
-  { id:"coque",  label:"Coque"   },
-  { id:"careca", label:"Careca"  },
-  { id:"franja", label:"Franja"  },
-  { id:"afro",   label:"Afro"    },
-  { id:"tranca", label:"Tranças" },
-];
-const HAIR_COLORS = [
-  { id:"preto",    label:"Preto",    color:"#120c08" },
-  { id:"castanho", label:"Castanho", color:"#6b3a1f" },
-  { id:"loiro",    label:"Loiro",    color:"#d4a820" },
-  { id:"ruivo",    label:"Ruivo",    color:"#b83810" },
-  { id:"cinza",    label:"Grisalho", color:"#8090a0" },
-  { id:"branco",   label:"Branco",   color:"#e8e8f0" },
-  { id:"azul",     label:"Azul",     color:"#2860c8" },
-  { id:"roxo",     label:"Roxo",     color:"#8030c0" },
-  { id:"verde",    label:"Verde",    color:"#20a040" },
-  { id:"rosa",     label:"Rosa",     color:"#e05080" },
-];
-const EYE_COLORS = [
-  { id:"castanho", label:"Castanho", color:"#6b3a1f" },
-  { id:"verde",    label:"Verde",    color:"#20a040" },
-  { id:"azul",     label:"Azul",     color:"#2860c8" },
-  { id:"cinza",    label:"Cinza",    color:"#8090a0" },
-  { id:"preto",    label:"Preto",    color:"#1a1008" },
-  { id:"vermelho", label:"Vermelho", color:"#c02020" },
-  { id:"roxo",     label:"Roxo",     color:"#8030c0" },
-  { id:"dourado",  label:"Dourado",  color:"#c8a000" },
-];
-const MOUTH_STYLES = [
-  { id:"sorriso",  label:"Sorriso",       emoji:"🙂" },
-  { id:"grin",     label:"Sorriso Largo", emoji:"😁" },
-  { id:"neutro",   label:"Neutro",        emoji:"😐" },
-  { id:"serio",    label:"Sério",         emoji:"😤" },
-  { id:"surpreso", label:"Surpreso",      emoji:"😮" },
-];
-const ACCESSORIES = [
-  { id:"nenhum",   label:"Nenhum",        emoji:"" },
-  { id:"oculos",   label:"Óculos",        emoji:"👓" },
-  { id:"sol",      label:"Óculos de Sol", emoji:"🕶️" },
-  { id:"chapeu",   label:"Chapéu",        emoji:"🎩" },
-  { id:"coroa",    label:"Coroa",         emoji:"👑" },
-  { id:"capuz",    label:"Capuz",         emoji:"🧙" },
-  { id:"tiara",    label:"Tiara Arcana",  emoji:"✨" },
-  { id:"capacete", label:"Capacete",      emoji:"⛑️" },
-];
 
 /* DAILY QUEST DEFAULTS */
 const DAILY_QUEST_DEFAULTS = [
@@ -628,243 +229,34 @@ function PixelBar({ value, max = 100, color = "#39ff14", segments = 24 }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   AVATAR DISPLAY — CSS pixel-art character portrait
+   CHARACTER PORTRAIT — real photo display
 ═══════════════════════════════════════════════════════════ */
-function AvatarDisplay({ avatar = {}, size = 64 }) {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const cv = canvasRef.current;
-    if (!cv) return;
-    const ctx = cv.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, 16, 16);
-
-    /* ── Palette resolution ── */
-    const skinD = SKIN_TONES.find(s => s.id === avatar.skin)         || SKIN_TONES[1];
-    const hairS = HAIR_STYLES.find(h => h.id === avatar.hairStyle)   || HAIR_STYLES[0];
-    const hairC = HAIR_COLORS.find(c => c.id === avatar.hairColor)   || HAIR_COLORS[0];
-    const eyeC  = EYE_COLORS.find(e => e.id === avatar.eyeColor)     || EYE_COLORS[0];
-    const mthS  = MOUTH_STYLES.find(m => m.id === avatar.mouthStyle) || MOUTH_STYLES[0];
-
-    /* Color math */
-    const toRgb = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
-    const adj   = (h, d) => { const [r,g,b]=toRgb(h); return `rgb(${Math.max(0,Math.min(255,r+d))},${Math.max(0,Math.min(255,g+d))},${Math.max(0,Math.min(255,b+d))})` };
-
-    const SK  = skinD.color;
-    const SKD = adj(SK, -40);   // skin shadow
-    const HR  = hairC.color;
-    const HRD = adj(HR, -55);   // hair shadow
-    const HRL = adj(HR,  35);   // hair highlight
-    const EY  = eyeC.color;
-    const EYD = adj(EY, -65);   // pupil
-    const OL  = '#120a04';      // dark outline
-    const EW  = '#f2f2ff';      // eye white
-    const ML  = '#c84040';      // mouth
-    const MD  = '#872020';      // mouth inner dark
-    const GT  = '#f0f0f0';      // teeth
-
-    /* Drawing helpers */
-    const px = (x, y, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, 1, 1); };
-    const dg  = (rows, x0, y0, cm) =>
-      rows.forEach((row, dy) =>
-        [...row].forEach((ch, dx) => { const c = cm[ch]; if (c) px(x0+dx, y0+dy, c); })
-      );
-
-    const hm = { H: HR, A: HRD, L: HRL, O: OL };
-
-    /* ── LAYER 1: Hair back (behind face) ─────────────────── */
-    const HAIR_BACK = {
-      curto: [
-        '..OOOOOOOOOOO...',
-        '..OHHHHHHHHHAO..',
-        '..OHHHHHHHHHAO..',
-        '..AHHHHHHHHHAA..',
-      ],
-      longo: [
-        '..OOOOOOOOOOO...',
-        '..OHHHHHHHHHAO..',
-        '..OHHHHHHHHHAO..',
-        '..AHHHHHHHHHAA..',
-        'OAH..........HAO',
-        'OAH..........HAO',
-        'OAH..........HAO',
-        'OAH..........HAO',
-        '.OAHHHHHHHHHAAO.',
-      ],
-      spike: [
-        '.OOHOO.OHOO.O...',
-        '..OHHHHHHHHHAO..',
-        '..OHHHHHHHHHAO..',
-        '..AHHHHHHHHHAA..',
-      ],
-      coque: [
-        '....OOOHHOO.....',
-        '...OHHHHHHHAO...',
-        '..OHHHHHHHHHAO..',
-        '..AHHHHHHHHHAA..',
-      ],
-      careca: [],
-      franja: [
-        '..OOOOOOOOOOO...',
-        '..OHHHHHHHHHAO..',
-        '..OHHHHHHHHHAO..',
-        '..AHHHHHHHHHAA..',
-      ],
-      afro: [
-        '.OOOOOOOOOOOOOO.',
-        '.OHHHHHHHHHHHO..',
-        '.OHHHHHHHHHHHO..',
-        '.OHHHHHHHHHHHO..',
-        '.OHHHHHHHHHHHO..',
-        '.OAHHHHHHHHHAAO.',
-      ],
-      tranca: [
-        '..OOOOOOOOOOO...',
-        '..OHHHHHHHHHAO..',
-        '..OHHHHHHHHHAO..',
-        '..AHHHHHHHHHAA..',
-        'OAH..........HAO',
-        'OAH..........HAO',
-      ],
-    };
-    const hb = HAIR_BACK[hairS.id] || HAIR_BACK.curto;
-    hb.forEach((row, i) => dg([row], 0, i, hm));
-
-    /* ── LAYER 2: Face base ────────────────────────────────── */
-    dg([
-      '....OOOOOOOO....',  // y=3  top outline
-      '...OSSSSSSSSO...',  // y=4
-      '..OSSSSSSSSSSO..',  // y=5
-      '..OSSSSSSSSSSO..',  // y=6  eyes
-      '..OSSSSSSSSSSO..',  // y=7  eyes
-      '..OSSSSSSSSSSO..',  // y=8  cheeks
-      '..OSSSSSSSSSDO..',  // y=9  nose/upper mouth
-      '..OSSSSSSSSSDO..',  // y=10 mouth
-      '..OSSSSSSSSDDO..',  // y=11 mouth lower
-      '...OSSSSSSDOO...',  // y=12 chin
-      '....OOOOOOOO....',  // y=13 bottom outline
-    ], 0, 3, { O: OL, S: SK, D: SKD });
-
-    /* ── LAYER 3: Eyes ─────────────────────────────────────── */
-    const eyeVariant = mthS.id === 'serio'
-      ? { l: ['OOO','OEP'], r: ['OOO','PEO'] }
-      : mthS.id === 'surpreso'
-      ? { l: ['OWW','OEW'], r: ['WWO','WEO'] }  // wide-open
-      : { l: ['OWW','OEP'], r: ['WWO','PEO'] };  // normal
-
-    const em = { O: OL, W: EW, E: EY, P: EYD };
-    dg(eyeVariant.l, 4, 6, em);
-    dg(eyeVariant.r, 9, 6, em);
-
-    /* ── LAYER 4: Cheeks ───────────────────────────────────── */
-    ctx.globalAlpha = 0.40;
-    ctx.fillStyle = '#e08070';
-    ctx.fillRect(3, 8, 2, 1);
-    ctx.fillRect(11, 8, 2, 1);
-    ctx.globalAlpha = 1;
-
-    /* ── LAYER 5: Nose ─────────────────────────────────────── */
-    px(7, 9, SKD);
-
-    /* ── LAYER 6: Mouth ────────────────────────────────────── */
-    const mouths = {
-      sorriso:  () => dg(['.MMMM.','.NNNN.'], 5, 10, { M:ML, N:MD }),
-      grin:     () => dg(['MMMMMM','MGGGGM'], 5, 9,  { M:ML, G:GT }),
-      neutro:   () => dg(['OOOOOO'], 5, 10, { O:OL }),
-      serio:    () => { dg(['OOOOOO'], 5, 11, { O:OL }); },
-      surpreso: () => dg(['.OO.','.MM.','.MM.','.OO.'], 6, 9, { O:OL, M:'#aaaaaa' }),
-    };
-    (mouths[mthS.id] || mouths.sorriso)();
-
-    /* ── LAYER 7: Hair front / fringe (over face top) ──────── */
-    const HAIR_FRONT = {
-      franja: ['..OHHHHHHHHHO...', '..OHHHHHHHHHO...'],
-      afro:   ['.OHHHHHHHHHHHO..'],
-      tranca: ['....HHHHHHHH....'],
-    };
-    const hf = HAIR_FRONT[hairS.id];
-    if (hf) hf.forEach((row, i) => dg([row], 0, 3+i, hm));
-
-    /* ── LAYER 8: Accessory emoji (drawn as text) ──────────── */
-    const accD = ACCESSORIES.find(a => a.id === avatar.accessory);
-    if (accD?.emoji) {
-      ctx.font = 'bold 5px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(accD.emoji, 8, 0);
-    }
-  }, [avatar]);
-
+function CharacterPortrait({ fotoUrl, size = 64 }) {
   return (
-    <canvas
-      ref={canvasRef}
-      width={16}
-      height={16}
-      style={{ width: size, height: size, imageRendering: 'pixelated', display: 'block', flexShrink: 0 }}
-    />
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   AVATAR CREATOR — palette pickers
-═══════════════════════════════════════════════════════════ */
-function AvatarCreator({ avatar, onChange }) {
-  const av  = avatar || {};
-  const set = (field, val) => onChange({ ...av, [field]: val });
-
-  const Dot = ({ active, color, label, onClick }) => (
-    <button onClick={onClick} title={label} style={{
-      width:"28px", height:"28px", borderRadius:"50%",
-      background:color, flexShrink:0,
-      border:`3px solid ${active?"#f0c030":"#1e3060"}`,
-      cursor:"pointer",
-      boxShadow:active?"0 0 8px #f0c03088":"none",
-      transition:"all .1s",
-    }} />
-  );
-  const Chip = ({ active, onClick, children }) => (
-    <button onClick={onClick} style={{
-      padding:"5px 9px",
-      border:`2px solid ${active?"#f0c030":"#1e3060"}`,
-      background:active?"#f0c03020":"#0c1630",
-      color:active?"#f0c030":"#3060b8",
-      fontFamily:"'Press Start 2P',monospace", fontSize:"5px",
-      cursor:"pointer", transition:"all .1s",
-      boxShadow:active?"0 0 6px #f0c03044":"none",
-    }}>{children}</button>
-  );
-  const Row = ({ label, children }) => (
-    <div style={{ marginBottom:"14px" }}>
-      <div className="px-font" style={{ fontSize:"6px", color:"#3060b8", letterSpacing:".15em", marginBottom:"8px" }}>{label}</div>
-      <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>{children}</div>
-    </div>
-  );
-
-  return (
-    <div>
-      <Row label="TOM DE PELE">
-        {SKIN_TONES.map(s => <Dot key={s.id} active={av.skin===s.id} color={s.color} label={s.label} onClick={()=>set("skin",s.id)} />)}
-      </Row>
-      <Row label="CABELO — ESTILO">
-        {HAIR_STYLES.map(h => <Chip key={h.id} active={av.hairStyle===h.id} onClick={()=>set("hairStyle",h.id)}>{h.label}</Chip>)}
-      </Row>
-      <Row label="CABELO — COR">
-        {HAIR_COLORS.map(c => <Dot key={c.id} active={av.hairColor===c.id} color={c.color} label={c.label} onClick={()=>set("hairColor",c.id)} />)}
-      </Row>
-      <Row label="COR DOS OLHOS">
-        {EYE_COLORS.map(e => <Dot key={e.id} active={av.eyeColor===e.id} color={e.color} label={e.label} onClick={()=>set("eyeColor",e.id)} />)}
-      </Row>
-      <Row label="EXPRESSÃO">
-        {MOUTH_STYLES.map(m => <Chip key={m.id} active={av.mouthStyle===m.id} onClick={()=>set("mouthStyle",m.id)}>{m.emoji} {m.label}</Chip>)}
-      </Row>
-      <Row label="ACESSÓRIO">
-        {ACCESSORIES.map(a => <Chip key={a.id} active={av.accessory===a.id} onClick={()=>set("accessory",a.id)}>{a.emoji ? a.emoji+" " : "— "}{a.label}</Chip>)}
-      </Row>
+    <div style={{
+      width: size, height: size,
+      border: "3px solid #c8a000",
+      boxShadow: "0 0 0 1px #06080f, 0 0 16px rgba(200,160,0,.4)",
+      overflow: "hidden",
+      flexShrink: 0,
+      background: "#0c1630",
+      position: "relative",
+    }}>
+      {fotoUrl ? (
+        <img src={fotoUrl} alt="personagem" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+      ) : (
+        <div style={{
+          width:"100%", height:"100%",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          fontSize: Math.round(size * 0.55) + "px",
+          background: "linear-gradient(135deg,#0a1428,#1a2848)",
+        }}>🧝</div>
+      )}
     </div>
   );
 }
+
+
 
 /* ═══════════════════════════════════════════════════════════
    GLOBAL STYLES — PIXEL 16-BIT ARCANE
@@ -1208,7 +600,7 @@ const PxBadge = ({ color, children }) => (
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD
 ═══════════════════════════════════════════════════════════ */
-function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados, classeDados, avatar }) {
+function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados, classeDados, fotoUrl }) {
   const now    = new Date();
   const wa     = new Date(now - 7*86400000);
   const moods  = Object.entries(diary).filter(([k])=>new Date(k)>=wa).map(([,e])=>e.mood).filter(Boolean);
@@ -1236,7 +628,7 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados,
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:"16px" }}>
           {/* Avatar + name */}
           <div style={{ display:"flex", gap:"16px", alignItems:"center", flex:1 }}>
-            <AvatarDisplay avatar={avatar} size={76} />
+            <CharacterPortrait fotoUrl={fotoUrl} size={76} />
             <div>
               <div className="px-font" style={{ fontSize:"7px", color:"#ffd70088", letterSpacing:".2em", marginBottom:"6px" }}>
                 ✦ SALÃO DO HERÓI · REINO ARCANO ✦
@@ -2945,6 +2337,118 @@ function CalendarioModule() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ÁLBUM DE MEMÓRIAS
+═══════════════════════════════════════════════════════════ */
+function AlbumModule({ memorias, setMemorias }) {
+  const [foto,    setFoto]    = useState(null);
+  const [legenda, setLegenda] = useState("");
+  const [preview, setPreview] = useState(null);
+  const fileRef = useRef(null);
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setFoto(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const salvar = () => {
+    if (!foto) return;
+    setMemorias(prev => [...prev, { id: uid(), fotoUrl: foto, legenda: legenda.trim(), data: new Date().toISOString() }]);
+    setFoto(null);
+    setLegenda("");
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const deletar = (id) => {
+    if (window.confirm("Remover esta memória?")) setMemorias(prev => prev.filter(m => m.id !== id));
+  };
+
+  const fmt = (iso) => { const d = new Date(iso); return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`; };
+
+  return (
+    <div>
+      <PxTitle icon="📸" color="#c8a000">ÁLBUM DE MEMÓRIAS</PxTitle>
+
+      {/* ── Form nova memória ── */}
+      <div className="px-panel-hero" style={{ marginBottom:"24px" }}>
+        <div className="px-font" style={{ fontSize:"7px", color:"#f0c030", marginBottom:"16px" }}>✦ NOVA MEMÓRIA</div>
+
+        {foto ? (
+          <div style={{ position:"relative", display:"inline-block", marginBottom:"16px" }}>
+            <img src={foto} alt="preview" style={{ maxWidth:"100%", maxHeight:"220px", objectFit:"contain", border:"3px solid #c8a000", display:"block" }} />
+            <button onClick={() => { setFoto(null); if(fileRef.current) fileRef.current.value=""; }}
+              style={{ position:"absolute", top:"6px", right:"6px", background:"#06080f", border:"2px solid #e04040", color:"#e04040", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"4px 6px", cursor:"pointer" }}>✕</button>
+          </div>
+        ) : (
+          <div onClick={() => fileRef.current?.click()}
+            style={{ border:"3px dashed #1e3060", padding:"32px", textAlign:"center", cursor:"pointer", background:"#06080f", marginBottom:"16px", transition:"border-color .15s" }}
+            onMouseEnter={e => e.currentTarget.style.borderColor="#c8a000"}
+            onMouseLeave={e => e.currentTarget.style.borderColor="#1e3060"}>
+            <div style={{ fontSize:"48px", marginBottom:"8px" }}>📷</div>
+            <div className="px-font" style={{ fontSize:"6px", color:"#2a4880" }}>CLIQUE PARA ESCOLHER UMA FOTO</div>
+          </div>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" style={{ display:"none" }} onChange={handleFile} />
+
+        <div className="px-font" style={{ fontSize:"6px", color:"#3060b8", letterSpacing:".15em", marginBottom:"8px" }}>LEGENDA</div>
+        <textarea
+          value={legenda} onChange={e => setLegenda(e.target.value)} maxLength={200} rows={3}
+          placeholder="Escreva uma legenda para esta memória..."
+          style={{ width:"100%", boxSizing:"border-box", background:"#06080f", border:"3px solid #1e3060", color:"#c8deff", fontFamily:"'VT323',monospace", fontSize:"18px", padding:"10px 12px", outline:"none", resize:"vertical", marginBottom:"4px" }}
+        />
+        <div className="px-font" style={{ fontSize:"5px", color:"#1e3060", marginBottom:"16px" }}>{legenda.length}/200</div>
+
+        <button onClick={salvar} disabled={!foto}
+          style={{ padding:"14px 24px", background: foto?"linear-gradient(135deg,#201400,#3a2800)":"#0c1428", border:`3px solid ${foto?"#c8a000":"#1e3060"}`, color: foto?"#f0c030":"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: foto?"pointer":"not-allowed", boxShadow: foto?"3px 3px 0 #4a3000":"none" }}>
+          ✦ GUARDAR MEMÓRIA
+        </button>
+      </div>
+
+      {/* ── Grade de memórias ── */}
+      {memorias.length === 0 ? (
+        <div className="px-panel" style={{ textAlign:"center", padding:"40px" }}>
+          <div style={{ fontSize:"56px", marginBottom:"12px", opacity:.4 }}>🗃️</div>
+          <div className="px-font" style={{ fontSize:"7px", color:"#2a4880" }}>NENHUMA MEMÓRIA AINDA</div>
+          <div className="px-body" style={{ fontSize:"16px", color:"#1e3060", marginTop:"8px" }}>Adicione sua primeira foto acima!</div>
+        </div>
+      ) : (
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))", gap:"16px" }}>
+          {[...memorias].reverse().map(m => (
+            <div key={m.id} style={{ background:"#0c1630", border:"3px solid #1e3060", boxShadow:"0 0 0 1px #06080f", overflow:"hidden" }}>
+              <div style={{ position:"relative", cursor:"pointer" }} onClick={() => setPreview(m)}>
+                <img src={m.fotoUrl} alt={m.legenda||"memória"} style={{ width:"100%", height:"180px", objectFit:"cover", display:"block" }} />
+                <button onClick={e => { e.stopPropagation(); deletar(m.id); }}
+                  style={{ position:"absolute", top:"6px", right:"6px", background:"#06080fee", border:"2px solid #e04040", color:"#e04040", fontFamily:"'Press Start 2P',monospace", fontSize:"5px", padding:"3px 5px", cursor:"pointer" }}>✕</button>
+              </div>
+              <div style={{ padding:"10px 12px" }}>
+                {m.legenda && <div className="px-body" style={{ fontSize:"16px", color:"#c8deff", marginBottom:"6px", lineHeight:1.4 }}>{m.legenda}</div>}
+                <div className="px-font" style={{ fontSize:"5px", color:"#2a4880" }}>📅 {fmt(m.data)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Lightbox ── */}
+      {preview && (
+        <div onClick={() => setPreview(null)}
+          style={{ position:"fixed", inset:0, background:"#06080fee", zIndex:900, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px", cursor:"pointer" }}>
+          <div style={{ maxWidth:"90vw", maxHeight:"90vh", textAlign:"center" }} onClick={e => e.stopPropagation()}>
+            <img src={preview.fotoUrl} alt={preview.legenda} style={{ maxWidth:"100%", maxHeight:"70vh", objectFit:"contain", border:"3px solid #c8a000", display:"block", margin:"0 auto" }} />
+            {preview.legenda && <div className="px-body" style={{ fontSize:"20px", color:"#c8deff", marginTop:"12px" }}>{preview.legenda}</div>}
+            <div className="px-font" style={{ fontSize:"5px", color:"#2a4880", marginTop:"6px" }}>📅 {fmt(preview.data)}</div>
+            <button onClick={() => setPreview(null)}
+              style={{ marginTop:"14px", background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"8px 14px", cursor:"pointer" }}>✕ FECHAR</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    MAIN APP
 ═══════════════════════════════════════════════════════════ */
 export default function App() {
@@ -2959,14 +2463,14 @@ export default function App() {
   const [apiKey,             setApiKey]             = useLS("meudiario_apikey",            "");
   const [dailyQuests,        setDailyQuests]        = useLS("mylog_daily_quests",          DAILY_QUEST_DEFAULTS);
   const [dailyCompletions,   setDailyCompletions]   = useLS("mylog_daily_completions",     {});
+  const [memorias,           setMemorias]           = useLS("mylog_memorias",               []);
   const [showPersonagemModal,setShowPersonagemModal] = useState(false);
 
-  // Primeira vez: mostrar criador de personagem
+  // Primeira vez: mostrar tela de nome
   if (!personagem || !personagem.nome) {
     return (
       <WelcomeScreen
-        personagemExistente={personagem}
-        onStart={(p) => setPersonagem(p || { nome:"HERÓI", racaId:null, classeId:null, avatar:{} })}
+        onStart={(p) => setPersonagem(p || { nome:"HERÓI", racaId:"elfo_noite", classeId:"druida", fotoUrl:null })}
       />
     );
   }
@@ -2974,7 +2478,7 @@ export default function App() {
   const nomeHeroi  = personagem.nome;
   const racaDados  = RACAS.find(r => r.id === personagem.racaId);
   const classeDados= CLASSES.find(c => c.id === personagem.classeId);
-  const avatar     = personagem.avatar || {};
+  const fotoUrl    = personagem.fotoUrl || null;
 
   const xp    = calcXP(tasks,diary,goals);
   const lv    = calcLevel(xp);
@@ -2993,6 +2497,7 @@ export default function App() {
     {id:"notes",      label:"📚 GRIMÓRIO"},
     {id:"skilltree",  label:"🌳 ÁRV. HAB."},
     {id:"ai",         label:"🔮 ORÁCULO"},
+    {id:"album",      label:"📸 ÁLBUM"},
   ];
 
   return (
@@ -3017,9 +2522,9 @@ export default function App() {
         position:"sticky", top:0, zIndex:100,
       }}>
         <div style={{ maxWidth:"980px", margin:"0 auto", display:"flex", alignItems:"center", gap:"16px", flexWrap:"wrap" }}>
-          {/* Avatar mini */}
-          <button onClick={() => setShowPersonagemModal(true)} style={{ background:"none", border:"2px solid #1e3060", padding:"4px", cursor:"pointer", flexShrink:0 }} title="Editar personagem">
-            <AvatarDisplay avatar={avatar} size={44} />
+          {/* Retrato do personagem */}
+          <button onClick={() => setShowPersonagemModal(true)} style={{ background:"none", border:"none", padding:"2px", cursor:"pointer", flexShrink:0 }} title="Editar personagem">
+            <CharacterPortrait fotoUrl={fotoUrl} size={48} />
           </button>
 
           <div style={{ flex:"0 0 auto" }}>
@@ -3072,7 +2577,7 @@ export default function App() {
 
       {/* ══ MAIN ══ */}
       <main style={{ maxWidth:"980px", margin:"0 auto", padding:"24px 20px", position:"relative", zIndex:1 }}>
-        {tab==="dashboard"  && <DashboardModule diary={diary} tasks={tasks} goals={goals} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} avatar={avatar} />}
+        {tab==="dashboard"  && <DashboardModule diary={diary} tasks={tasks} goals={goals} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} fotoUrl={fotoUrl} />}
         {tab==="diary"      && <DiaryModule data={diary} setData={setDiary} />}
         {tab==="tasks"      && <QuestLogModule tasks={tasks} setTasks={setTasks} dailyQuests={dailyQuests} setDailyQuests={setDailyQuests} dailyCompletions={dailyCompletions} setDailyCompletions={setDailyCompletions} />}
         {tab==="goals"      && <FacanhasModule goals={goals} setGoals={setGoals} />}
@@ -3080,6 +2585,7 @@ export default function App() {
         {tab==="calendario" && <CalendarioModule />}
         {tab==="skilltree"  && <SkillTreeModule />}
         {tab==="ai"         && <OracleModule diary={diary} tasks={tasks} goals={goals} notes={notes} apiKey={apiKey} setApiKey={setApiKey} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} />}
+        {tab==="album"      && <AlbumModule memorias={memorias} setMemorias={setMemorias} />}
       </main>
     </div>
   );
