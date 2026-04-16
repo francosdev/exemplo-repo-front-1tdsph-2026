@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, createContext, useContext } from "react";
 
 /* ═══════════════════════════════════════════════════════════
    PIXEL STAR FIELD — 16-bit canvas stars
@@ -222,6 +222,80 @@ const THEMES = [
 ];
 
 /* ═══════════════════════════════════════════════════════════
+   THEME ICONS — ícones únicos por tema
+═══════════════════════════════════════════════════════════ */
+const THEME_ICONS = {
+  arcane: {
+    soundStyle: "rpg",
+    tabs:      { hall:"⚔", diary:"📖", quests:"📜", goals:"🏆", calendar:"📅", notes:"📚", skilltree:"🌳", oracle:"🔮", album:"📸", raid:"⚔" },
+    deco:      "✦",
+    dungeon:   "🏰",
+    companion: "🧙",
+    character: "🧝",
+    questTypes:{ lendaria:"👑", epica:"💜", normal:"🔵", secundaria:"🌿" },
+    guilds:    { leitura:"📚", estudos:"🎓", saude:"🌿", financeiro:"💰", pessoal:"⭐", trabalho:"🛡️" },
+    stats:     { diary:"📖", quests:"⚔️", overdue:"☠️", goals:"🏆" },
+  },
+  darkfantasy: {
+    soundStyle: "dark",
+    tabs:      { hall:"🩸", diary:"🕯️", quests:"💀", goals:"☠️", calendar:"🌑", notes:"📕", skilltree:"🦇", oracle:"🩸", album:"🖼️", raid:"⛧" },
+    deco:      "⛧",
+    dungeon:   "🏚️",
+    companion: "🧟",
+    character: "🧛",
+    questTypes:{ lendaria:"🩸", epica:"☠️", normal:"💀", secundaria:"🦇" },
+    guilds:    { leitura:"📕", estudos:"🕯️", saude:"🩸", financeiro:"💎", pessoal:"🌑", trabalho:"⚰️" },
+    stats:     { diary:"🕯️", quests:"💀", overdue:"⛧", goals:"☠️" },
+  },
+  cyberpunk: {
+    soundStyle: "cyber",
+    tabs:      { hall:"💾", diary:"📡", quests:"🤖", goals:"🔋", calendar:"📆", notes:"💻", skilltree:"🔌", oracle:"📡", album:"📷", raid:"⚡" },
+    deco:      "◈",
+    dungeon:   "🏙️",
+    companion: "🤖",
+    character: "🤖",
+    questTypes:{ lendaria:"⚡", epica:"💜", normal:"💙", secundaria:"💚" },
+    guilds:    { leitura:"💾", estudos:"🖥️", saude:"💉", financeiro:"💳", pessoal:"🎮", trabalho:"🔧" },
+    stats:     { diary:"📡", quests:"🤖", overdue:"⚠️", goals:"🔋" },
+  },
+  fantasia: {
+    soundStyle: "nature",
+    tabs:      { hall:"🌿", diary:"🍃", quests:"🌱", goals:"🌸", calendar:"🌻", notes:"📜", skilltree:"🌲", oracle:"🧚", album:"🦋", raid:"🐉" },
+    deco:      "✿",
+    dungeon:   "🌲",
+    companion: "🧙‍♀️",
+    character: "🧚",
+    questTypes:{ lendaria:"🌸", epica:"🍄", normal:"🌿", secundaria:"🌱" },
+    guilds:    { leitura:"📜", estudos:"🧪", saude:"🍃", financeiro:"🌰", pessoal:"🦋", trabalho:"⚒️" },
+    stats:     { diary:"🍃", quests:"🗡️", overdue:"🥀", goals:"🌸" },
+  },
+  finalfantasy: {
+    soundStyle: "crystal",
+    tabs:      { hall:"⚔️", diary:"📔", quests:"🗡️", goals:"💎", calendar:"🗓️", notes:"📖", skilltree:"💠", oracle:"🔷", album:"🖼️", raid:"🐲" },
+    deco:      "◆",
+    dungeon:   "🗼",
+    companion: "🧙‍♂️",
+    character: "🧝‍♂️",
+    questTypes:{ lendaria:"💎", epica:"🔷", normal:"💙", secundaria:"🌀" },
+    guilds:    { leitura:"📖", estudos:"🔷", saude:"💊", financeiro:"💰", pessoal:"💎", trabalho:"🛡️" },
+    stats:     { diary:"📔", quests:"⚔️", overdue:"💔", goals:"💎" },
+  },
+  stardew: {
+    soundStyle: "cozy",
+    tabs:      { hall:"🏡", diary:"📝", quests:"🌾", goals:"🌻", calendar:"📅", notes:"🗒️", skilltree:"🌱", oracle:"🌙", album:"📷", raid:"🐄" },
+    deco:      "✿",
+    dungeon:   "⛏️",
+    companion: "🐱",
+    character: "👨‍🌾",
+    questTypes:{ lendaria:"🌟", epica:"🌻", normal:"🌾", secundaria:"🌱" },
+    guilds:    { leitura:"📚", estudos:"🔬", saude:"🥕", financeiro:"💰", pessoal:"🏡", trabalho:"🪓" },
+    stats:     { diary:"📝", quests:"🌾", overdue:"🌧️", goals:"🌻" },
+  },
+};
+
+const ThemeContext = createContext(THEME_ICONS.arcane);
+
+/* ═══════════════════════════════════════════════════════════
    RAID FINAL — META SEMESTRAL (defaults)
 ═══════════════════════════════════════════════════════════ */
 const RAID_DEFAULTS = {
@@ -277,6 +351,7 @@ function PixelBar({ value, max = 100, color = "#39ff14", segments = 24 }) {
    CHARACTER PORTRAIT — real photo display
 ═══════════════════════════════════════════════════════════ */
 function CharacterPortrait({ fotoUrl, size = 64 }) {
+  const icons = useContext(ThemeContext);
   return (
     <div style={{
       width: size, height: size,
@@ -295,7 +370,7 @@ function CharacterPortrait({ fotoUrl, size = 64 }) {
           display:"flex", alignItems:"center", justifyContent:"center",
           fontSize: Math.round(size * 0.55) + "px",
           background: "linear-gradient(135deg,#0a1428,#1a2848)",
-        }}>🧝</div>
+        }}>{icons.character}</div>
       )}
     </div>
   );
@@ -742,7 +817,17 @@ function usePixelStyles() {
 const fireSound = (sound) =>
   window.dispatchEvent(new CustomEvent("rpg-sound", { detail: sound }));
 
-function useSounds(enabled) {
+/* Perfis de som por tema — frequências, ondas e escalas */
+const SOUND_PROFILES = {
+  rpg:     { wave:"square",   base:440, scale:[1,1.25,1.5,2],     clickFreq:520,  clickDur:0.05 },
+  dark:    { wave:"sawtooth", base:220, scale:[1,1.19,1.41,1.68], clickFreq:180,  clickDur:0.08 },
+  cyber:   { wave:"sawtooth", base:880, scale:[1,1.33,1.78,2.37], clickFreq:880,  clickDur:0.03 },
+  nature:  { wave:"sine",     base:528, scale:[1,1.12,1.25,1.5],  clickFreq:440,  clickDur:0.09 },
+  crystal: { wave:"triangle", base:392, scale:[1,1.25,1.67,2],    clickFreq:392,  clickDur:0.06 },
+  cozy:    { wave:"triangle", base:493, scale:[1,1.12,1.33,1.5],  clickFreq:349,  clickDur:0.08 },
+};
+
+function useSounds(enabled, soundStyle = "rpg") {
   const acRef = useRef(null);
 
   const getAC = useCallback(() => {
@@ -752,45 +837,60 @@ function useSounds(enabled) {
     return acRef.current;
   }, []);
 
-  const beep = useCallback((freq, dur, vol = 0.28, type = "square") => {
+  const beep = useCallback((freq, dur, vol = 0.28, type) => {
     try {
+      const p = SOUND_PROFILES[soundStyle] || SOUND_PROFILES.rpg;
       const ctx = getAC(); if (!ctx) return;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = type; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      osc.type = type || p.wave;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
       gain.gain.setValueAtTime(vol, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
       osc.start(ctx.currentTime); osc.stop(ctx.currentTime + dur);
     } catch(e) {}
-  }, [getAC]);
+  }, [getAC, soundStyle]);
 
   const play = useCallback((sound) => {
     if (!enabled) return;
+    const p = SOUND_PROFILES[soundStyle] || SOUND_PROFILES.rpg;
+    const [s0, s1, s2, s3] = p.scale.map(m => Math.round(p.base * m));
+
     switch (sound) {
       case "click":
-        beep(520, 0.05, 0.18); break;
+        beep(p.clickFreq, p.clickDur, 0.18); break;
+
       case "success":
-        beep(523, 0.09, 0.25);
-        setTimeout(() => beep(659, 0.09, 0.25), 100);
-        setTimeout(() => beep(784, 0.18, 0.3), 200); break;
+        beep(s0, 0.09, 0.25);
+        setTimeout(() => beep(s1, 0.09, 0.25), 100);
+        setTimeout(() => beep(s2, 0.18, 0.30), 200); break;
+
       case "levelup":
-        [523, 659, 784, 1047].forEach((f, i) =>
+        [s0, s1, s2, s3].forEach((f, i) =>
           setTimeout(() => beep(f, 0.14, 0.32), i * 110));
         break;
+
       case "error":
-        beep(220, 0.11, 0.22); setTimeout(() => beep(180, 0.17, 0.22), 100); break;
+        beep(Math.round(p.base * 0.5), 0.11, 0.22);
+        setTimeout(() => beep(Math.round(p.base * 0.4), 0.18, 0.22), 110); break;
+
       case "notification":
-        beep(880, 0.07, 0.2); setTimeout(() => beep(1100, 0.14, 0.25), 85); break;
+        beep(s2, 0.07, 0.2);
+        setTimeout(() => beep(s3, 0.14, 0.25), 90); break;
+
       case "quest_add":
-        beep(392, 0.07, 0.2); setTimeout(() => beep(523, 0.11, 0.25), 75); break;
+        beep(s1, 0.07, 0.2);
+        setTimeout(() => beep(s2, 0.11, 0.25), 80); break;
+
       case "dungeon_enter":
-        beep(110, 0.45, 0.38, "sawtooth");
-        setTimeout(() => beep(147, 0.35, 0.28, "sawtooth"), 280);
-        setTimeout(() => beep(165, 0.55, 0.32, "sawtooth"), 560); break;
+        beep(Math.round(p.base * 0.25), 0.45, 0.38, "sawtooth");
+        setTimeout(() => beep(Math.round(p.base * 0.33), 0.35, 0.28, "sawtooth"), 280);
+        setTimeout(() => beep(Math.round(p.base * 0.37), 0.55, 0.32, "sawtooth"), 560); break;
+
       default: break;
     }
-  }, [enabled, beep]);
+  }, [enabled, soundStyle, beep]);
 
   useEffect(() => {
     const handler = (e) => play(e.detail);
@@ -955,6 +1055,7 @@ const PxBadge = ({ color, children }) => (
    DASHBOARD
 ═══════════════════════════════════════════════════════════ */
 function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados, classeDados, fotoUrl }) {
+  const icons = useContext(ThemeContext);
   const now    = new Date();
   const wa     = new Date(now - 7*86400000);
   const moods  = Object.entries(diary).filter(([k])=>new Date(k)>=wa).map(([,e])=>e.mood).filter(Boolean);
@@ -1042,10 +1143,10 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados,
       {/* ── Stats ── */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"10px", marginBottom:"16px" }}>
         {[
-          { icon:"📖", label:"CRÔNICA",       val:Object.keys(diary).length, sub:`${weekEntries} esta semana`, color:"#bb86fc" },
-          { icon:"⚔️", label:"QUESTS FEITAS",val:done,   sub:`${pending} abertas`,    color:"#39ff14" },
-          { icon:"☠️", label:"ATRASADAS",    val:overdue, sub:overdue>0?"PERIGO!":"TUDO OK", color:overdue>0?"#ff5555":"#39ff14" },
-          { icon:"🏆", label:"FAÇANHAS",     val:`${avgG}%`, sub:`${goals.length} ativas`,   color:"#ffd700" },
+          { icon:icons.stats.diary,   label:"CRÔNICA",       val:Object.keys(diary).length, sub:`${weekEntries} esta semana`, color:"#bb86fc" },
+          { icon:icons.stats.quests,  label:"QUESTS FEITAS", val:done,   sub:`${pending} abertas`,    color:"#39ff14" },
+          { icon:icons.stats.overdue, label:"ATRASADAS",     val:overdue, sub:overdue>0?"PERIGO!":"TUDO OK", color:overdue>0?"#ff5555":"#39ff14" },
+          { icon:icons.stats.goals,   label:"FAÇANHAS",      val:`${avgG}%`, sub:`${goals.length} ativas`,   color:"#ffd700" },
         ].map(s => (
           <div key={s.label} className="px-panel" style={{ textAlign:"center", marginBottom:0, padding:"14px 10px" }}>
             <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
@@ -1064,7 +1165,7 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados,
         <div className="px-panel">
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
-          <PxTitle icon="🏆" color="#ffd700">FAÇANHAS EM PROGRESSO</PxTitle>
+          <PxTitle icon={icons.stats.goals} color="#ffd700">FAÇANHAS EM PROGRESSO</PxTitle>
           <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
             {goals.map(g=>{
               const guild=GUILDS.find(x=>x.id===g.category);
@@ -1072,7 +1173,7 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados,
               return (
                 <div key={g.id}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"4px" }}>
-                    <span className="px-body" style={{ fontSize:"17px", color:"#c0e8ff" }}>{guild?.icon} {g.title}</span>
+                    <span className="px-body" style={{ fontSize:"17px", color:"#c0e8ff" }}>{icons.guilds[g.category]||guild?.icon} {g.title}</span>
                     <span className="px-font" style={{ fontSize:"8px", color:guild?.color||"#00d4ff" }}>{pct}%</span>
                   </div>
                   <PixelBar value={pct} color={guild?.color||"#00d4ff"} segments={20} />
@@ -1088,14 +1189,14 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados,
         <div className="px-panel">
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
-          <PxTitle icon="📜" color="#00d4ff">QUESTS ATIVAS</PxTitle>
+          <PxTitle icon={icons.tabs.quests} color="#00d4ff">QUESTS ATIVAS</PxTitle>
           <div style={{ display:"flex", flexDirection:"column", gap:"6px" }}>
             {tasks.filter(t=>!t.completed).slice(0,5).map(q=>{
               const qt=QUEST_TYPES.find(t=>t.value===q.priority)||QUEST_TYPES[2];
               const over=q.dueDate&&new Date(q.dueDate)<now;
               return (
                 <div key={q.id} className="px-quest" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"8px 10px", background:"#04091a", border:`2px solid ${qt.color}44`, borderLeft:`4px solid ${qt.color}`, transition:"all .15s" }}>
-                  <span style={{ fontSize:"14px" }}>{qt.icon}</span>
+                  <span style={{ fontSize:"14px" }}>{icons.questTypes[qt.value]||qt.icon}</span>
                   <span className="px-body" style={{ flex:1, fontSize:"18px", color:qt.color }}>{q.title}</span>
                   <PxBadge color={qt.color}>{qt.label}</PxBadge>
                   {q.dueDate && <span className="px-font" style={{ fontSize:"6px", color:over?"#ff5555":"#1a4070" }}>{fmtDate(q.dueDate+"T12:00:00")}</span>}
@@ -1295,6 +1396,7 @@ function DiaryModule({ data, setData }) {
    QUEST LOG
 ═══════════════════════════════════════════════════════════ */
 function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCompletions, setDailyCompletions }) {
+  const icons = useContext(ThemeContext);
   const [form,setForm]    = useState({title:"",priority:"normal",dueDate:"",category:""});
   const [filter,setFilter]= useState("all");
   const [showDailyForm,setShowDailyForm] = useState(false);
@@ -1335,7 +1437,7 @@ function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCom
         <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
         <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"16px", flexWrap:"wrap", gap:"8px" }}>
-          <PxTitle icon="🌅" color="#f0c030">QUESTS DIÁRIAS</PxTitle>
+          <PxTitle icon={icons.tabs.diary} color="#f0c030">QUESTS DIÁRIAS</PxTitle>
           <div style={{ display:"flex", gap:"8px", alignItems:"center" }}>
             <span className="px-font" style={{ fontSize:"7px", color:"#f0c03088" }}>{dailyDoneCount}/{dailyQuests.length} HOJE</span>
             <button className="px-btn px-btn-gold" style={{ padding:"7px 12px" }} onClick={()=>setShowDailyForm(p=>!p)}>+ NOVA</button>
@@ -1392,7 +1494,7 @@ function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCom
                 <div style={{ flex:1 }}>
                   <div className="px-body" style={{ fontSize:"19px", color:done?"#1a4070":"#f0c030", textDecoration:done?"line-through":"none" }}>{q.title}</div>
                   <div style={{ display:"flex", gap:"6px", marginTop:"2px" }}>
-                    {guild && <PxBadge color={guild.color}>{guild.icon} {guild.label}</PxBadge>}
+                    {guild && <PxBadge color={guild.color}>{icons.guilds[guild.id]||guild.icon} {guild.label}</PxBadge>}
                     <PxBadge color="#f0c030">+{q.xp} XP</PxBadge>
                   </div>
                 </div>
@@ -1412,7 +1514,7 @@ function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCom
       <div className="px-panel">
         <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
         <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
-        <PxTitle icon="📜" color="#00d4ff">ACEITAR NOVA QUEST</PxTitle>
+        <PxTitle icon={icons.tabs.quests} color="#00d4ff">ACEITAR NOVA QUEST</PxTitle>
         <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
           <input className="px-input" placeholder="> Nome da quest..."
             value={form.title}
@@ -1482,8 +1584,8 @@ function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCom
                       {q.title}
                     </div>
                     <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", alignItems:"center" }}>
-                      <PxBadge color={qt.color}>{qt.icon} {qt.label} +{qt.xp}XP</PxBadge>
-                      {g && <PxBadge color={g.color}>{g.icon} {g.label}</PxBadge>}
+                      <PxBadge color={qt.color}>{icons.questTypes[qt.value]||qt.icon} {qt.label} +{qt.xp}XP</PxBadge>
+                      {g && <PxBadge color={g.color}>{icons.guilds[g.id]||g.icon} {g.label}</PxBadge>}
                       {q.dueDate && <PxBadge color={over?"#ff5555":"#1a4070"}>{fmtDate(q.dueDate+"T12:00:00")}</PxBadge>}
                     </div>
                   </div>
@@ -1498,7 +1600,7 @@ function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCom
         <div className="px-panel" style={{ textAlign:"center", padding:"40px" }}>
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
-          <div className="px-float" style={{ fontSize:"48px", marginBottom:"12px", display:"block" }}>📜</div>
+          <div className="px-float" style={{ fontSize:"48px", marginBottom:"12px", display:"block" }}>{icons.tabs.quests}</div>
           <div className="px-font" style={{ fontSize:"9px", color:"#1a4070", marginBottom:"8px" }}>QUADRO DE QUESTS VAZIO</div>
           <div className="px-body" style={{ fontSize:"18px", color:"#0d2860" }}>Aceite sua primeira quest, aventureiro!</div>
         </div>
@@ -1573,6 +1675,7 @@ function GrimorioModule({ notes, setNotes }) {
    FAÇANHAS (GOALS)
 ═══════════════════════════════════════════════════════════ */
 function FacanhasModule({ goals, setGoals }) {
+  const icons = useContext(ThemeContext);
   const [showForm,setShowForm]= useState(false);
   const [form,setForm]        = useState({title:"",category:"estudos",description:"",targetValue:100,currentValue:0,unit:"%",deadline:""});
   const [activeG,setActiveG]  = useState("all");
@@ -1595,7 +1698,7 @@ function FacanhasModule({ goals, setGoals }) {
             color:activeG===g.id?g.color:"#1a4070", transition:"all .15s",
             boxShadow:activeG===g.id?`0 0 10px ${g.color}44, 3px 3px 0 ${g.color}44`:"3px 3px 0 #020a1e",
           }}>
-            {g.icon} {g.label}
+            {icons.guilds[g.id]||g.icon} {g.label}
           </button>
         ))}
         <button className="px-btn px-btn-gold" style={{ padding:"8px 14px", marginLeft:"auto" }} onClick={()=>setShowForm(!showForm)}>+ NOVA FAÇANHA</button>
@@ -1605,7 +1708,7 @@ function FacanhasModule({ goals, setGoals }) {
         <div className="px-panel-hero">
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
-          <PxTitle icon="🏆" color="#ffd700">NOVA FAÇANHA ÉPICA</PxTitle>
+          <PxTitle icon={icons.tabs.goals} color="#ffd700">NOVA FAÇANHA ÉPICA</PxTitle>
           <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
             <input className="px-input" placeholder="> Nome da façanha..." value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} />
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px" }}>
@@ -1631,9 +1734,9 @@ function FacanhasModule({ goals, setGoals }) {
         <div className="px-panel" style={{ textAlign:"center", padding:"40px" }}>
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
-          <div className="px-float" style={{ fontSize:"48px", marginBottom:"12px", display:"block" }}>🏆</div>
+          <div className="px-float" style={{ fontSize:"48px", marginBottom:"12px", display:"block" }}>{icons.tabs.goals}</div>
           <div className="px-font" style={{ fontSize:"8px", color:"#1a4070", marginBottom:"12px" }}>SEM FAÇANHAS ENCONTRADAS</div>
-          <button className="px-btn px-btn-gold" style={{ padding:"12px 20px" }} onClick={()=>setShowForm(true)}>✦ CRIAR PRIMEIRA FAÇANHA</button>
+          <button className="px-btn px-btn-gold" style={{ padding:"12px 20px" }} onClick={()=>setShowForm(true)}>{icons.deco} CRIAR PRIMEIRA FAÇANHA</button>
         </div>
       )}
 
@@ -1650,7 +1753,7 @@ function FacanhasModule({ goals, setGoals }) {
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:"12px" }}>
                 <div style={{ flex:1 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px", flexWrap:"wrap" }}>
-                    <span style={{ fontSize:"18px" }}>{guild?.icon}</span>
+                    <span style={{ fontSize:"18px" }}>{icons.guilds[goal.category]||guild?.icon}</span>
                     <span className="px-font" style={{ fontSize:"9px", color:guild?.color||"#00d4ff" }}>{goal.title}</span>
                     {done && <PxBadge color="#39ff14">✓ COMPLETA!</PxBadge>}
                   </div>
@@ -1663,7 +1766,7 @@ function FacanhasModule({ goals, setGoals }) {
                     <PixelBar value={pct} color={guild?.color||"#00d4ff"} segments={22} />
                   </div>
                   <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>
-                    <PxBadge color={guild?.color||"#00d4ff"}>{guild?.icon} {guild?.label}</PxBadge>
+                    <PxBadge color={guild?.color||"#00d4ff"}>{icons.guilds[goal.category]||guild?.icon} {guild?.label}</PxBadge>
                     {dl!==null && <PxBadge color={dl<7?"#ff5555":"#1a4070"}>{dl>0?`${dl}D RESTANTES`:dl===0?"HOJE!":"EXPIRADA"}</PxBadge>}
                     <span className="px-font" style={{ fontSize:"7px", color:"#0d2860", alignSelf:"center" }}>{Math.round(pct)}%</span>
                   </div>
@@ -2806,6 +2909,7 @@ function AlbumModule({ memorias, setMemorias }) {
    DUNGEON MODE — Foco total com trilha sonora épica
 ═══════════════════════════════════════════════════════════ */
 function DungeonModeOverlay({ onExit, nomeHeroi }) {
+  const icons = useContext(ThemeContext);
   const [seconds, setSeconds] = useState(0);
   const [ambientOn, setAmbientOn] = useState(false);
   const ambientRef = useRef(null);
@@ -2885,7 +2989,7 @@ function DungeonModeOverlay({ onExit, nomeHeroi }) {
 
         {/* Ícone pulsante */}
         <div style={{ fontSize:"64px", marginBottom:"16px", animation:"dungeonPulse 2s ease-in-out infinite" }}>
-          🏰
+          {icons.dungeon}
         </div>
 
         {/* Cronômetro */}
@@ -2948,6 +3052,7 @@ function DungeonModeOverlay({ onExit, nomeHeroi }) {
    RAID FINAL — META SEMESTRAL (Boss Fight)
 ═══════════════════════════════════════════════════════════ */
 function RaidFinalModule({ nomeHeroi }) {
+  const icons = useContext(ThemeContext);
   const [raid, setRaid]     = useLS("mylog_raid_final", RAID_DEFAULTS);
   const [showAdd, setShowAdd] = useState(false);
   const [newObj, setNewObj]  = useState("");
@@ -2986,7 +3091,7 @@ function RaidFinalModule({ nomeHeroi }) {
         <div style={{ fontSize:"88px", display:"block", marginBottom:"16px",
           animation: allDone ? "pxFloat 2s ease-in-out infinite" : "dungeonPulse 1.8s ease-in-out infinite",
           filter: allDone ? "drop-shadow(0 0 24px #39ff14)" : `drop-shadow(0 0 20px ${bossColor})` }}>
-          {allDone ? "🏆" : bossHp > 60 ? "💀" : bossHp > 30 ? "🩻" : "⚰️"}
+          {allDone ? icons.tabs.goals : bossHp > 60 ? "💀" : bossHp > 30 ? "🩻" : "⚰️"}
         </div>
 
         {editTitle ? (
@@ -3134,7 +3239,7 @@ function RaidFinalModule({ nomeHeroi }) {
       {/* ── Recompensa final ── */}
       {allDone && (
         <div className="px-panel" style={{ borderColor:"#39ff14", background:"#001800", textAlign:"center", padding:"36px 24px" }}>
-          <div style={{ fontSize:"72px", marginBottom:"16px", animation:"pxFloat 2s ease-in-out infinite" }}>🏆</div>
+          <div style={{ fontSize:"72px", marginBottom:"16px", animation:"pxFloat 2s ease-in-out infinite" }}>{icons.tabs.goals}</div>
           <div className="px-font" style={{ fontSize:"12px", color:"#39ff14", textShadow:"0 0 20px #39ff14aa", marginBottom:"10px" }}>
             RAID CONCLUÍDO!
           </div>
@@ -3172,7 +3277,8 @@ export default function App() {
   const [soundEnabled,       setSoundEnabled]       = useLS("mylog_sound",                true);
   const [toast,              setToast]              = useState(null);
 
-  useSounds(soundEnabled);
+  const curIcons = THEME_ICONS[themeId] || THEME_ICONS.arcane;
+  useSounds(soundEnabled, curIcons.soundStyle);
 
   // Aplica data-theme no body para CSS vars
   useEffect(() => {
@@ -3234,20 +3340,22 @@ export default function App() {
   const xpCur = xp-xpForLvl(lv);
   const xpNeed= xpForNext(lv)-xpForLvl(lv);
 
+  const ti = curIcons.tabs;
   const TABS = [
-    {id:"dashboard",  label:"⚔ HALL"},
-    {id:"diary",      label:"📖 CRÔNICA"},
-    {id:"tasks",      label:"📜 QUESTS"},
-    {id:"goals",      label:"🏆 FAÇANHAS"},
-    {id:"calendario", label:"📅 CALENDÁRIO"},
-    {id:"notes",      label:"📚 GRIMÓRIO"},
-    {id:"skilltree",  label:"🌳 ÁRV. HAB."},
-    {id:"ai",         label:"🔮 ORÁCULO"},
-    {id:"album",      label:"📸 ÁLBUM"},
-    {id:"raid",       label:"⚔ RAID FINAL"},
+    {id:"dashboard",  label:`${ti.hall} HALL`},
+    {id:"diary",      label:`${ti.diary} CRÔNICA`},
+    {id:"tasks",      label:`${ti.quests} QUESTS`},
+    {id:"goals",      label:`${ti.goals} FAÇANHAS`},
+    {id:"calendario", label:`${ti.calendar} CALENDÁRIO`},
+    {id:"notes",      label:`${ti.notes} GRIMÓRIO`},
+    {id:"skilltree",  label:`${ti.skilltree} ÁRV. HAB.`},
+    {id:"ai",         label:`${ti.oracle} ORÁCULO`},
+    {id:"album",      label:`${ti.album} ÁLBUM`},
+    {id:"raid",       label:`${ti.raid} RAID FINAL`},
   ];
 
   return (
+    <ThemeContext.Provider value={curIcons}>
     <div className="px-crt" style={{ minHeight:"100vh", background: curTheme.bg, color:"#c8deff", fontFamily:"'VT323',monospace", position:"relative" }}>
       <PixelStarField />
 
@@ -3334,7 +3442,7 @@ export default function App() {
             }}
             title="Modo Dungeon — Foco total"
           >
-            🏰 DUNGEON
+            {curIcons.dungeon} DUNGEON
           </button>
 
           {/* ── SOM ── */}
@@ -3386,5 +3494,6 @@ export default function App() {
         {tab==="raid"       && <RaidFinalModule nomeHeroi={nomeHeroi} />}
       </main>
     </div>
+    </ThemeContext.Provider>
   );
 }
