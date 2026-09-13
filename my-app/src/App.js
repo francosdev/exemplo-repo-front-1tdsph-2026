@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, createContext, useContext } from "react";
 
 /* ═══════════════════════════════════════════════════════════
    PIXEL STAR FIELD — 16-bit canvas stars
@@ -65,52 +65,17 @@ function PixelStarField() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CHARACTER CREATOR — Final Fantasy + WoW style
+   WELCOME SCREEN — simple name entry
 ═══════════════════════════════════════════════════════════ */
-const FRACAO_COR = { "Aliança": "#4898f0", "Horda": "#e04040", "Neutro": "#c8a000" };
+function WelcomeScreen({ onStart }) {
+  const [nome, setNome] = useState("");
 
-function WelcomeScreen({ onStart, personagemExistente }) {
-  const [fase,   setFase]  = useState("title");
-  const [cursor, setCursor]= useState(0);
-  const [nome,   setNome]  = useState("");
-  const [raca,   setRaca]  = useState(null);
-  const [classe, setClasse]= useState(null);
-  const [avatar, setAvatar]= useState({});
-  const [racaHover, setRacaHover]   = useState(null);
-  const [classeHover, setClasseHover] = useState(null);
+  const iniciar = () => {
+    if (!nome.trim()) return;
+    onStart({ nome: nome.trim(), racaId: "elfo_noite", classeId: "druida", fotoUrl: null });
+  };
 
-  const opcoes = personagemExistente
-    ? ["▶ CONTINUAR AVENTURA", "  NOVO PERSONAGEM"]
-    : ["▶ NOVA AVENTURA"];
-
-  /* navegação por teclado na tela de título */
-  useEffect(() => {
-    const onKey = (e) => {
-      if (fase === "title") {
-        if (e.key === "ArrowUp")   setCursor(p => (p - 1 + opcoes.length) % opcoes.length);
-        if (e.key === "ArrowDown") setCursor(p => (p + 1) % opcoes.length);
-        if (e.key === "Enter") {
-          if (personagemExistente && cursor === 0) onStart(personagemExistente);
-          else setFase("nome");
-        }
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [fase, cursor, opcoes.length, personagemExistente, onStart]);
-
-  const ffBox = (borderColor, extra = {}) => ({
-    background:"#0c1630",
-    border:`3px solid ${borderColor}`,
-    boxShadow:`0 0 0 1px #06080f, 0 0 0 4px ${borderColor}44, inset 0 0 0 2px ${borderColor}44, 0 0 30px ${borderColor}22`,
-    ...extra,
-  });
-
-  const racaSel   = RACAS.find(r => r.id === raca);
-  const classeSel = CLASSES.find(c => c.id === classe);
-
-  /* ── Tela de Título ── */
-  if (fase === "title") return (
+  return (
     <div style={{ position:"fixed", inset:0, background:"#06080f", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
       <PixelStarField />
       <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", width:"100%", maxWidth:"480px", padding:"24px" }}>
@@ -121,379 +86,75 @@ function WelcomeScreen({ onStart, personagemExistente }) {
           </div>
           <div className="px-font" style={{ fontSize:"6px", color:"#3060b8", marginTop:"10px", letterSpacing:".2em" }}>FIAP · QUEST TRACKER</div>
         </div>
-        <div style={{ ...ffBox("#3060b8"), padding:"28px 40px", minWidth:"280px" }}>
-          {opcoes.map((op, i) => (
-            <div key={i} onClick={() => { setCursor(i); if(personagemExistente && i===0) onStart(personagemExistente); else setFase("nome"); }}
-              style={{ padding:"12px 4px", color: cursor===i ? "#f0c030" : "#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor:"pointer", textShadow: cursor===i ? "0 0 12px rgba(200,160,0,.6)" : "none", letterSpacing:".06em", transition:"color .15s" }}>
-              {cursor===i ? op : op.replace("▶","  ")}
-            </div>
-          ))}
-        </div>
-        <div className="px-blink px-font" style={{ marginTop:"28px", fontSize:"6px", color:"#1e3060", letterSpacing:".15em" }}>↑↓ MOVER · ENTER CONFIRMAR</div>
-      </div>
-    </div>
-  );
-
-  /* ── Passo: Nome ── */
-  if (fase === "nome") return (
-    <div style={{ position:"fixed", inset:0, background:"#06080f", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
-      <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, width:"100%", maxWidth:"440px", padding:"24px" }}>
-        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"20px", textAlign:"center" }}>PASSO 1 DE 3 · NOME DO HERÓI</div>
-        <div style={{ ...ffBox("#c8a000"), padding:"28px 28px" }}>
-          <div className="px-font" style={{ fontSize:"8px", color:"#f0c030", marginBottom:"16px" }}>✦ COMO DESEJA SER CHAMADO?</div>
+        <div style={{ background:"#0c1630", border:"3px solid #c8a000", boxShadow:"0 0 0 1px #06080f, 0 0 0 4px #c8a00044, inset 0 0 0 2px #c8a00044, 0 0 30px #c8a00022", padding:"28px 40px", minWidth:"280px", width:"100%" }}>
+          <div className="px-font" style={{ fontSize:"8px", color:"#f0c030", marginBottom:"16px", textAlign:"center" }}>✦ COMO DESEJA SER CHAMADO?</div>
           <input autoFocus className="px-input"
             style={{ marginBottom:"16px", fontSize:"22px", letterSpacing:".1em", textTransform:"uppercase", color:"#f0c030", borderColor:"#c8a000" }}
             placeholder="> SEU NOME..."
             maxLength={14}
             value={nome}
             onChange={e => setNome(e.target.value.toUpperCase())}
-            onKeyDown={e => e.key==="Enter" && nome.trim() && setFase("raca")}
+            onKeyDown={e => e.key === "Enter" && iniciar()}
           />
-          <div style={{ display:"flex", gap:"10px" }}>
-            <button onClick={() => nome.trim() && setFase("raca")} disabled={!nome.trim()}
-              style={{ flex:1, padding:"12px", background:"#201400", border:"3px solid #c8a000", color: nome.trim()?"#f0c030":"#4a3000", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: nome.trim()?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000", transition:"all .15s" }}>
-              PRÓXIMO ▶
-            </button>
-            <button onClick={() => setFase("title")}
-              style={{ padding:"12px 16px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
-              ◀
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  /* ── Passo: Raça ── */
-  if (fase === "raca") return (
-    <div style={{ position:"fixed", inset:0, background:"#06080f", overflowY:"auto", zIndex:1000 }}>
-      <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, maxWidth:"860px", margin:"0 auto", padding:"24px 16px" }}>
-        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"8px", textAlign:"center" }}>PASSO 2 DE 3 · ESCOLHA SUA RAÇA</div>
-        <div className="px-font" style={{ fontSize:"10px", color:"#f0c030", textAlign:"center", marginBottom:"20px", textShadow:"0 0 12px rgba(200,160,0,.5)" }}>{nome}</div>
-
-        {/* Painel de preview */}
-        {(racaHover || racaSel) && (() => { const r = RACAS.find(x=>x.id===(racaHover||raca)); return r ? (
-          <div style={{ ...ffBox(FRACAO_COR[r.fracao]||"#3060b8"), padding:"14px 18px", marginBottom:"16px", display:"flex", gap:"16px", alignItems:"center" }}>
-            <div style={{ fontSize:"44px", flexShrink:0 }}>{r.icone}</div>
-            <div style={{ flex:1 }}>
-              <div className="px-font" style={{ fontSize:"8px", color: FRACAO_COR[r.fracao]||"#80b4ff", marginBottom:"4px" }}>{r.nome} <span style={{ fontSize:"6px", color:FRACAO_COR[r.fracao]+"88" }}>· {r.fracao}</span></div>
-              <div className="px-body" style={{ fontSize:"16px", color:"#6898c8", marginBottom:"4px" }}>{r.desc}</div>
-              <div className="px-font" style={{ fontSize:"6px", color:r.cor }}>{r.bonus}</div>
-            </div>
-          </div>
-        ) : null; })()}
-
-        {/* Grade de raças por facção */}
-        {["Aliança","Horda","Neutro"].map(fracao => {
-          const lista = RACAS.filter(r => r.fracao === fracao);
-          if (!lista.length) return null;
-          return (
-            <div key={fracao} style={{ marginBottom:"16px" }}>
-              <div className="px-font" style={{ fontSize:"6px", color:FRACAO_COR[fracao], marginBottom:"8px", letterSpacing:".15em" }}>
-                {fracao === "Aliança" ? "⚔️" : fracao === "Horda" ? "💀" : "⚖️"} {fracao.toUpperCase()}
-              </div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))", gap:"8px" }}>
-                {lista.map(r => (
-                  <div key={r.id}
-                    onClick={() => setRaca(r.id)}
-                    onMouseEnter={() => setRacaHover(r.id)}
-                    onMouseLeave={() => setRacaHover(null)}
-                    style={{
-                      padding:"12px 8px", textAlign:"center", cursor:"pointer",
-                      border:`2px solid ${raca===r.id ? r.cor : "#1e3060"}`,
-                      background: raca===r.id ? r.cor+"18" : "#0c1630",
-                      boxShadow: raca===r.id ? `0 0 10px ${r.cor}44` : "none",
-                      transition:"all .15s",
-                    }}>
-                    <div style={{ fontSize:"28px", marginBottom:"4px" }}>{r.icone}</div>
-                    <div className="px-font" style={{ fontSize:"5px", color: raca===r.id ? r.cor : "#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{r.nome}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-
-        <div style={{ display:"flex", gap:"10px", marginTop:"8px" }}>
-          <button onClick={() => raca && setFase("classe")} disabled={!raca}
-            style={{ flex:1, padding:"14px", background: raca?"#201400":"#0c1428", border:`3px solid ${raca?"#c8a000":"#1e3060"}`, color: raca?"#f0c030":"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: raca?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000" }}>
-            PRÓXIMO ▶
-          </button>
-          <button onClick={() => setFase("nome")}
-            style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
-            ◀
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  /* ── Passo: Classe ── */
-  if (fase === "classe") return (
-    <div style={{ position:"fixed", inset:0, background:"#06080f", overflowY:"auto", zIndex:1000 }}>
-      <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, maxWidth:"860px", margin:"0 auto", padding:"24px 16px" }}>
-        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"8px", textAlign:"center" }}>PASSO 3 DE 3 · ESCOLHA SUA CLASSE</div>
-        <div className="px-font" style={{ fontSize:"10px", color:"#f0c030", textAlign:"center", marginBottom:"4px" }}>{nome}</div>
-        <div className="px-font" style={{ fontSize:"6px", color: FRACAO_COR[racaSel?.fracao]||"#3060b8", textAlign:"center", marginBottom:"20px" }}>{racaSel?.icone} {racaSel?.nome}</div>
-
-        {/* preview de classe */}
-        {(classeHover || classeSel) && (() => { const c = CLASSES.find(x=>x.id===(classeHover||classe)); return c ? (
-          <div style={{ ...ffBox(c.cor), padding:"14px 18px", marginBottom:"16px", display:"flex", gap:"16px", alignItems:"center" }}>
-            <div style={{ fontSize:"44px", flexShrink:0 }}>{c.icone}</div>
-            <div style={{ flex:1 }}>
-              <div className="px-font" style={{ fontSize:"8px", color:c.cor, marginBottom:"4px" }}>{c.nome}</div>
-              <div className="px-body" style={{ fontSize:"16px", color:"#6898c8", marginBottom:"4px" }}>{c.desc}</div>
-              <div className="px-font" style={{ fontSize:"6px", color:c.cor+"bb" }}>Atributo Principal: {c.atributo}</div>
-            </div>
-          </div>
-        ) : null; })()}
-
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))", gap:"8px", marginBottom:"16px" }}>
-          {CLASSES.map(c => (
-            <div key={c.id}
-              onClick={() => setClasse(c.id)}
-              onMouseEnter={() => setClasseHover(c.id)}
-              onMouseLeave={() => setClasseHover(null)}
-              style={{
-                padding:"14px 8px", textAlign:"center", cursor:"pointer",
-                border:`2px solid ${classe===c.id ? c.cor : "#1e3060"}`,
-                background: classe===c.id ? c.cor+"18" : "#0c1630",
-                boxShadow: classe===c.id ? `0 0 10px ${c.cor}44` : "none",
-                transition:"all .15s",
-              }}>
-              <div style={{ fontSize:"26px", marginBottom:"4px" }}>{c.icone}</div>
-              <div className="px-font" style={{ fontSize:"5px", color: classe===c.id ? c.cor : "#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{c.nome}</div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display:"flex", gap:"10px" }}>
-          <button onClick={() => classe && setFase("avatar")} disabled={!classe}
-            style={{ flex:1, padding:"14px", background: classe?"#201400":"#0c1428", border:`3px solid ${classe?"#c8a000":"#1e3060"}`, color: classe?"#f0c030":"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: classe?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000" }}>
-            PRÓXIMO ▶
-          </button>
-          <button onClick={() => setFase("raca")}
-            style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
-            ◀
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  /* ── Passo: Avatar ── */
-  if (fase === "avatar") return (
-    <div style={{ position:"fixed", inset:0, background:"#06080f", overflowY:"auto", zIndex:1000 }}>
-      <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, maxWidth:"620px", margin:"0 auto", padding:"24px 16px" }}>
-        <div className="px-font" style={{ fontSize:"7px", color:"#2a4880", letterSpacing:".2em", marginBottom:"8px", textAlign:"center" }}>PASSO 4 DE 4 · CRIE SEU AVATAR</div>
-        <div style={{ display:"flex", justifyContent:"center", marginBottom:"20px", gap:"20px", alignItems:"center" }}>
-          <AvatarDisplay avatar={avatar} size={90} />
-          <div>
-            <div className="px-font" style={{ fontSize:"10px", color:"#f0c030" }}>{nome}</div>
-            <div className="px-font" style={{ fontSize:"6px", color: FRACAO_COR[racaSel?.fracao]||"#3060b8", marginTop:"6px" }}>{racaSel?.icone} {racaSel?.nome}</div>
-            <div className="px-font" style={{ fontSize:"6px", color:classeSel?.cor, marginTop:"4px" }}>{classeSel?.icone} {classeSel?.nome}</div>
-          </div>
-        </div>
-        <div style={{ background:"#0c1630", border:"3px solid #3060b8", padding:"20px", marginBottom:"16px" }}>
-          <AvatarCreator avatar={avatar} onChange={setAvatar} />
-        </div>
-        <div style={{ display:"flex", gap:"10px" }}>
-          <button onClick={() => setFase("confirmar")}
-            style={{ flex:1, padding:"14px", background:"#201400", border:"3px solid #c8a000", color:"#f0c030", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer", boxShadow:"3px 3px 0 #4a3000" }}>
-            PRÓXIMO ▶
-          </button>
-          <button onClick={() => setFase("classe")}
-            style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
-            ◀
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  /* ── Confirmação ── */
-  if (fase === "confirmar") return (
-    <div style={{ position:"fixed", inset:0, background:"#06080f", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000 }}>
-      <PixelStarField />
-      <div style={{ position:"relative", zIndex:1, width:"100%", maxWidth:"480px", padding:"24px" }}>
-        <div style={{ ...ffBox("#c8a000"), padding:"28px 28px" }}>
-          <div className="px-font" style={{ fontSize:"9px", color:"#f0c030", textAlign:"center", marginBottom:"24px", textShadow:"0 0 12px rgba(200,160,0,.5)" }}>
-            ✦ SEU PERSONAGEM ✦
-          </div>
-          <div style={{ display:"flex", gap:"20px", alignItems:"center", marginBottom:"20px" }}>
-            <AvatarDisplay avatar={avatar} size={80} />
-            <div>
-              <div className="px-font" style={{ fontSize:"12px", color:"#f0c030", marginBottom:"6px" }}>{nome}</div>
-              <div className="px-font" style={{ fontSize:"7px", color:classeSel?.cor, marginBottom:"4px" }}>{classeSel?.icone} {classeSel?.nome}</div>
-              <div className="px-font" style={{ fontSize:"6px", color: FRACAO_COR[racaSel?.fracao]||"#80b4ff" }}>{racaSel?.icone} {racaSel?.nome} · {racaSel?.fracao}</div>
-            </div>
-          </div>
-
-          <div style={{ background:"#060814", border:"2px solid #1e3060", padding:"12px", marginBottom:"20px" }}>
-            <div className="px-body" style={{ fontSize:"16px", color:"#6898c8", marginBottom:"6px" }}>{classeSel?.desc}</div>
-            <div className="px-font" style={{ fontSize:"6px", color:racaSel?.cor }}>{racaSel?.bonus}</div>
-          </div>
-
-          <button onClick={() => onStart({ nome, racaId: raca, classeId: classe, avatar })}
-            style={{ width:"100%", padding:"16px", background:"linear-gradient(135deg,#201400,#3a2800)", border:"3px solid #c8a000", color:"#f0c030", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor:"pointer", boxShadow:"0 0 20px rgba(200,160,0,.3), 3px 3px 0 #4a3000", letterSpacing:".08em" }}>
+          <button
+            onClick={iniciar}
+            disabled={!nome.trim()}
+            style={{ width:"100%", padding:"16px", background:"linear-gradient(135deg,#201400,#3a2800)", border:"3px solid #c8a000", color: nome.trim()?"#f0c030":"#4a3000", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor: nome.trim()?"pointer":"not-allowed", boxShadow:"0 0 20px rgba(200,160,0,.3), 3px 3px 0 #4a3000", letterSpacing:".08em" }}>
             ⚔ COMEÇAR AVENTURA
           </button>
-          <button onClick={() => setFase("avatar")}
-            style={{ width:"100%", marginTop:"8px", padding:"10px", background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"7px", cursor:"pointer" }}>
-            ◀ VOLTAR
-          </button>
         </div>
+        <div className="px-blink px-font" style={{ marginTop:"28px", fontSize:"6px", color:"#1e3060", letterSpacing:".15em" }}>🧝 ELFO DA NOITE · 🌿 DRUIDA</div>
       </div>
     </div>
   );
 
-  return null;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   PERSONAGEM MODAL — edit character anytime
+   PERSONAGEM MODAL — nome + foto apenas
 ═══════════════════════════════════════════════════════════ */
 function PersonagemModal({ personagem, onSave, onClose }) {
-  const [nome,     setNome]     = useState(personagem?.nome || "");
-  const [racaId,   setRacaId]   = useState(personagem?.racaId || null);
-  const [classeId, setClasseId] = useState(personagem?.classeId || null);
-  const [avatar,   setAvatar]   = useState(personagem?.avatar || {});
-  const [aba,      setAba]      = useState("avatar");
+  const [nome,   setNome]   = useState(personagem?.nome || "");
+  const [fotoUrl, setFotoUrl] = useState(personagem?.fotoUrl || null);
+  const fileRef = useRef(null);
 
-  const racaDados   = RACAS.find(r => r.id === racaId);
-  const classeDados = CLASSES.find(c => c.id === classeId);
-
-  const ABAS = [
-    { id:"avatar",     icon:"👤", label:"AVATAR"    },
-    { id:"identidade", icon:"✦",  label:"NOME"      },
-    { id:"raca",       icon:"⚔️", label:"RAÇA"      },
-    { id:"classe",     icon:"🔮", label:"CLASSE"    },
-  ];
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setFotoUrl(ev.target.result);
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div style={{ position:"fixed", inset:0, background:"#06080fee", zIndex:800, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px", backdropFilter:"blur(3px)" }}>
-      <div style={{ width:"100%", maxWidth:"660px", maxHeight:"92vh", overflowY:"auto", background:"#0c1630", border:"3px solid #c8a000", boxShadow:"0 0 0 1px #06080f, 0 0 40px rgba(200,160,0,.25)" }}>
-        {/* Header */}
-        <div style={{ padding:"14px 18px", borderBottom:"2px solid #1e3060", display:"flex", alignItems:"center", gap:"14px", position:"sticky", top:0, background:"#0c1630", zIndex:1 }}>
-          <AvatarDisplay avatar={avatar} size={52} />
-          <div style={{ flex:1 }}>
-            <div className="px-font" style={{ fontSize:"9px", color:"#f0c030" }}>{nome || "PERSONAGEM"}</div>
-            <div className="px-font" style={{ fontSize:"5px", color:"#2a4880", marginTop:"4px" }}>
-              {classeDados ? `${classeDados.icone} ${classeDados.nome}` : ""}{classeDados && racaDados ? "  ·  " : ""}{racaDados ? `${racaDados.icone} ${racaDados.nome}` : ""}
-            </div>
-          </div>
-          <button onClick={onClose} style={{ background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", padding:"8px 12px", cursor:"pointer" }}>✕</button>
+      <div style={{ width:"100%", maxWidth:"400px", background:"#0c1630", border:"3px solid #c8a000", boxShadow:"0 0 0 1px #06080f, 0 0 40px rgba(200,160,0,.25)" }}>
+        <div style={{ padding:"14px 18px", borderBottom:"2px solid #1e3060", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <div className="px-font" style={{ fontSize:"8px", color:"#f0c030" }}>✦ MEU PERSONAGEM</div>
+          <button onClick={onClose} style={{ background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", padding:"6px 10px", cursor:"pointer" }}>✕</button>
         </div>
-
-        {/* Tabs */}
-        <div style={{ display:"flex", borderBottom:"2px solid #1e3060" }}>
-          {ABAS.map(a => (
-            <button key={a.id} onClick={() => setAba(a.id)} style={{
-              flex:1, padding:"10px 4px", background:"none", border:"none",
-              borderBottom: aba===a.id ? "3px solid #c8a000" : "3px solid transparent",
-              marginBottom:"-2px",
-              color: aba===a.id ? "#f0c030" : "#2a4880",
-              fontFamily:"'Press Start 2P',monospace", fontSize:"6px",
-              cursor:"pointer", transition:"all .15s",
-            }}>{a.icon} {a.label}</button>
-          ))}
-        </div>
-
-        {/* Content */}
         <div style={{ padding:"20px" }}>
-          {aba === "avatar" && (
-            <div>
-              <div style={{ display:"flex", justifyContent:"center", marginBottom:"20px" }}>
-                <AvatarDisplay avatar={avatar} size={96} />
-              </div>
-              <AvatarCreator avatar={avatar} onChange={setAvatar} />
-            </div>
-          )}
-
-          {aba === "identidade" && (
-            <div>
-              <div className="px-font" style={{ fontSize:"8px", color:"#f0c030", marginBottom:"12px" }}>✦ NOME DO HERÓI</div>
-              <input className="px-input" maxLength={14}
-                value={nome} onChange={e => setNome(e.target.value.toUpperCase())}
-                placeholder="> SEU NOME..."
-                style={{ fontSize:"20px", letterSpacing:".1em", textTransform:"uppercase", color:"#f0c030", borderColor:"#c8a000", marginBottom:"8px" }}
-              />
-              <div className="px-font" style={{ fontSize:"6px", color:"#1e3060" }}>{nome.length}/14 CARACTERES</div>
-            </div>
-          )}
-
-          {aba === "raca" && (
-            <div>
-              {racaDados && (
-                <div style={{ display:"flex", gap:"12px", alignItems:"center", padding:"12px", background:"#06080f", border:`2px solid ${FRACAO_COR[racaDados.fracao]||"#3060b8"}`, marginBottom:"16px" }}>
-                  <div style={{ fontSize:"32px" }}>{racaDados.icone}</div>
-                  <div>
-                    <div className="px-font" style={{ fontSize:"8px", color:FRACAO_COR[racaDados.fracao]||"#80b4ff" }}>{racaDados.nome}</div>
-                    <div className="px-font" style={{ fontSize:"6px", color:racaDados.cor, marginTop:"4px" }}>{racaDados.bonus}</div>
-                  </div>
-                </div>
-              )}
-              {["Aliança","Horda","Neutro"].map(fracao => (
-                <div key={fracao} style={{ marginBottom:"12px" }}>
-                  <div className="px-font" style={{ fontSize:"6px", color:FRACAO_COR[fracao], marginBottom:"6px", letterSpacing:".1em" }}>
-                    {fracao === "Aliança" ? "⚔️" : fracao === "Horda" ? "💀" : "⚖️"} {fracao.toUpperCase()}
-                  </div>
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))", gap:"6px" }}>
-                    {RACAS.filter(r => r.fracao === fracao).map(r => (
-                      <div key={r.id} onClick={() => setRacaId(r.id)} style={{
-                        padding:"10px 6px", textAlign:"center", cursor:"pointer",
-                        border:`2px solid ${racaId===r.id ? r.cor : "#1e3060"}`,
-                        background:racaId===r.id ? r.cor+"18" : "#06080f",
-                        transition:"all .15s",
-                      }}>
-                        <div style={{ fontSize:"22px", marginBottom:"4px" }}>{r.icone}</div>
-                        <div className="px-font" style={{ fontSize:"5px", color:racaId===r.id?r.cor:"#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{r.nome}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {aba === "classe" && (
-            <div>
-              {classeDados && (
-                <div style={{ display:"flex", gap:"12px", alignItems:"center", padding:"12px", background:"#06080f", border:`2px solid ${classeDados.cor}`, marginBottom:"16px" }}>
-                  <div style={{ fontSize:"32px" }}>{classeDados.icone}</div>
-                  <div>
-                    <div className="px-font" style={{ fontSize:"8px", color:classeDados.cor }}>{classeDados.nome}</div>
-                    <div className="px-font" style={{ fontSize:"6px", color:classeDados.cor+"99", marginTop:"4px" }}>Atributo: {classeDados.atributo}</div>
-                  </div>
-                </div>
-              )}
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(90px,1fr))", gap:"6px" }}>
-                {CLASSES.map(c => (
-                  <div key={c.id} onClick={() => setClasseId(c.id)} style={{
-                    padding:"12px 6px", textAlign:"center", cursor:"pointer",
-                    border:`2px solid ${classeId===c.id ? c.cor : "#1e3060"}`,
-                    background:classeId===c.id ? c.cor+"18" : "#06080f",
-                    transition:"all .15s",
-                  }}>
-                    <div style={{ fontSize:"22px", marginBottom:"4px" }}>{c.icone}</div>
-                    <div className="px-font" style={{ fontSize:"5px", color:classeId===c.id?c.cor:"#3060b8", wordBreak:"break-word", lineHeight:1.6 }}>{c.nome}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <div style={{ display:"flex", flexDirection:"column", alignItems:"center", marginBottom:"20px", gap:"12px" }}>
+            <CharacterPortrait fotoUrl={fotoUrl} size={120} />
+            <button onClick={() => fileRef.current?.click()}
+              style={{ padding:"8px 16px", background:"#0c1428", border:"2px solid #3060b8", color:"#4898f0", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", cursor:"pointer" }}>
+              📷 TROCAR FOTO
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display:"none" }} onChange={handleFile} />
+          </div>
+          <div className="px-font" style={{ fontSize:"6px", color:"#3060b8", marginBottom:"8px", letterSpacing:".15em" }}>NOME DO HERÓI</div>
+          <input className="px-input" maxLength={14}
+            value={nome} onChange={e => setNome(e.target.value.toUpperCase())}
+            placeholder="> SEU NOME..."
+            style={{ fontSize:"20px", letterSpacing:".1em", textTransform:"uppercase", color:"#f0c030", borderColor:"#c8a000", marginBottom:"8px" }}
+          />
+          <div className="px-font" style={{ fontSize:"6px", color:"#1e3060", marginBottom:"20px" }}>🧝 ELFO DA NOITE · 🌿 DRUIDA</div>
         </div>
-
-        {/* Footer */}
-        <div style={{ padding:"14px 18px", borderTop:"2px solid #1e3060", display:"flex", gap:"10px", position:"sticky", bottom:0, background:"#0c1630" }}>
-          <button onClick={() => { if(nome.trim()) onSave({ ...personagem, nome:nome.trim(), racaId, classeId, avatar }); }}
+        <div style={{ padding:"14px 18px", borderTop:"2px solid #1e3060", display:"flex", gap:"10px" }}>
+          <button onClick={() => nome.trim() && onSave({ ...personagem, nome: nome.trim(), fotoUrl })}
             disabled={!nome.trim()}
             style={{ flex:1, padding:"14px", background:"#201400", border:"3px solid #c8a000", color:nome.trim()?"#f0c030":"#4a3000", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:nome.trim()?"pointer":"not-allowed", boxShadow:"3px 3px 0 #4a3000" }}>
-            ✦ SALVAR PERSONAGEM
+            ✦ SALVAR
           </button>
           <button onClick={onClose} style={{ padding:"14px 18px", background:"#0c1428", border:"3px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor:"pointer" }}>
             CANCELAR
@@ -538,66 +199,6 @@ const CLASSES = [
   { id:"evocador",       nome:"Evocador",             icone:"🐉", cor:"#40e0a0", desc:"Meio-dragão descendente dos Dracthyr. Controla magia dracônica.", atributo:"Inteligência Dracônica" },
 ];
 
-/* ═══════════════════════════════════════════════════════════
-   AVATAR CUSTOMIZATION
-═══════════════════════════════════════════════════════════ */
-const SKIN_TONES = [
-  { id:"s1", label:"Muito Claro",  color:"#fde8d0" },
-  { id:"s2", label:"Claro",        color:"#f5c9a0" },
-  { id:"s3", label:"Médio",        color:"#e8a878" },
-  { id:"s4", label:"Médio Escuro", color:"#c87040" },
-  { id:"s5", label:"Escuro",       color:"#8b5020" },
-  { id:"s6", label:"Muito Escuro", color:"#4a2810" },
-];
-const HAIR_STYLES = [
-  { id:"curto",  label:"Curto"   },
-  { id:"longo",  label:"Longo"   },
-  { id:"spike",  label:"Espetado"},
-  { id:"coque",  label:"Coque"   },
-  { id:"careca", label:"Careca"  },
-  { id:"franja", label:"Franja"  },
-  { id:"afro",   label:"Afro"    },
-  { id:"tranca", label:"Tranças" },
-];
-const HAIR_COLORS = [
-  { id:"preto",    label:"Preto",    color:"#120c08" },
-  { id:"castanho", label:"Castanho", color:"#6b3a1f" },
-  { id:"loiro",    label:"Loiro",    color:"#d4a820" },
-  { id:"ruivo",    label:"Ruivo",    color:"#b83810" },
-  { id:"cinza",    label:"Grisalho", color:"#8090a0" },
-  { id:"branco",   label:"Branco",   color:"#e8e8f0" },
-  { id:"azul",     label:"Azul",     color:"#2860c8" },
-  { id:"roxo",     label:"Roxo",     color:"#8030c0" },
-  { id:"verde",    label:"Verde",    color:"#20a040" },
-  { id:"rosa",     label:"Rosa",     color:"#e05080" },
-];
-const EYE_COLORS = [
-  { id:"castanho", label:"Castanho", color:"#6b3a1f" },
-  { id:"verde",    label:"Verde",    color:"#20a040" },
-  { id:"azul",     label:"Azul",     color:"#2860c8" },
-  { id:"cinza",    label:"Cinza",    color:"#8090a0" },
-  { id:"preto",    label:"Preto",    color:"#1a1008" },
-  { id:"vermelho", label:"Vermelho", color:"#c02020" },
-  { id:"roxo",     label:"Roxo",     color:"#8030c0" },
-  { id:"dourado",  label:"Dourado",  color:"#c8a000" },
-];
-const MOUTH_STYLES = [
-  { id:"sorriso",  label:"Sorriso",       emoji:"🙂" },
-  { id:"grin",     label:"Sorriso Largo", emoji:"😁" },
-  { id:"neutro",   label:"Neutro",        emoji:"😐" },
-  { id:"serio",    label:"Sério",         emoji:"😤" },
-  { id:"surpreso", label:"Surpreso",      emoji:"😮" },
-];
-const ACCESSORIES = [
-  { id:"nenhum",   label:"Nenhum",        emoji:"" },
-  { id:"oculos",   label:"Óculos",        emoji:"👓" },
-  { id:"sol",      label:"Óculos de Sol", emoji:"🕶️" },
-  { id:"chapeu",   label:"Chapéu",        emoji:"🎩" },
-  { id:"coroa",    label:"Coroa",         emoji:"👑" },
-  { id:"capuz",    label:"Capuz",         emoji:"🧙" },
-  { id:"tiara",    label:"Tiara Arcana",  emoji:"✨" },
-  { id:"capacete", label:"Capacete",      emoji:"⛑️" },
-];
 
 /* DAILY QUEST DEFAULTS */
 const DAILY_QUEST_DEFAULTS = [
@@ -606,6 +207,127 @@ const DAILY_QUEST_DEFAULTS = [
   { id:"dq_casa",      title:"Arrumar o quarto",     category:"pessoal",  xp:20, icon:"🧹" },
   { id:"dq_agua",      title:"Beber 2L de água",     category:"saude",    xp:20, icon:"💧" },
   { id:"dq_ler",       title:"Ler por 15 minutos",   category:"leitura",  xp:25, icon:"📖" },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   THEMES — Visual palettes
+═══════════════════════════════════════════════════════════ */
+const THEMES = [
+  { id:"arcane",       label:"ARCANO",         icon:"🔮", desc:"WoW Clássico · Azul & Ouro",       bg:"#06080f", headerBg:"#080c1a" },
+  { id:"darkfantasy",  label:"DARK FANTASY",   icon:"⚔️", desc:"Berserk · Eclipse · Carmesim & Negro",    bg:"#080000", headerBg:"#0a0100" },
+  { id:"cyberpunk",    label:"CYBER PUNK",     icon:"🔫", desc:"Night City · CP2077 · Amarelo & Ciano",  bg:"#020308", headerBg:"#010206" },
+  { id:"fantasia",     label:"FANTASIA",       icon:"🌿", desc:"Floresta Mágica · Verde & Bronze", bg:"#040e04", headerBg:"#030c03" },
+  { id:"finalfantasy", label:"FINAL FANTASY",  icon:"💎", desc:"Cristal Eterno · Safira & Prata",  bg:"#030815", headerBg:"#040a18" },
+  { id:"stardew",      label:"STARDEW VALLEY", icon:"🌾", desc:"Fazenda Aconchegante · Marrom",    bg:"#1a1008", headerBg:"#160e04" },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   THEME ICONS — ícones únicos por tema
+═══════════════════════════════════════════════════════════ */
+const THEME_ICONS = {
+  arcane: {
+    soundStyle: "rpg",
+    tabs:      { hall:"⚔", diary:"📖", quests:"📜", goals:"🏆", calendar:"📅", notes:"📚", skilltree:"🌳", oracle:"🔮", album:"📸", raid:"⚔" },
+    deco:      "✦",
+    dungeon:   "🏰",
+    companion: "🧙",
+    character: "🧝",
+    questTypes:{ lendaria:"👑", epica:"💜", normal:"🔵", secundaria:"🌿" },
+    guilds:    { leitura:"📚", estudos:"🎓", saude:"🌿", financeiro:"💰", pessoal:"⭐", trabalho:"🛡️" },
+    stats:     { diary:"📖", quests:"⚔️", overdue:"☠️", goals:"🏆" },
+  },
+  darkfantasy: {
+    /* ── BERSERK: Guts · Dragon Slayer · Eclipse · Godhand ── */
+    soundStyle: "dark",
+    tabs:      { hall:"⚔️", diary:"🩸", quests:"💀", goals:"🔥", calendar:"🌑", notes:"📜", skilltree:"🐺", oracle:"👁️", album:"🖼️", raid:"⛧" },
+    deco:      "✠",
+    dungeon:   "🌑",
+    companion: "🧙‍♀️",
+    character: "⚔️",
+    questTypes:{ lendaria:"🔥", epica:"💀", normal:"🩸", secundaria:"⚔️" },
+    guilds:    { leitura:"📜", estudos:"🔥", saude:"🩸", financeiro:"⚰️", pessoal:"🌑", trabalho:"⚔️" },
+    stats:     { diary:"🩸", quests:"⚔️", overdue:"⛧", goals:"🔥" },
+  },
+  cyberpunk: {
+    /* ── CYBERPUNK 2077: V · Night City · Arasaka · Johnny Silverhand ── */
+    soundStyle: "cyber",
+    tabs:      { hall:"🔫", diary:"💿", quests:"⚡", goals:"🏙️", calendar:"📆", notes:"🧠", skilltree:"🔌", oracle:"👁️", album:"📷", raid:"💀" },
+    deco:      "◈",
+    dungeon:   "🏙️",
+    companion: "💀",
+    character: "🔫",
+    questTypes:{ lendaria:"💥", epica:"⚡", normal:"🔵", secundaria:"💚" },
+    guilds:    { leitura:"💾", estudos:"🧠", saude:"💊", financeiro:"💳", pessoal:"🎸", trabalho:"🔧" },
+    stats:     { diary:"💿", quests:"⚡", overdue:"⚠️", goals:"🏙️" },
+  },
+  fantasia: {
+    soundStyle: "nature",
+    tabs:      { hall:"🌿", diary:"🍃", quests:"🌱", goals:"🌸", calendar:"🌻", notes:"📜", skilltree:"🌲", oracle:"🧚", album:"🦋", raid:"🐉" },
+    deco:      "✿",
+    dungeon:   "🌲",
+    companion: "🧙‍♀️",
+    character: "🧚",
+    questTypes:{ lendaria:"🌸", epica:"🍄", normal:"🌿", secundaria:"🌱" },
+    guilds:    { leitura:"📜", estudos:"🧪", saude:"🍃", financeiro:"🌰", pessoal:"🦋", trabalho:"⚒️" },
+    stats:     { diary:"🍃", quests:"🗡️", overdue:"🥀", goals:"🌸" },
+  },
+  finalfantasy: {
+    soundStyle: "crystal",
+    tabs:      { hall:"⚔️", diary:"📔", quests:"🗡️", goals:"💎", calendar:"🗓️", notes:"📖", skilltree:"💠", oracle:"🔷", album:"🖼️", raid:"🐲" },
+    deco:      "◆",
+    dungeon:   "🗼",
+    companion: "🧙‍♂️",
+    character: "🧝‍♂️",
+    questTypes:{ lendaria:"💎", epica:"🔷", normal:"💙", secundaria:"🌀" },
+    guilds:    { leitura:"📖", estudos:"🔷", saude:"💊", financeiro:"💰", pessoal:"💎", trabalho:"🛡️" },
+    stats:     { diary:"📔", quests:"⚔️", overdue:"💔", goals:"💎" },
+  },
+  stardew: {
+    soundStyle: "cozy",
+    tabs:      { hall:"🏡", diary:"📝", quests:"🌾", goals:"🌻", calendar:"📅", notes:"🗒️", skilltree:"🌱", oracle:"🌙", album:"📷", raid:"🐄" },
+    deco:      "✿",
+    dungeon:   "⛏️",
+    companion: "🐱",
+    character: "👨‍🌾",
+    questTypes:{ lendaria:"🌟", epica:"🌻", normal:"🌾", secundaria:"🌱" },
+    guilds:    { leitura:"📚", estudos:"🔬", saude:"🥕", financeiro:"💰", pessoal:"🏡", trabalho:"🪓" },
+    stats:     { diary:"📝", quests:"🌾", overdue:"🌧️", goals:"🌻" },
+  },
+};
+
+const ThemeContext = createContext(THEME_ICONS.arcane);
+
+/* ═══════════════════════════════════════════════════════════
+   RAID FINAL — META SEMESTRAL (defaults)
+═══════════════════════════════════════════════════════════ */
+const RAID_DEFAULTS = {
+  titulo: "RAID FINAL — SEMESTRE ÉPICO",
+  deadline: "",
+  objetivos: [
+    { id:"r1", titulo:"Concluir todas as matérias do semestre",  xp:500, done:false },
+    { id:"r2", titulo:"Zero faltas em todas as aulas",           xp:300, done:false },
+    { id:"r3", titulo:"Média acima de 7 em todas as provas",     xp:400, done:false },
+    { id:"r4", titulo:"Entregar todos os projetos no prazo",     xp:350, done:false },
+    { id:"r5", titulo:"Completar a Árvore de Habilidades FIAP",  xp:600, done:false },
+  ],
+};
+
+/* ═══════════════════════════════════════════════════════════
+   RPG NOTIFICATIONS — mensagens do reino
+═══════════════════════════════════════════════════════════ */
+const RPG_NOTIF_MSGS = [
+  "⚔ Seu reino precisa de você, herói!",
+  "🐉 Um boss apareceu — complete suas quests!",
+  "🔮 O Oráculo aguarda sua consulta...",
+  "📖 A crônica de hoje ainda está em branco!",
+  "⭐ Suas façanhas estão esquecidas, aventureiro!",
+  "💀 Quests atrasadas drenando sua vida...",
+  "🧙 Ignis o aguarda para uma sessão de estudos!",
+  "🏆 O RAID FINAL se aproxima — esteja preparado!",
+  "⚡ Que a magia do conhecimento guie seus passos!",
+  "🛡️ Guerreiro, não abandone sua jornada hoje!",
+  "🌟 O nível seguinte está ao seu alcance!",
+  "🌿 A guilda convoca seus membros para batalha!",
 ];
 
 /* ═══════════════════════════════════════════════════════════
@@ -628,147 +350,35 @@ function PixelBar({ value, max = 100, color = "#39ff14", segments = 24 }) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   AVATAR DISPLAY — CSS pixel-art character portrait
+   CHARACTER PORTRAIT — real photo display
 ═══════════════════════════════════════════════════════════ */
-function AvatarDisplay({ avatar = {}, size = 64 }) {
-  const skin  = SKIN_TONES.find(s => s.id === avatar.skin)        || SKIN_TONES[1];
-  const hSty  = HAIR_STYLES.find(h => h.id === avatar.hairStyle)  || HAIR_STYLES[0];
-  const hCol  = HAIR_COLORS.find(c => c.id === avatar.hairColor)  || HAIR_COLORS[0];
-  const eCol  = EYE_COLORS.find(e => e.id === avatar.eyeColor)    || EYE_COLORS[0];
-  const mSty  = MOUTH_STYLES.find(m => m.id === avatar.mouthStyle)|| MOUTH_STYLES[0];
-  const acc   = ACCESSORIES.find(a => a.id === avatar.accessory)  || ACCESSORIES[0];
-
-  const s        = size;
-  const headSize = Math.round(s * 0.72);
-  const headTop  = Math.round(s * 0.24);
-  const headLeft = Math.round((s - headSize) / 2);
-
-  const hairRadius = {
-    curto:"50% 50% 20% 20%", longo:"50% 50% 0 0",
-    spike:"30% 30% 0 0",     coque:"50%",
-    careca:null,              franja:"50% 50% 20% 20%",
-    afro:"50%",               tranca:"40% 40% 0 0",
-  }[hSty.id] || "50% 50% 20% 20%";
-
-  const hairH = hSty.id === "afro"
-    ? headSize * 1.05
-    : hSty.id === "coque"
-    ? headSize * 0.5
-    : headSize * 0.58;
-
+function CharacterPortrait({ fotoUrl, size = 64 }) {
+  const icons = useContext(ThemeContext);
   return (
-    <div style={{ width:s, height:s, position:"relative", display:"inline-block", imageRendering:"pixelated", flexShrink:0 }}>
-      {/* Accessory top */}
-      {acc.id !== "nenhum" && (
-        <div style={{ position:"absolute", top:0, left:"50%", transform:"translateX(-50%)", fontSize:Math.round(s*0.3), lineHeight:1, zIndex:5, textAlign:"center" }}>
-          {acc.emoji}
-        </div>
-      )}
-      {/* Hair back */}
-      {hSty.id !== "careca" && (
+    <div style={{
+      width: size, height: size,
+      border: "3px solid #c8a000",
+      boxShadow: "0 0 0 1px #06080f, 0 0 16px rgba(200,160,0,.4)",
+      overflow: "hidden",
+      flexShrink: 0,
+      background: "#0c1630",
+      position: "relative",
+    }}>
+      {fotoUrl ? (
+        <img src={fotoUrl} alt="personagem" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+      ) : (
         <div style={{
-          position:"absolute",
-          top: headTop - Math.round(s * 0.04),
-          left: headLeft - Math.round(s * 0.03),
-          width: headSize + Math.round(s * 0.06),
-          height: hairH,
-          background: hCol.color,
-          borderRadius: hairRadius,
-          zIndex:1,
-        }} />
-      )}
-      {/* Face */}
-      <div style={{
-        position:"absolute", top:headTop, left:headLeft,
-        width:headSize, height:headSize,
-        background:skin.color,
-        borderRadius:"45% 45% 42% 42%",
-        zIndex:2, overflow:"hidden",
-        display:"flex", flexDirection:"column", alignItems:"center",
-      }}>
-        {/* Eyes */}
-        <div style={{ display:"flex", gap:Math.round(headSize*0.20), marginTop:Math.round(headSize*0.30) }}>
-          <div style={{ width:Math.round(s*0.09), height:Math.round(s*0.09), background:eCol.color, borderRadius:"50%" }} />
-          <div style={{ width:Math.round(s*0.09), height:Math.round(s*0.09), background:eCol.color, borderRadius:"50%" }} />
-        </div>
-        {/* Mouth */}
-        <div style={{ fontSize:Math.round(s*0.19), lineHeight:1, marginTop:Math.round(s*0.04) }}>{mSty.emoji}</div>
-      </div>
-      {/* Hair fringe (front layer) */}
-      {(hSty.id === "franja" || hSty.id === "tranca") && (
-        <div style={{
-          position:"absolute",
-          top: headTop + Math.round(headSize * 0.01),
-          left: headLeft + Math.round(headSize * 0.12),
-          width: headSize * 0.76,
-          height: headSize * 0.20,
-          background: hCol.color,
-          borderRadius:"0 0 50% 50%",
-          zIndex:3,
-        }} />
+          width:"100%", height:"100%",
+          display:"flex", alignItems:"center", justifyContent:"center",
+          fontSize: Math.round(size * 0.55) + "px",
+          background: "linear-gradient(135deg,#0a1428,#1a2848)",
+        }}>{icons.character}</div>
       )}
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   AVATAR CREATOR — palette pickers
-═══════════════════════════════════════════════════════════ */
-function AvatarCreator({ avatar, onChange }) {
-  const av  = avatar || {};
-  const set = (field, val) => onChange({ ...av, [field]: val });
 
-  const Dot = ({ active, color, label, onClick }) => (
-    <button onClick={onClick} title={label} style={{
-      width:"28px", height:"28px", borderRadius:"50%",
-      background:color, flexShrink:0,
-      border:`3px solid ${active?"#f0c030":"#1e3060"}`,
-      cursor:"pointer",
-      boxShadow:active?"0 0 8px #f0c03088":"none",
-      transition:"all .1s",
-    }} />
-  );
-  const Chip = ({ active, onClick, children }) => (
-    <button onClick={onClick} style={{
-      padding:"5px 9px",
-      border:`2px solid ${active?"#f0c030":"#1e3060"}`,
-      background:active?"#f0c03020":"#0c1630",
-      color:active?"#f0c030":"#3060b8",
-      fontFamily:"'Press Start 2P',monospace", fontSize:"5px",
-      cursor:"pointer", transition:"all .1s",
-      boxShadow:active?"0 0 6px #f0c03044":"none",
-    }}>{children}</button>
-  );
-  const Row = ({ label, children }) => (
-    <div style={{ marginBottom:"14px" }}>
-      <div className="px-font" style={{ fontSize:"6px", color:"#3060b8", letterSpacing:".15em", marginBottom:"8px" }}>{label}</div>
-      <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>{children}</div>
-    </div>
-  );
-
-  return (
-    <div>
-      <Row label="TOM DE PELE">
-        {SKIN_TONES.map(s => <Dot key={s.id} active={av.skin===s.id} color={s.color} label={s.label} onClick={()=>set("skin",s.id)} />)}
-      </Row>
-      <Row label="CABELO — ESTILO">
-        {HAIR_STYLES.map(h => <Chip key={h.id} active={av.hairStyle===h.id} onClick={()=>set("hairStyle",h.id)}>{h.label}</Chip>)}
-      </Row>
-      <Row label="CABELO — COR">
-        {HAIR_COLORS.map(c => <Dot key={c.id} active={av.hairColor===c.id} color={c.color} label={c.label} onClick={()=>set("hairColor",c.id)} />)}
-      </Row>
-      <Row label="COR DOS OLHOS">
-        {EYE_COLORS.map(e => <Dot key={e.id} active={av.eyeColor===e.id} color={e.color} label={e.label} onClick={()=>set("eyeColor",e.id)} />)}
-      </Row>
-      <Row label="EXPRESSÃO">
-        {MOUTH_STYLES.map(m => <Chip key={m.id} active={av.mouthStyle===m.id} onClick={()=>set("mouthStyle",m.id)}>{m.emoji} {m.label}</Chip>)}
-      </Row>
-      <Row label="ACESSÓRIO">
-        {ACCESSORIES.map(a => <Chip key={a.id} active={av.accessory===a.id} onClick={()=>set("accessory",a.id)}>{a.emoji ? a.emoji+" " : "— "}{a.label}</Chip>)}
-      </Row>
-    </div>
-  );
-}
 
 /* ═══════════════════════════════════════════════════════════
    GLOBAL STYLES — PIXEL 16-BIT ARCANE
@@ -1029,9 +639,345 @@ function usePixelStyles() {
         border-color: #00d4ff !important;
         box-shadow: 0 0 8px rgba(0,212,255,0.2) !important;
       }
+
+      /* ══════════════════════════════════════════════
+         THEME: DARK FANTASY — Berserk · Eclipse · Dragon Slayer
+      ══════════════════════════════════════════════ */
+      [data-theme="darkfantasy"] .px-panel {
+        background: #120000; border-color: #8b0000;
+        box-shadow: 0 0 0 1px #080000, 0 0 0 4px #3a0000, inset 0 0 0 2px #5a0000, 0 0 16px rgba(139,0,0,0.2);
+      }
+      [data-theme="darkfantasy"] .px-panel::before,
+      [data-theme="darkfantasy"] .px-panel::after { background:#8b0000; border-color:#ff2200; }
+      [data-theme="darkfantasy"] .px-panel-hero {
+        background: #1a0000; border-color: #cc2200;
+        box-shadow: 0 0 0 1px #080000, 0 0 0 4px #5a0a00, inset 0 0 0 2px #aa1500, 0 0 24px rgba(204,34,0,0.25);
+      }
+      [data-theme="darkfantasy"] .px-panel-hero::before,
+      [data-theme="darkfantasy"] .px-panel-hero::after { background:#cc2200; border-color:#ff5500; }
+      [data-theme="darkfantasy"] .px-panel-arcane {
+        background: #100500; border-color: #7a1800;
+        box-shadow: 0 0 0 1px #080000, 0 0 0 4px #3a0800, inset 0 0 0 2px #601000, 0 0 20px rgba(122,24,0,0.18);
+      }
+      [data-theme="darkfantasy"] .px-panel-arcane::before,
+      [data-theme="darkfantasy"] .px-panel-arcane::after { background:#7a1800; border-color:#ff4400; }
+      [data-theme="darkfantasy"] ::-webkit-scrollbar-thumb { background:#8b0000; }
+      [data-theme="darkfantasy"] ::-webkit-scrollbar-track { background:#080000; border-left-color:#3a0000; }
+      [data-theme="darkfantasy"] .px-nav-btn { color:#3a1000; }
+      [data-theme="darkfantasy"] .px-nav-btn:hover { color:#ff3300; background:rgba(204,34,0,.10); }
+      [data-theme="darkfantasy"] .px-nav-btn.active { color:#ff5500 !important; border-bottom-color:#cc2200; background:rgba(204,34,0,.10); text-shadow:0 0 12px rgba(255,80,0,0.8); }
+      [data-theme="darkfantasy"] .px-btn-cyan { background:#180000; color:#ff5500; border-color:#8b0000; box-shadow:3px 3px 0 #0a0000; }
+      [data-theme="darkfantasy"] .px-btn-gold { background:#1a0500; color:#ff8040; border-color:#cc2200; box-shadow:3px 3px 0 #5a0a00; }
+      [data-theme="darkfantasy"] .px-input { background:#0a0000; border-color:#3a0000; }
+      [data-theme="darkfantasy"] .px-input:focus { border-color:#8b0000; box-shadow:inset 2px 2px 0 #060000, 0 0 0 2px rgba(139,0,0,.30); }
+      [data-theme="darkfantasy"] .px-textarea { background:#0a0000; border-color:#3a0000; }
+      [data-theme="darkfantasy"] .px-quest:hover { border-color:#cc2200 !important; box-shadow:0 0 10px rgba(204,34,0,0.3) !important; }
+
+      /* ══════════════════════════════════════════════
+         THEME: CYBER PUNK — Night City · CP2077
+         Primário: Amarelo elétrico #f0d000
+         Secundário: Ciano #00e5ff
+      ══════════════════════════════════════════════ */
+      [data-theme="cyberpunk"] .px-panel {
+        background: #0a0800; border-color: #a08000;
+        box-shadow: 0 0 0 1px #020308, 0 0 0 4px #403000, inset 0 0 0 2px #706000, 0 0 16px rgba(200,160,0,0.15);
+      }
+      [data-theme="cyberpunk"] .px-panel::before,
+      [data-theme="cyberpunk"] .px-panel::after { background:#a08000; border-color:#f0d000; }
+      [data-theme="cyberpunk"] .px-panel-hero {
+        background: #020810; border-color: #00c8e0;
+        box-shadow: 0 0 0 1px #020308, 0 0 0 4px #003a40, inset 0 0 0 2px #0090a8, 0 0 20px rgba(0,200,224,0.2);
+      }
+      [data-theme="cyberpunk"] .px-panel-hero::before,
+      [data-theme="cyberpunk"] .px-panel-hero::after { background:#00c8e0; border-color:#80eeff; }
+      [data-theme="cyberpunk"] .px-panel-arcane {
+        background: #080600; border-color: #f0d000;
+        box-shadow: 0 0 0 1px #020308, 0 0 0 4px #604800, inset 0 0 0 2px #907000, 0 0 20px rgba(240,208,0,0.18);
+      }
+      [data-theme="cyberpunk"] .px-panel-arcane::before,
+      [data-theme="cyberpunk"] .px-panel-arcane::after { background:#f0d000; border-color:#fff080; }
+      [data-theme="cyberpunk"] ::-webkit-scrollbar-thumb { background:#a08000; }
+      [data-theme="cyberpunk"] ::-webkit-scrollbar-track { background:#020308; border-left-color:#403000; }
+      [data-theme="cyberpunk"] .px-nav-btn { color:#302800; }
+      [data-theme="cyberpunk"] .px-nav-btn:hover { color:#f0d000; background:rgba(240,208,0,.08); }
+      [data-theme="cyberpunk"] .px-nav-btn.active { color:#f0d000 !important; border-bottom-color:#f0d000; background:rgba(240,208,0,.10); text-shadow:0 0 10px rgba(240,208,0,0.8); }
+      [data-theme="cyberpunk"] .px-btn-cyan { background:#050400; color:#f0d000; border-color:#a08000; box-shadow:3px 3px 0 #1a1400; }
+      [data-theme="cyberpunk"] .px-btn-gold { background:#020810; color:#00e5ff; border-color:#00c8e0; box-shadow:3px 3px 0 #003040; }
+      [data-theme="cyberpunk"] .px-input { background:#020308; border-color:#403000; color:#f0e8a0; }
+      [data-theme="cyberpunk"] .px-input:focus { border-color:#f0d000; box-shadow:inset 2px 2px 0 #010204, 0 0 0 2px rgba(240,208,0,.25); }
+      [data-theme="cyberpunk"] .px-textarea { background:#020308; border-color:#403000; color:#f0e8a0; }
+      [data-theme="cyberpunk"] .px-quest:hover { border-color:#f0d000 !important; box-shadow:0 0 10px rgba(240,208,0,0.25) !important; }
+
+      /* ══════════════════════════════════════════════
+         THEME: FANTASIA — Floresta Mágica
+      ══════════════════════════════════════════════ */
+      [data-theme="fantasia"] .px-panel {
+        background: #081408; border-color: #2a7020;
+        box-shadow: 0 0 0 1px #040e04, 0 0 0 4px #103810, inset 0 0 0 2px #1a5018, 0 0 16px rgba(42,112,32,0.15);
+      }
+      [data-theme="fantasia"] .px-panel::before,
+      [data-theme="fantasia"] .px-panel::after { background:#2a7020; border-color:#60c050; }
+      [data-theme="fantasia"] .px-panel-hero {
+        background: #0a1808; border-color: #8a6020;
+        box-shadow: 0 0 0 1px #040e04, 0 0 0 4px #3a2808, inset 0 0 0 2px #6a4818, 0 0 20px rgba(138,96,32,0.18);
+      }
+      [data-theme="fantasia"] .px-panel-hero::before,
+      [data-theme="fantasia"] .px-panel-hero::after { background:#8a6020; border-color:#d4a040; }
+      [data-theme="fantasia"] .px-panel-arcane {
+        background: #060e18; border-color: #2a5090;
+        box-shadow: 0 0 0 1px #040e04, 0 0 0 4px #0e2850, inset 0 0 0 2px #1a4070, 0 0 20px rgba(42,80,144,0.15);
+      }
+      [data-theme="fantasia"] .px-panel-arcane::before,
+      [data-theme="fantasia"] .px-panel-arcane::after { background:#2a5090; border-color:#6090d0; }
+      [data-theme="fantasia"] ::-webkit-scrollbar-thumb { background:#2a7020; }
+      [data-theme="fantasia"] ::-webkit-scrollbar-track { background:#040e04; border-left-color:#103810; }
+      [data-theme="fantasia"] .px-nav-btn { color:#102808; }
+      [data-theme="fantasia"] .px-nav-btn:hover { color:#40c040; background:rgba(42,112,32,.08); }
+      [data-theme="fantasia"] .px-nav-btn.active { color:#c8a040 !important; border-bottom-color:#8a6020; background:rgba(138,96,32,.08); text-shadow:0 0 10px rgba(138,96,32,0.6); }
+      [data-theme="fantasia"] .px-btn-cyan { background:#040e04; color:#60c050; border-color:#2a7020; box-shadow:3px 3px 0 #020804; }
+      [data-theme="fantasia"] .px-btn-gold { background:#0a1808; color:#c8a040; border-color:#8a6020; box-shadow:3px 3px 0 #3a2808; }
+      [data-theme="fantasia"] .px-input { background:#040e04; border-color:#103810; color:#d8ecd0; }
+      [data-theme="fantasia"] .px-input:focus { border-color:#2a7020; box-shadow:inset 2px 2px 0 #020804, 0 0 0 2px rgba(42,112,32,.25); }
+      [data-theme="fantasia"] .px-textarea { background:#040e04; border-color:#103810; color:#d8ecd0; }
+      [data-theme="fantasia"] .px-quest:hover { border-color:#8a6020 !important; box-shadow:0 0 8px rgba(138,96,32,0.2) !important; }
+
+      /* ══════════════════════════════════════════════
+         THEME: FINAL FANTASY — Cristal Eterno
+      ══════════════════════════════════════════════ */
+      [data-theme="finalfantasy"] .px-panel {
+        background: #06102a; border-color: #1840a0;
+        box-shadow: 0 0 0 1px #030815, 0 0 0 4px #0a2060, inset 0 0 0 2px #1230a0, 0 0 16px rgba(24,64,160,0.18);
+      }
+      [data-theme="finalfantasy"] .px-panel::before,
+      [data-theme="finalfantasy"] .px-panel::after { background:#1840a0; border-color:#80b0ff; }
+      [data-theme="finalfantasy"] .px-panel-hero {
+        background: #080620; border-color: #8098e0;
+        box-shadow: 0 0 0 1px #030815, 0 0 0 4px #3040a0, inset 0 0 0 2px #6078c0, 0 0 20px rgba(128,152,224,0.2);
+      }
+      [data-theme="finalfantasy"] .px-panel-hero::before,
+      [data-theme="finalfantasy"] .px-panel-hero::after { background:#8098e0; border-color:#c0d0ff; }
+      [data-theme="finalfantasy"] .px-panel-arcane {
+        background: #050820; border-color: #4080ff;
+        box-shadow: 0 0 0 1px #030815, 0 0 0 4px #1030a0, inset 0 0 0 2px #2060e0, 0 0 20px rgba(64,128,255,0.15);
+      }
+      [data-theme="finalfantasy"] .px-panel-arcane::before,
+      [data-theme="finalfantasy"] .px-panel-arcane::after { background:#4080ff; border-color:#a0c0ff; }
+      [data-theme="finalfantasy"] ::-webkit-scrollbar-thumb { background:#1840a0; }
+      [data-theme="finalfantasy"] ::-webkit-scrollbar-track { background:#030815; border-left-color:#0a2060; }
+      [data-theme="finalfantasy"] .px-nav-btn { color:#102050; }
+      [data-theme="finalfantasy"] .px-nav-btn:hover { color:#6090e0; background:rgba(24,64,160,.08); }
+      [data-theme="finalfantasy"] .px-nav-btn.active { color:#c0d4ff !important; border-bottom-color:#8098e0; background:rgba(128,152,224,.08); text-shadow:0 0 10px rgba(128,152,224,0.5); }
+      [data-theme="finalfantasy"] .px-btn-cyan { background:#06102a; color:#80b0ff; border-color:#1840a0; box-shadow:3px 3px 0 #030815; }
+      [data-theme="finalfantasy"] .px-btn-gold { background:#080620; color:#c0d4ff; border-color:#8098e0; box-shadow:3px 3px 0 #3040a0; }
+      [data-theme="finalfantasy"] .px-input { background:#030815; border-color:#0a2060; color:#d0e8ff; }
+      [data-theme="finalfantasy"] .px-input:focus { border-color:#4080ff; box-shadow:inset 2px 2px 0 #020510, 0 0 0 2px rgba(64,128,255,.25); }
+      [data-theme="finalfantasy"] .px-textarea { background:#030815; border-color:#0a2060; color:#d0e8ff; }
+      [data-theme="finalfantasy"] .px-quest:hover { border-color:#4080ff !important; box-shadow:0 0 8px rgba(64,128,255,0.2) !important; }
+
+      /* ══════════════════════════════════════════════
+         THEME: STARDEW VALLEY — Fazenda Aconchegante
+      ══════════════════════════════════════════════ */
+      [data-theme="stardew"] .px-panel {
+        background: #241a0c; border-color: #6a5030;
+        box-shadow: 0 0 0 1px #1a1008, 0 0 0 4px #3a2808, inset 0 0 0 2px #5a4020, 0 0 16px rgba(106,80,48,0.15);
+      }
+      [data-theme="stardew"] .px-panel::before,
+      [data-theme="stardew"] .px-panel::after { background:#6a5030; border-color:#c8a060; }
+      [data-theme="stardew"] .px-panel-hero {
+        background: #201404; border-color: #c89040;
+        box-shadow: 0 0 0 1px #1a1008, 0 0 0 4px #6a4808, inset 0 0 0 2px #a07828, 0 0 20px rgba(200,144,64,0.18);
+      }
+      [data-theme="stardew"] .px-panel-hero::before,
+      [data-theme="stardew"] .px-panel-hero::after { background:#c89040; border-color:#e8c880; }
+      [data-theme="stardew"] .px-panel-arcane {
+        background: #1e1820; border-color: #806040;
+        box-shadow: 0 0 0 1px #1a1008, 0 0 0 4px #3a2818, inset 0 0 0 2px #604830, 0 0 20px rgba(128,96,64,0.15);
+      }
+      [data-theme="stardew"] .px-panel-arcane::before,
+      [data-theme="stardew"] .px-panel-arcane::after { background:#806040; border-color:#c0a070; }
+      [data-theme="stardew"] ::-webkit-scrollbar-thumb { background:#6a5030; }
+      [data-theme="stardew"] ::-webkit-scrollbar-track { background:#1a1008; border-left-color:#3a2808; }
+      [data-theme="stardew"] .px-nav-btn { color:#3a2808; }
+      [data-theme="stardew"] .px-nav-btn:hover { color:#c89040; background:rgba(200,144,64,.08); }
+      [data-theme="stardew"] .px-nav-btn.active { color:#e8c060 !important; border-bottom-color:#c89040; background:rgba(200,144,64,.08); text-shadow:0 0 10px rgba(200,144,64,0.5); }
+      [data-theme="stardew"] .px-btn-cyan { background:#241a0c; color:#c89040; border-color:#6a5030; box-shadow:3px 3px 0 #0a0804; }
+      [data-theme="stardew"] .px-btn-gold { background:#201404; color:#e8c060; border-color:#c89040; box-shadow:3px 3px 0 #6a4808; }
+      [data-theme="stardew"] .px-input { background:#1a1008; border-color:#3a2808; color:#f0e8d0; }
+      [data-theme="stardew"] .px-input:focus { border-color:#c89040; box-shadow:inset 2px 2px 0 #0e0c04, 0 0 0 2px rgba(200,144,64,.25); }
+      [data-theme="stardew"] .px-textarea { background:#1a1008; border-color:#3a2808; color:#f0e8d0; }
+      [data-theme="stardew"] .px-quest:hover { border-color:#c89040 !important; box-shadow:0 0 8px rgba(200,144,64,0.2) !important; }
+
+      /* ── Dungeon Mode animation ── */
+      @keyframes dungeonPulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+      @keyframes toastSlide { from{transform:translateX(120%);opacity:0} to{transform:translateX(0);opacity:1} }
     `;
     document.head.appendChild(style);
   }, []);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SOUND SYSTEM — Web Audio API 8-bit
+═══════════════════════════════════════════════════════════ */
+const fireSound = (sound) =>
+  window.dispatchEvent(new CustomEvent("rpg-sound", { detail: sound }));
+
+/* Perfis de som por tema — frequências, ondas e escalas */
+const SOUND_PROFILES = {
+  rpg:     { wave:"square",   base:440, scale:[1,1.25,1.5,2],     clickFreq:520,  clickDur:0.05 },
+  dark:    { wave:"sawtooth", base:110, scale:[1,1.19,1.33,1.5],  clickFreq:130,  clickDur:0.12 }, /* Berserk — ominoso, grave, lento */
+  cyber:   { wave:"square",   base:660, scale:[1,1.5,2,2.67],     clickFreq:720,  clickDur:0.03 }, /* CP2077 — industrial, seco, metálico */
+  nature:  { wave:"sine",     base:528, scale:[1,1.12,1.25,1.5],  clickFreq:440,  clickDur:0.09 },
+  crystal: { wave:"triangle", base:392, scale:[1,1.25,1.67,2],    clickFreq:392,  clickDur:0.06 },
+  cozy:    { wave:"triangle", base:493, scale:[1,1.12,1.33,1.5],  clickFreq:349,  clickDur:0.08 },
+};
+
+function useSounds(enabled, soundStyle = "rpg") {
+  const acRef = useRef(null);
+
+  const getAC = useCallback(() => {
+    if (!acRef.current) {
+      try { acRef.current = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+    }
+    return acRef.current;
+  }, []);
+
+  const beep = useCallback((freq, dur, vol = 0.28, type) => {
+    try {
+      const p = SOUND_PROFILES[soundStyle] || SOUND_PROFILES.rpg;
+      const ctx = getAC(); if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = type || p.wave;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(vol, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + dur);
+    } catch(e) {}
+  }, [getAC, soundStyle]);
+
+  const play = useCallback((sound) => {
+    if (!enabled) return;
+    const p = SOUND_PROFILES[soundStyle] || SOUND_PROFILES.rpg;
+    const [s0, s1, s2, s3] = p.scale.map(m => Math.round(p.base * m));
+
+    switch (sound) {
+      case "click":
+        beep(p.clickFreq, p.clickDur, 0.18); break;
+
+      case "success":
+        beep(s0, 0.09, 0.25);
+        setTimeout(() => beep(s1, 0.09, 0.25), 100);
+        setTimeout(() => beep(s2, 0.18, 0.30), 200); break;
+
+      case "levelup":
+        [s0, s1, s2, s3].forEach((f, i) =>
+          setTimeout(() => beep(f, 0.14, 0.32), i * 110));
+        break;
+
+      case "error":
+        beep(Math.round(p.base * 0.5), 0.11, 0.22);
+        setTimeout(() => beep(Math.round(p.base * 0.4), 0.18, 0.22), 110); break;
+
+      case "notification":
+        beep(s2, 0.07, 0.2);
+        setTimeout(() => beep(s3, 0.14, 0.25), 90); break;
+
+      case "quest_add":
+        beep(s1, 0.07, 0.2);
+        setTimeout(() => beep(s2, 0.11, 0.25), 80); break;
+
+      case "dungeon_enter":
+        beep(Math.round(p.base * 0.25), 0.45, 0.38, "sawtooth");
+        setTimeout(() => beep(Math.round(p.base * 0.33), 0.35, 0.28, "sawtooth"), 280);
+        setTimeout(() => beep(Math.round(p.base * 0.37), 0.55, 0.32, "sawtooth"), 560); break;
+
+      default: break;
+    }
+  }, [enabled, soundStyle, beep]);
+
+  useEffect(() => {
+    const handler = (e) => play(e.detail);
+    window.addEventListener("rpg-sound", handler);
+    return () => window.removeEventListener("rpg-sound", handler);
+  }, [play]);
+
+  return { play };
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RPG TOAST — notificação in-app estilo RPG
+═══════════════════════════════════════════════════════════ */
+function RPGToast({ message, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 5000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  return (
+    <div style={{
+      position:"fixed", bottom:"24px", right:"24px", zIndex:3000,
+      background:"#0c1630", border:"3px solid #c8a000",
+      boxShadow:"0 0 20px rgba(200,160,0,.4), 4px 4px 0 #4a3000",
+      padding:"14px 16px", maxWidth:"300px",
+      animation:"toastSlide .3s ease-out",
+    }}>
+      <div style={{ display:"flex", alignItems:"flex-start", gap:"10px" }}>
+        <span style={{ fontSize:"24px", flexShrink:0 }}>📯</span>
+        <div style={{ flex:1 }}>
+          <div className="px-font" style={{ fontSize:"7px", color:"#f0c030", marginBottom:"4px" }}>
+            ⚔ MENSAGEM DO REINO
+          </div>
+          <div className="px-body" style={{ fontSize:"16px", color:"#c8deff", lineHeight:1.4 }}>
+            {message}
+          </div>
+        </div>
+        <button onClick={onClose} style={{ background:"none", border:"none", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"9px", cursor:"pointer", flexShrink:0, lineHeight:1 }}>✕</button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   THEME SWITCHER — dropdown de temas
+═══════════════════════════════════════════════════════════ */
+function ThemeSwitcher({ currentThemeId, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const theme = THEMES.find(t => t.id === currentThemeId) || THEMES[0];
+
+  return (
+    <div style={{ position:"relative" }}>
+      <button
+        onClick={() => { setOpen(o => !o); fireSound("click"); }}
+        style={{ background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"8px 10px", cursor:"pointer", whiteSpace:"nowrap" }}
+        title="Mudar tema"
+      >
+        {theme.icon} TEMA
+      </button>
+      {open && (
+        <div style={{
+          position:"absolute", right:0, top:"calc(100% + 4px)", zIndex:500,
+          background:"#0c1630", border:"3px solid #3060b8",
+          boxShadow:"0 8px 32px rgba(0,0,0,.9)", minWidth:"220px",
+        }}>
+          {THEMES.map(t => (
+            <button key={t.id} onClick={() => { onSelect(t.id); setOpen(false); fireSound("click"); }}
+              style={{
+                display:"block", width:"100%", padding:"10px 14px",
+                background: currentThemeId === t.id ? "#1e3060" : "none",
+                border:"none", borderBottom:"1px solid #0a1840",
+                color: currentThemeId === t.id ? "#f0c030" : "#4898f0",
+                fontFamily:"'Press Start 2P',monospace", fontSize:"7px",
+                cursor:"pointer", textAlign:"left", lineHeight:1.6,
+              }}>
+              {t.icon} {t.label}
+              <div style={{ fontSize:"5px", color:"#1a4070", marginTop:"2px" }}>{t.desc}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1112,7 +1058,8 @@ const PxBadge = ({ color, children }) => (
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD
 ═══════════════════════════════════════════════════════════ */
-function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados, classeDados, avatar }) {
+function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados, classeDados, fotoUrl }) {
+  const icons = useContext(ThemeContext);
   const now    = new Date();
   const wa     = new Date(now - 7*86400000);
   const moods  = Object.entries(diary).filter(([k])=>new Date(k)>=wa).map(([,e])=>e.mood).filter(Boolean);
@@ -1140,7 +1087,7 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados,
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:"16px" }}>
           {/* Avatar + name */}
           <div style={{ display:"flex", gap:"16px", alignItems:"center", flex:1 }}>
-            <AvatarDisplay avatar={avatar} size={76} />
+            <CharacterPortrait fotoUrl={fotoUrl} size={76} />
             <div>
               <div className="px-font" style={{ fontSize:"7px", color:"#ffd70088", letterSpacing:".2em", marginBottom:"6px" }}>
                 ✦ SALÃO DO HERÓI · REINO ARCANO ✦
@@ -1200,10 +1147,10 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados,
       {/* ── Stats ── */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"10px", marginBottom:"16px" }}>
         {[
-          { icon:"📖", label:"CRÔNICA",       val:Object.keys(diary).length, sub:`${weekEntries} esta semana`, color:"#bb86fc" },
-          { icon:"⚔️", label:"QUESTS FEITAS",val:done,   sub:`${pending} abertas`,    color:"#39ff14" },
-          { icon:"☠️", label:"ATRASADAS",    val:overdue, sub:overdue>0?"PERIGO!":"TUDO OK", color:overdue>0?"#ff5555":"#39ff14" },
-          { icon:"🏆", label:"FAÇANHAS",     val:`${avgG}%`, sub:`${goals.length} ativas`,   color:"#ffd700" },
+          { icon:icons.stats.diary,   label:"CRÔNICA",       val:Object.keys(diary).length, sub:`${weekEntries} esta semana`, color:"#bb86fc" },
+          { icon:icons.stats.quests,  label:"QUESTS FEITAS", val:done,   sub:`${pending} abertas`,    color:"#39ff14" },
+          { icon:icons.stats.overdue, label:"ATRASADAS",     val:overdue, sub:overdue>0?"PERIGO!":"TUDO OK", color:overdue>0?"#ff5555":"#39ff14" },
+          { icon:icons.stats.goals,   label:"FAÇANHAS",      val:`${avgG}%`, sub:`${goals.length} ativas`,   color:"#ffd700" },
         ].map(s => (
           <div key={s.label} className="px-panel" style={{ textAlign:"center", marginBottom:0, padding:"14px 10px" }}>
             <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
@@ -1222,7 +1169,7 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados,
         <div className="px-panel">
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
-          <PxTitle icon="🏆" color="#ffd700">FAÇANHAS EM PROGRESSO</PxTitle>
+          <PxTitle icon={icons.stats.goals} color="#ffd700">FAÇANHAS EM PROGRESSO</PxTitle>
           <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
             {goals.map(g=>{
               const guild=GUILDS.find(x=>x.id===g.category);
@@ -1230,7 +1177,7 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados,
               return (
                 <div key={g.id}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"4px" }}>
-                    <span className="px-body" style={{ fontSize:"17px", color:"#c0e8ff" }}>{guild?.icon} {g.title}</span>
+                    <span className="px-body" style={{ fontSize:"17px", color:"#c0e8ff" }}>{icons.guilds[g.category]||guild?.icon} {g.title}</span>
                     <span className="px-font" style={{ fontSize:"8px", color:guild?.color||"#00d4ff" }}>{pct}%</span>
                   </div>
                   <PixelBar value={pct} color={guild?.color||"#00d4ff"} segments={20} />
@@ -1246,14 +1193,14 @@ function DashboardModule({ diary, tasks, goals, nomeHeroi = "HERÓI", racaDados,
         <div className="px-panel">
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
-          <PxTitle icon="📜" color="#00d4ff">QUESTS ATIVAS</PxTitle>
+          <PxTitle icon={icons.tabs.quests} color="#00d4ff">QUESTS ATIVAS</PxTitle>
           <div style={{ display:"flex", flexDirection:"column", gap:"6px" }}>
             {tasks.filter(t=>!t.completed).slice(0,5).map(q=>{
               const qt=QUEST_TYPES.find(t=>t.value===q.priority)||QUEST_TYPES[2];
               const over=q.dueDate&&new Date(q.dueDate)<now;
               return (
                 <div key={q.id} className="px-quest" style={{ display:"flex", alignItems:"center", gap:"10px", padding:"8px 10px", background:"#04091a", border:`2px solid ${qt.color}44`, borderLeft:`4px solid ${qt.color}`, transition:"all .15s" }}>
-                  <span style={{ fontSize:"14px" }}>{qt.icon}</span>
+                  <span style={{ fontSize:"14px" }}>{icons.questTypes[qt.value]||qt.icon}</span>
                   <span className="px-body" style={{ flex:1, fontSize:"18px", color:qt.color }}>{q.title}</span>
                   <PxBadge color={qt.color}>{qt.label}</PxBadge>
                   {q.dueDate && <span className="px-font" style={{ fontSize:"6px", color:over?"#ff5555":"#1a4070" }}>{fmtDate(q.dueDate+"T12:00:00")}</span>}
@@ -1453,6 +1400,7 @@ function DiaryModule({ data, setData }) {
    QUEST LOG
 ═══════════════════════════════════════════════════════════ */
 function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCompletions, setDailyCompletions }) {
+  const icons = useContext(ThemeContext);
   const [form,setForm]    = useState({title:"",priority:"normal",dueDate:"",category:""});
   const [filter,setFilter]= useState("all");
   const [showDailyForm,setShowDailyForm] = useState(false);
@@ -1493,7 +1441,7 @@ function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCom
         <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
         <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"16px", flexWrap:"wrap", gap:"8px" }}>
-          <PxTitle icon="🌅" color="#f0c030">QUESTS DIÁRIAS</PxTitle>
+          <PxTitle icon={icons.tabs.diary} color="#f0c030">QUESTS DIÁRIAS</PxTitle>
           <div style={{ display:"flex", gap:"8px", alignItems:"center" }}>
             <span className="px-font" style={{ fontSize:"7px", color:"#f0c03088" }}>{dailyDoneCount}/{dailyQuests.length} HOJE</span>
             <button className="px-btn px-btn-gold" style={{ padding:"7px 12px" }} onClick={()=>setShowDailyForm(p=>!p)}>+ NOVA</button>
@@ -1550,7 +1498,7 @@ function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCom
                 <div style={{ flex:1 }}>
                   <div className="px-body" style={{ fontSize:"19px", color:done?"#1a4070":"#f0c030", textDecoration:done?"line-through":"none" }}>{q.title}</div>
                   <div style={{ display:"flex", gap:"6px", marginTop:"2px" }}>
-                    {guild && <PxBadge color={guild.color}>{guild.icon} {guild.label}</PxBadge>}
+                    {guild && <PxBadge color={guild.color}>{icons.guilds[guild.id]||guild.icon} {guild.label}</PxBadge>}
                     <PxBadge color="#f0c030">+{q.xp} XP</PxBadge>
                   </div>
                 </div>
@@ -1570,7 +1518,7 @@ function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCom
       <div className="px-panel">
         <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
         <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
-        <PxTitle icon="📜" color="#00d4ff">ACEITAR NOVA QUEST</PxTitle>
+        <PxTitle icon={icons.tabs.quests} color="#00d4ff">ACEITAR NOVA QUEST</PxTitle>
         <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
           <input className="px-input" placeholder="> Nome da quest..."
             value={form.title}
@@ -1640,8 +1588,8 @@ function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCom
                       {q.title}
                     </div>
                     <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", alignItems:"center" }}>
-                      <PxBadge color={qt.color}>{qt.icon} {qt.label} +{qt.xp}XP</PxBadge>
-                      {g && <PxBadge color={g.color}>{g.icon} {g.label}</PxBadge>}
+                      <PxBadge color={qt.color}>{icons.questTypes[qt.value]||qt.icon} {qt.label} +{qt.xp}XP</PxBadge>
+                      {g && <PxBadge color={g.color}>{icons.guilds[g.id]||g.icon} {g.label}</PxBadge>}
                       {q.dueDate && <PxBadge color={over?"#ff5555":"#1a4070"}>{fmtDate(q.dueDate+"T12:00:00")}</PxBadge>}
                     </div>
                   </div>
@@ -1656,7 +1604,7 @@ function QuestLogModule({ tasks, setTasks, dailyQuests, setDailyQuests, dailyCom
         <div className="px-panel" style={{ textAlign:"center", padding:"40px" }}>
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
-          <div className="px-float" style={{ fontSize:"48px", marginBottom:"12px", display:"block" }}>📜</div>
+          <div className="px-float" style={{ fontSize:"48px", marginBottom:"12px", display:"block" }}>{icons.tabs.quests}</div>
           <div className="px-font" style={{ fontSize:"9px", color:"#1a4070", marginBottom:"8px" }}>QUADRO DE QUESTS VAZIO</div>
           <div className="px-body" style={{ fontSize:"18px", color:"#0d2860" }}>Aceite sua primeira quest, aventureiro!</div>
         </div>
@@ -1731,6 +1679,7 @@ function GrimorioModule({ notes, setNotes }) {
    FAÇANHAS (GOALS)
 ═══════════════════════════════════════════════════════════ */
 function FacanhasModule({ goals, setGoals }) {
+  const icons = useContext(ThemeContext);
   const [showForm,setShowForm]= useState(false);
   const [form,setForm]        = useState({title:"",category:"estudos",description:"",targetValue:100,currentValue:0,unit:"%",deadline:""});
   const [activeG,setActiveG]  = useState("all");
@@ -1753,7 +1702,7 @@ function FacanhasModule({ goals, setGoals }) {
             color:activeG===g.id?g.color:"#1a4070", transition:"all .15s",
             boxShadow:activeG===g.id?`0 0 10px ${g.color}44, 3px 3px 0 ${g.color}44`:"3px 3px 0 #020a1e",
           }}>
-            {g.icon} {g.label}
+            {icons.guilds[g.id]||g.icon} {g.label}
           </button>
         ))}
         <button className="px-btn px-btn-gold" style={{ padding:"8px 14px", marginLeft:"auto" }} onClick={()=>setShowForm(!showForm)}>+ NOVA FAÇANHA</button>
@@ -1763,7 +1712,7 @@ function FacanhasModule({ goals, setGoals }) {
         <div className="px-panel-hero">
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
-          <PxTitle icon="🏆" color="#ffd700">NOVA FAÇANHA ÉPICA</PxTitle>
+          <PxTitle icon={icons.tabs.goals} color="#ffd700">NOVA FAÇANHA ÉPICA</PxTitle>
           <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
             <input className="px-input" placeholder="> Nome da façanha..." value={form.title} onChange={e=>setForm(p=>({...p,title:e.target.value}))} />
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px" }}>
@@ -1789,9 +1738,9 @@ function FacanhasModule({ goals, setGoals }) {
         <div className="px-panel" style={{ textAlign:"center", padding:"40px" }}>
           <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
           <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
-          <div className="px-float" style={{ fontSize:"48px", marginBottom:"12px", display:"block" }}>🏆</div>
+          <div className="px-float" style={{ fontSize:"48px", marginBottom:"12px", display:"block" }}>{icons.tabs.goals}</div>
           <div className="px-font" style={{ fontSize:"8px", color:"#1a4070", marginBottom:"12px" }}>SEM FAÇANHAS ENCONTRADAS</div>
-          <button className="px-btn px-btn-gold" style={{ padding:"12px 20px" }} onClick={()=>setShowForm(true)}>✦ CRIAR PRIMEIRA FAÇANHA</button>
+          <button className="px-btn px-btn-gold" style={{ padding:"12px 20px" }} onClick={()=>setShowForm(true)}>{icons.deco} CRIAR PRIMEIRA FAÇANHA</button>
         </div>
       )}
 
@@ -1808,7 +1757,7 @@ function FacanhasModule({ goals, setGoals }) {
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:"12px" }}>
                 <div style={{ flex:1 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px", flexWrap:"wrap" }}>
-                    <span style={{ fontSize:"18px" }}>{guild?.icon}</span>
+                    <span style={{ fontSize:"18px" }}>{icons.guilds[goal.category]||guild?.icon}</span>
                     <span className="px-font" style={{ fontSize:"9px", color:guild?.color||"#00d4ff" }}>{goal.title}</span>
                     {done && <PxBadge color="#39ff14">✓ COMPLETA!</PxBadge>}
                   </div>
@@ -1821,7 +1770,7 @@ function FacanhasModule({ goals, setGoals }) {
                     <PixelBar value={pct} color={guild?.color||"#00d4ff"} segments={22} />
                   </div>
                   <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>
-                    <PxBadge color={guild?.color||"#00d4ff"}>{guild?.icon} {guild?.label}</PxBadge>
+                    <PxBadge color={guild?.color||"#00d4ff"}>{icons.guilds[goal.category]||guild?.icon} {guild?.label}</PxBadge>
                     {dl!==null && <PxBadge color={dl<7?"#ff5555":"#1a4070"}>{dl>0?`${dl}D RESTANTES`:dl===0?"HOJE!":"EXPIRADA"}</PxBadge>}
                     <span className="px-font" style={{ fontSize:"7px", color:"#0d2860", alignSelf:"center" }}>{Math.round(pct)}%</span>
                   </div>
@@ -2849,6 +2798,468 @@ function CalendarioModule() {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ÁLBUM DE MEMÓRIAS
+═══════════════════════════════════════════════════════════ */
+function AlbumModule({ memorias, setMemorias }) {
+  const [foto,    setFoto]    = useState(null);
+  const [legenda, setLegenda] = useState("");
+  const [preview, setPreview] = useState(null);
+  const fileRef = useRef(null);
+
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setFoto(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const salvar = () => {
+    if (!foto) return;
+    setMemorias(prev => [...prev, { id: uid(), fotoUrl: foto, legenda: legenda.trim(), data: new Date().toISOString() }]);
+    setFoto(null);
+    setLegenda("");
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const deletar = (id) => {
+    if (window.confirm("Remover esta memória?")) setMemorias(prev => prev.filter(m => m.id !== id));
+  };
+
+  const fmt = (iso) => { const d = new Date(iso); return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`; };
+
+  return (
+    <div>
+      <PxTitle icon="📸" color="#c8a000">ÁLBUM DE MEMÓRIAS</PxTitle>
+
+      {/* ── Form nova memória ── */}
+      <div className="px-panel-hero" style={{ marginBottom:"24px" }}>
+        <div className="px-font" style={{ fontSize:"7px", color:"#f0c030", marginBottom:"16px" }}>✦ NOVA MEMÓRIA</div>
+
+        {foto ? (
+          <div style={{ position:"relative", display:"inline-block", marginBottom:"16px" }}>
+            <img src={foto} alt="preview" style={{ maxWidth:"100%", maxHeight:"220px", objectFit:"contain", border:"3px solid #c8a000", display:"block" }} />
+            <button onClick={() => { setFoto(null); if(fileRef.current) fileRef.current.value=""; }}
+              style={{ position:"absolute", top:"6px", right:"6px", background:"#06080f", border:"2px solid #e04040", color:"#e04040", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"4px 6px", cursor:"pointer" }}>✕</button>
+          </div>
+        ) : (
+          <div onClick={() => fileRef.current?.click()}
+            style={{ border:"3px dashed #1e3060", padding:"32px", textAlign:"center", cursor:"pointer", background:"#06080f", marginBottom:"16px", transition:"border-color .15s" }}
+            onMouseEnter={e => e.currentTarget.style.borderColor="#c8a000"}
+            onMouseLeave={e => e.currentTarget.style.borderColor="#1e3060"}>
+            <div style={{ fontSize:"48px", marginBottom:"8px" }}>📷</div>
+            <div className="px-font" style={{ fontSize:"6px", color:"#2a4880" }}>CLIQUE PARA ESCOLHER UMA FOTO</div>
+          </div>
+        )}
+        <input ref={fileRef} type="file" accept="image/*" style={{ display:"none" }} onChange={handleFile} />
+
+        <div className="px-font" style={{ fontSize:"6px", color:"#3060b8", letterSpacing:".15em", marginBottom:"8px" }}>LEGENDA</div>
+        <textarea
+          value={legenda} onChange={e => setLegenda(e.target.value)} maxLength={200} rows={3}
+          placeholder="Escreva uma legenda para esta memória..."
+          style={{ width:"100%", boxSizing:"border-box", background:"#06080f", border:"3px solid #1e3060", color:"#c8deff", fontFamily:"'VT323',monospace", fontSize:"18px", padding:"10px 12px", outline:"none", resize:"vertical", marginBottom:"4px" }}
+        />
+        <div className="px-font" style={{ fontSize:"5px", color:"#1e3060", marginBottom:"16px" }}>{legenda.length}/200</div>
+
+        <button onClick={salvar} disabled={!foto}
+          style={{ padding:"14px 24px", background: foto?"linear-gradient(135deg,#201400,#3a2800)":"#0c1428", border:`3px solid ${foto?"#c8a000":"#1e3060"}`, color: foto?"#f0c030":"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", cursor: foto?"pointer":"not-allowed", boxShadow: foto?"3px 3px 0 #4a3000":"none" }}>
+          ✦ GUARDAR MEMÓRIA
+        </button>
+      </div>
+
+      {/* ── Grade de memórias ── */}
+      {memorias.length === 0 ? (
+        <div className="px-panel" style={{ textAlign:"center", padding:"40px" }}>
+          <div style={{ fontSize:"56px", marginBottom:"12px", opacity:.4 }}>🗃️</div>
+          <div className="px-font" style={{ fontSize:"7px", color:"#2a4880" }}>NENHUMA MEMÓRIA AINDA</div>
+          <div className="px-body" style={{ fontSize:"16px", color:"#1e3060", marginTop:"8px" }}>Adicione sua primeira foto acima!</div>
+        </div>
+      ) : (
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))", gap:"16px" }}>
+          {[...memorias].reverse().map(m => (
+            <div key={m.id} style={{ background:"#0c1630", border:"3px solid #1e3060", boxShadow:"0 0 0 1px #06080f", overflow:"hidden" }}>
+              <div style={{ position:"relative", cursor:"pointer" }} onClick={() => setPreview(m)}>
+                <img src={m.fotoUrl} alt={m.legenda||"memória"} style={{ width:"100%", height:"180px", objectFit:"cover", display:"block" }} />
+                <button onClick={e => { e.stopPropagation(); deletar(m.id); }}
+                  style={{ position:"absolute", top:"6px", right:"6px", background:"#06080fee", border:"2px solid #e04040", color:"#e04040", fontFamily:"'Press Start 2P',monospace", fontSize:"5px", padding:"3px 5px", cursor:"pointer" }}>✕</button>
+              </div>
+              <div style={{ padding:"10px 12px" }}>
+                {m.legenda && <div className="px-body" style={{ fontSize:"16px", color:"#c8deff", marginBottom:"6px", lineHeight:1.4 }}>{m.legenda}</div>}
+                <div className="px-font" style={{ fontSize:"5px", color:"#2a4880" }}>📅 {fmt(m.data)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Lightbox ── */}
+      {preview && (
+        <div onClick={() => setPreview(null)}
+          style={{ position:"fixed", inset:0, background:"#06080fee", zIndex:900, display:"flex", alignItems:"center", justifyContent:"center", padding:"20px", cursor:"pointer" }}>
+          <div style={{ maxWidth:"90vw", maxHeight:"90vh", textAlign:"center" }} onClick={e => e.stopPropagation()}>
+            <img src={preview.fotoUrl} alt={preview.legenda} style={{ maxWidth:"100%", maxHeight:"70vh", objectFit:"contain", border:"3px solid #c8a000", display:"block", margin:"0 auto" }} />
+            {preview.legenda && <div className="px-body" style={{ fontSize:"20px", color:"#c8deff", marginTop:"12px" }}>{preview.legenda}</div>}
+            <div className="px-font" style={{ fontSize:"5px", color:"#2a4880", marginTop:"6px" }}>📅 {fmt(preview.data)}</div>
+            <button onClick={() => setPreview(null)}
+              style={{ marginTop:"14px", background:"none", border:"2px solid #1e3060", color:"#3060b8", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"8px 14px", cursor:"pointer" }}>✕ FECHAR</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DUNGEON MODE — Foco total com trilha sonora épica
+═══════════════════════════════════════════════════════════ */
+function DungeonModeOverlay({ onExit, nomeHeroi }) {
+  const icons = useContext(ThemeContext);
+  const [seconds, setSeconds] = useState(0);
+  const [ambientOn, setAmbientOn] = useState(false);
+  const ambientRef = useRef(null);
+  const acRef = useRef(null);
+
+  useEffect(() => {
+    const t = setInterval(() => setSeconds(s => s + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const startAmbient = () => {
+    try {
+      if (!acRef.current) acRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = acRef.current;
+
+      const master = ctx.createGain();
+      master.gain.value = 0.12;
+      master.connect(ctx.destination);
+
+      // Drone grave
+      const drone = ctx.createOscillator();
+      drone.type = "sawtooth"; drone.frequency.value = 55;
+      drone.connect(master); drone.start();
+
+      // LFO de vibrato
+      const lfo = ctx.createOscillator();
+      const lfoG = ctx.createGain();
+      lfo.frequency.value = 0.08; lfoG.gain.value = 2.5;
+      lfo.connect(lfoG); lfoG.connect(drone.frequency); lfo.start();
+
+      // Harmônico médio
+      const mid = ctx.createOscillator();
+      const midG = ctx.createGain();
+      mid.type = "sine"; mid.frequency.value = 110; midG.gain.value = 0.4;
+      mid.connect(midG); midG.connect(master); mid.start();
+
+      // Nota alta suave
+      const high = ctx.createOscillator();
+      const highG = ctx.createGain();
+      high.type = "sine"; high.frequency.value = 220; highG.gain.value = 0.15;
+      high.connect(highG); highG.connect(master); high.start();
+
+      ambientRef.current = { drone, lfo, mid, high, master };
+      setAmbientOn(true);
+    } catch(e) {}
+  };
+
+  const stopAmbient = () => {
+    try {
+      if (ambientRef.current) {
+        const { drone, lfo, mid, high } = ambientRef.current;
+        [drone, lfo, mid, high].forEach(n => { try { n.stop(); } catch(e) {} });
+        ambientRef.current = null;
+      }
+    } catch(e) {}
+    setAmbientOn(false);
+  };
+
+  useEffect(() => () => stopAmbient(), []);
+
+  const fmt = s =>
+    `${String(Math.floor(s / 3600)).padStart(2,"0")}:${String(Math.floor((s%3600)/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+
+  return (
+    <div style={{
+      position:"fixed", inset:0, zIndex:2000,
+      background:"radial-gradient(ellipse at 50% 25%, #0a0a2a 0%, #000006 75%)",
+      display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+    }}>
+      {/* Scan lines sutis */}
+      <div style={{ position:"absolute", inset:0, backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px)", pointerEvents:"none" }} />
+
+      <div style={{ position:"relative", zIndex:1, display:"flex", flexDirection:"column", alignItems:"center", padding:"24px" }}>
+        <div className="px-font" style={{ fontSize:"7px", color:"#1e3060", letterSpacing:".3em", marginBottom:"20px" }}>
+          ⚔ MODO DUNGEON ⚔
+        </div>
+
+        {/* Ícone pulsante */}
+        <div style={{ fontSize:"64px", marginBottom:"16px", animation:"dungeonPulse 2s ease-in-out infinite" }}>
+          {icons.dungeon}
+        </div>
+
+        {/* Cronômetro */}
+        <div className="px-font" style={{
+          fontSize:"clamp(28px,7vw,56px)", color:"#c8a000",
+          textShadow:"0 0 30px rgba(200,160,0,.9), 0 0 60px rgba(200,160,0,.3)",
+          letterSpacing:".12em", marginBottom:"12px",
+        }}>
+          {fmt(seconds)}
+        </div>
+
+        <div className="px-font" style={{ fontSize:"7px", color:"#1e3060", marginBottom:"8px", letterSpacing:".12em" }}>
+          FOCO TOTAL
+        </div>
+        <div className="px-body" style={{ fontSize:"18px", color:"#2a4880", marginBottom:"36px" }}>
+          {nomeHeroi} · distrações bloqueadas · concentração máxima
+        </div>
+
+        {/* Trilha sonora */}
+        <div className="px-panel" style={{ width:"100%", maxWidth:"420px", marginBottom:"24px", textAlign:"center" }}>
+          <div className="px-font" style={{ fontSize:"7px", color:"#4898f0", marginBottom:"12px" }}>
+            🎵 TRILHA SONORA ÉPICA
+          </div>
+          <div style={{ display:"flex", gap:"8px", justifyContent:"center" }}>
+            {["🔥 BATALHA", "🌙 DUNGEON", "🌊 FLORESTA"].map((label, i) => (
+              <button key={i}
+                onClick={() => { if (!ambientOn) startAmbient(); else stopAmbient(); }}
+                className="px-btn px-btn-purple"
+                style={{ padding:"8px 10px", fontSize:"6px", background: ambientOn && i===1 ? "#4898f044" : undefined }}>
+                {ambientOn && i===1 ? "▮▮" : "▶"} {label}
+              </button>
+            ))}
+          </div>
+          {ambientOn && (
+            <div className="px-body" style={{ fontSize:"14px", color:"#4898f088", marginTop:"10px" }}>
+              ♪ trilha épica ativa — use fones para melhor experiência ♪
+            </div>
+          )}
+        </div>
+
+        <div style={{ display:"flex", gap:"14px" }}>
+          <button
+            onClick={() => { stopAmbient(); onExit(); }}
+            className="px-btn px-btn-danger"
+            style={{ padding:"14px 28px", fontSize:"9px" }}
+          >
+            ✕ SAIR DA DUNGEON
+          </button>
+        </div>
+
+        <div className="px-font" style={{ fontSize:"5px", color:"#0d1a40", marginTop:"20px", letterSpacing:".1em" }}>
+          PRESSIONE ESC PARA SAIR
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RAID FINAL — META SEMESTRAL (Boss Fight)
+═══════════════════════════════════════════════════════════ */
+function RaidFinalModule({ nomeHeroi }) {
+  const icons = useContext(ThemeContext);
+  const [raid, setRaid]     = useLS("mylog_raid_final", RAID_DEFAULTS);
+  const [showAdd, setShowAdd] = useState(false);
+  const [newObj, setNewObj]  = useState("");
+  const [editTitle, setEditTitle] = useState(false);
+
+  const total   = raid.objetivos.length;
+  const done    = raid.objetivos.filter(o => o.done).length;
+  const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
+  const bossHp  = 100 - pct;
+  const totalXp = raid.objetivos.filter(o => o.done).reduce((s, o) => s + (o.xp || 200), 0);
+  const allDone = pct === 100;
+
+  const toggle = id => {
+    setRaid(p => ({ ...p, objetivos: p.objetivos.map(o => o.id===id ? {...o, done:!o.done} : o) }));
+    fireSound("success");
+  };
+  const delObj = id => setRaid(p => ({ ...p, objetivos: p.objetivos.filter(o => o.id !== id) }));
+  const addObj = () => {
+    if (!newObj.trim()) return;
+    setRaid(p => ({ ...p, objetivos: [...p.objetivos, { id: uid(), titulo: newObj.trim(), xp: 200, done: false }] }));
+    setNewObj(""); setShowAdd(false);
+    fireSound("quest_add");
+  };
+
+  const bossColor = bossHp > 60 ? "#ff2200" : bossHp > 30 ? "#ff8800" : "#ffdd00";
+
+  return (
+    <div style={{ maxWidth:"860px", margin:"0 auto" }}>
+
+      {/* ── BOSS BANNER ── */}
+      <div className="px-panel-hero" style={{ textAlign:"center", padding:"32px 24px", marginBottom:"24px", position:"relative", overflow:"hidden" }}>
+        <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
+        <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #ffd700", zIndex:2 }} />
+
+        {/* Splash art do boss */}
+        <div style={{ fontSize:"88px", display:"block", marginBottom:"16px",
+          animation: allDone ? "pxFloat 2s ease-in-out infinite" : "dungeonPulse 1.8s ease-in-out infinite",
+          filter: allDone ? "drop-shadow(0 0 24px #39ff14)" : `drop-shadow(0 0 20px ${bossColor})` }}>
+          {allDone ? icons.tabs.goals : bossHp > 60 ? "💀" : bossHp > 30 ? "🩻" : "⚰️"}
+        </div>
+
+        {editTitle ? (
+          <input className="px-input" value={raid.titulo}
+            style={{ textAlign:"center", fontSize:"16px", marginBottom:"12px" }}
+            onChange={e => setRaid(p => ({...p, titulo: e.target.value}))}
+            onBlur={() => setEditTitle(false)} autoFocus />
+        ) : (
+          <div className="px-font" onClick={() => setEditTitle(true)} style={{
+            fontSize:"clamp(7px,2vw,12px)", color: allDone ? "#39ff14" : "#f0c030",
+            letterSpacing:".08em", marginBottom:"10px", cursor:"pointer",
+            textShadow: allDone ? "0 0 16px #39ff1488" : "0 0 10px rgba(200,160,0,.5)",
+          }} title="Clique para editar">
+            {raid.titulo}
+          </div>
+        )}
+
+        <div className="px-font" style={{ fontSize:"8px", color: allDone ? "#39ff14" : bossColor,
+          textShadow:`0 0 16px ${allDone ? "#39ff1466" : bossColor+"66"}`, marginBottom:"16px" }}>
+          {allDone ? "✓ RAID CONCLUÍDO — HERÓI LENDÁRIO!" : `☠ CHEFE DO SEMESTRE · HP ${bossHp}%`}
+        </div>
+
+        {/* Boss HP Bar */}
+        <div style={{ marginBottom:"10px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px" }}>
+            <span className="px-font" style={{ fontSize:"7px", color: allDone ? "#39ff14" : "#ff4444" }}>
+              {allDone ? "✓ DERROTADO" : "☠ BOSS HP"}
+            </span>
+            <span className="px-font" style={{ fontSize:"7px", color: allDone ? "#39ff14" : "#ff4444" }}>
+              {done}/{total} OBJETIVOS CONCLUÍDOS
+            </span>
+          </div>
+          <div style={{ display:"flex", gap:"2px" }}>
+            {Array.from({ length: 25 }, (_, i) => {
+              const seg = 25 - i;
+              const filled = seg <= Math.round((bossHp / 100) * 25);
+              return (
+                <div key={i} style={{
+                  flex:1, height:"14px",
+                  background: filled
+                    ? (bossHp > 60 ? "#ff2200" : bossHp > 30 ? "#ff8800" : "#ffdd00")
+                    : "#001800",
+                  border:`1px solid ${filled ? "#ff000033" : "#0a1040"}`,
+                  transition:"background .4s",
+                }} />
+              );
+            })}
+          </div>
+        </div>
+
+        <div style={{ display:"flex", gap:"16px", justifyContent:"center", flexWrap:"wrap", marginTop:"12px" }}>
+          <div className="px-font" style={{ fontSize:"7px", color:"#4a3000" }}>
+            +{totalXp.toLocaleString("pt-BR")} XP ACUMULADOS
+          </div>
+          {raid.deadline && (
+            <div className="px-font" style={{ fontSize:"7px", color:"#1e3060" }}>
+              ⚔ PRAZO: {new Date(raid.deadline + "T12:00:00").toLocaleDateString("pt-BR")}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── OBJETIVOS ── */}
+      <div className="px-panel" style={{ marginBottom:"24px" }}>
+        <div style={{ position:"absolute", top:-6, right:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
+        <div style={{ position:"absolute", bottom:-6, left:-6, width:8, height:8, background:"#020a1e", border:"2px solid #00d4ff", zIndex:2 }} />
+
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"16px", flexWrap:"wrap", gap:"12px" }}>
+          <PxTitle icon="⚔" color="#ffd700">OBJETIVOS DO RAID</PxTitle>
+          <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
+              <span className="px-font" style={{ fontSize:"6px", color:"#1a4070" }}>PRAZO:</span>
+              <input type="date" className="px-input"
+                style={{ width:"auto", fontSize:"13px", padding:"4px 8px" }}
+                value={raid.deadline}
+                onChange={e => setRaid(p => ({...p, deadline: e.target.value}))} />
+            </div>
+            <button className="px-btn px-btn-gold" style={{ padding:"8px 14px" }}
+              onClick={() => { setShowAdd(!showAdd); fireSound("click"); }}>
+              + OBJETIVO
+            </button>
+          </div>
+        </div>
+
+        {showAdd && (
+          <div style={{ display:"flex", gap:"8px", marginBottom:"16px" }}>
+            <input className="px-input" style={{ flex:1 }}
+              placeholder="> Novo objetivo do raid..."
+              value={newObj}
+              onChange={e => setNewObj(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && addObj()}
+              autoFocus />
+            <button className="px-btn px-btn-gold" style={{ padding:"8px 14px" }} onClick={addObj}>✓</button>
+            <button className="px-btn px-btn-ghost" style={{ padding:"8px 12px" }} onClick={() => setShowAdd(false)}>✕</button>
+          </div>
+        )}
+
+        <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+          {raid.objetivos.map((o, i) => (
+            <div key={o.id} onClick={() => toggle(o.id)}
+              style={{
+                display:"flex", alignItems:"center", gap:"12px",
+                padding:"12px 14px", cursor:"pointer",
+                background: o.done ? "#001a00" : "#020a1e",
+                border:`2px solid ${o.done ? "#39ff14" : "#1e3060"}`,
+                borderLeft:`4px solid ${o.done ? "#39ff14" : "#c8a000"}`,
+                transition:"all .15s",
+              }}>
+              <div style={{
+                width:16, height:16, flexShrink:0,
+                border:`2px solid ${o.done ? "#39ff14" : "#1e3060"}`,
+                background: o.done ? "#39ff14" : "transparent",
+                display:"flex", alignItems:"center", justifyContent:"center",
+              }}>
+                {o.done && <span style={{ color:"#020a1e", fontSize:"10px", fontWeight:"bold" }}>✓</span>}
+              </div>
+              <div style={{ flex:1 }}>
+                <div className="px-body" style={{
+                  fontSize:"19px", color: o.done ? "#39ff14" : "#c0e8ff",
+                  textDecoration: o.done ? "line-through" : "none",
+                }}>
+                  {String(i + 1).padStart(2,"0")}. {o.titulo}
+                </div>
+              </div>
+              <PxBadge color={o.done ? "#39ff14" : "#c8a000"}>+{o.xp} XP</PxBadge>
+              <button onClick={ev => { ev.stopPropagation(); delObj(o.id); }}
+                style={{ background:"none", border:"1px solid #3a0000", color:"#883030",
+                  fontFamily:"'Press Start 2P',monospace", fontSize:"6px",
+                  padding:"4px 7px", cursor:"pointer" }}>
+                DEL
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {raid.objetivos.length === 0 && (
+          <div style={{ textAlign:"center", padding:"24px" }}>
+            <div className="px-body" style={{ fontSize:"16px", color:"#1a4070" }}>
+              Adicione objetivos para o raid semestral acima
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Recompensa final ── */}
+      {allDone && (
+        <div className="px-panel" style={{ borderColor:"#39ff14", background:"#001800", textAlign:"center", padding:"36px 24px" }}>
+          <div style={{ fontSize:"72px", marginBottom:"16px", animation:"pxFloat 2s ease-in-out infinite" }}>{icons.tabs.goals}</div>
+          <div className="px-font" style={{ fontSize:"12px", color:"#39ff14", textShadow:"0 0 20px #39ff14aa", marginBottom:"10px" }}>
+            RAID CONCLUÍDO!
+          </div>
+          <div className="px-body" style={{ fontSize:"20px", color:"#80ff80", marginBottom:"8px" }}>
+            {nomeHeroi} tornou-se um herói lendário do semestre!
+          </div>
+          <div className="px-font" style={{ fontSize:"7px", color:"#1a5030" }}>
+            +{totalXp.toLocaleString("pt-BR")} XP GANHOS NESTE RAID
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    MAIN APP
 ═══════════════════════════════════════════════════════════ */
 export default function App() {
@@ -2863,22 +3274,67 @@ export default function App() {
   const [apiKey,             setApiKey]             = useLS("meudiario_apikey",            "");
   const [dailyQuests,        setDailyQuests]        = useLS("mylog_daily_quests",          DAILY_QUEST_DEFAULTS);
   const [dailyCompletions,   setDailyCompletions]   = useLS("mylog_daily_completions",     {});
+  const [memorias,           setMemorias]           = useLS("mylog_memorias",               []);
   const [showPersonagemModal,setShowPersonagemModal] = useState(false);
+  const [themeId,            setThemeId]            = useLS("mylog_theme",                "arcane");
+  const [dungeonMode,        setDungeonMode]        = useState(false);
+  const [soundEnabled,       setSoundEnabled]       = useLS("mylog_sound",                true);
+  const [toast,              setToast]              = useState(null);
 
-  // Primeira vez: mostrar criador de personagem
+  const curIcons = THEME_ICONS[themeId] || THEME_ICONS.arcane;
+  useSounds(soundEnabled, curIcons.soundStyle);
+
+  // Aplica data-theme no body para CSS vars
+  useEffect(() => {
+    document.body.setAttribute("data-theme", themeId);
+  }, [themeId]);
+
+  // ESC sai do Modo Dungeon
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") setDungeonMode(false); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  // Toast RPG a cada 45 min enquanto o app está aberto
+  useEffect(() => {
+    const t = setInterval(() => {
+      setToast(RPG_NOTIF_MSGS[Math.floor(Math.random() * RPG_NOTIF_MSGS.length)]);
+    }, 45 * 60 * 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Notificações Push do browser (RPG style)
+  useEffect(() => {
+    if (!("Notification" in window) || !personagem?.nome) return;
+    const schedule = async () => {
+      if (Notification.permission === "default") await Notification.requestPermission();
+      if (Notification.permission !== "granted") return;
+      const fire = () => {
+        const msg = RPG_NOTIF_MSGS[Math.floor(Math.random() * RPG_NOTIF_MSGS.length)];
+        try { new Notification(`⚔ ${personagem.nome} — MYLOG RPG`, { body: msg, icon: "/logo192.png" }); } catch(e) {}
+        setTimeout(fire, (2 + Math.random() * 2) * 3600000);
+      };
+      setTimeout(fire, 1800000); // 1ª notificação após 30 min
+    };
+    schedule();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personagem?.nome]);
+
+  // Primeira vez: mostrar tela de nome
   if (!personagem || !personagem.nome) {
     return (
       <WelcomeScreen
-        personagemExistente={personagem}
-        onStart={(p) => setPersonagem(p || { nome:"HERÓI", racaId:null, classeId:null, avatar:{} })}
+        onStart={(p) => setPersonagem(p || { nome:"HERÓI", racaId:"elfo_noite", classeId:"druida", fotoUrl:null })}
       />
     );
   }
 
-  const nomeHeroi  = personagem.nome;
-  const racaDados  = RACAS.find(r => r.id === personagem.racaId);
-  const classeDados= CLASSES.find(c => c.id === personagem.classeId);
-  const avatar     = personagem.avatar || {};
+  const nomeHeroi   = personagem.nome;
+  const racaDados   = RACAS.find(r => r.id === personagem.racaId);
+  const classeDados = CLASSES.find(c => c.id === personagem.classeId);
+  const fotoUrl     = personagem.fotoUrl || null;
+  const curTheme    = THEMES.find(t => t.id === themeId) || THEMES[0];
 
   const xp    = calcXP(tasks,diary,goals);
   const lv    = calcLevel(xp);
@@ -2888,19 +3344,23 @@ export default function App() {
   const xpCur = xp-xpForLvl(lv);
   const xpNeed= xpForNext(lv)-xpForLvl(lv);
 
+  const ti = curIcons.tabs;
   const TABS = [
-    {id:"dashboard",  label:"⚔ HALL"},
-    {id:"diary",      label:"📖 CRÔNICA"},
-    {id:"tasks",      label:"📜 QUESTS"},
-    {id:"goals",      label:"🏆 FAÇANHAS"},
-    {id:"calendario", label:"📅 CALENDÁRIO"},
-    {id:"notes",      label:"📚 GRIMÓRIO"},
-    {id:"skilltree",  label:"🌳 ÁRV. HAB."},
-    {id:"ai",         label:"🔮 ORÁCULO"},
+    {id:"dashboard",  label:`${ti.hall} HALL`},
+    {id:"diary",      label:`${ti.diary} CRÔNICA`},
+    {id:"tasks",      label:`${ti.quests} QUESTS`},
+    {id:"goals",      label:`${ti.goals} FAÇANHAS`},
+    {id:"calendario", label:`${ti.calendar} CALENDÁRIO`},
+    {id:"notes",      label:`${ti.notes} GRIMÓRIO`},
+    {id:"skilltree",  label:`${ti.skilltree} ÁRV. HAB.`},
+    {id:"ai",         label:`${ti.oracle} ORÁCULO`},
+    {id:"album",      label:`${ti.album} ÁLBUM`},
+    {id:"raid",       label:`${ti.raid} RAID FINAL`},
   ];
 
   return (
-    <div className="px-crt" style={{ minHeight:"100vh", background:"#06080f", color:"#c8deff", fontFamily:"'VT323',monospace", position:"relative" }}>
+    <ThemeContext.Provider value={curIcons}>
+    <div className="px-crt" style={{ minHeight:"100vh", background: curTheme.bg, color:"#c8deff", fontFamily:"'VT323',monospace", position:"relative" }}>
       <PixelStarField />
 
       {/* ══ PERSONAGEM MODAL ══ */}
@@ -2912,18 +3372,29 @@ export default function App() {
         />
       )}
 
+      {/* ══ DUNGEON MODE ══ */}
+      {dungeonMode && (
+        <DungeonModeOverlay
+          onExit={() => setDungeonMode(false)}
+          nomeHeroi={nomeHeroi}
+        />
+      )}
+
+      {/* ══ RPG TOAST ══ */}
+      {toast && <RPGToast message={toast} onClose={() => setToast(null)} />}
+
       {/* ══ HEADER FF-style ══ */}
       <header style={{
-        background:"#080c1a",
+        background: curTheme.headerBg,
         borderBottom:"3px solid #1a3060",
         boxShadow:"0 3px 0 #06080f, 0 6px 20px rgba(0,0,0,.7), 0 2px 16px rgba(48,96,184,.08)",
         padding:"8px 20px",
         position:"sticky", top:0, zIndex:100,
       }}>
         <div style={{ maxWidth:"980px", margin:"0 auto", display:"flex", alignItems:"center", gap:"16px", flexWrap:"wrap" }}>
-          {/* Avatar mini */}
-          <button onClick={() => setShowPersonagemModal(true)} style={{ background:"none", border:"2px solid #1e3060", padding:"4px", cursor:"pointer", flexShrink:0 }} title="Editar personagem">
-            <AvatarDisplay avatar={avatar} size={44} />
+          {/* Retrato do personagem */}
+          <button onClick={() => setShowPersonagemModal(true)} style={{ background:"none", border:"none", padding:"2px", cursor:"pointer", flexShrink:0 }} title="Editar personagem">
+            <CharacterPortrait fotoUrl={fotoUrl} size={48} />
           </button>
 
           <div style={{ flex:"0 0 auto" }}>
@@ -2962,11 +3433,50 @@ export default function App() {
             style={{ background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"6px", padding:"8px 10px", cursor:"pointer" }}
             title="Editar personagem"
           >⚙ PERSONAGEM</button>
+
+          {/* ── DUNGEON MODE ── */}
+          <button
+            onClick={() => { setDungeonMode(true); fireSound("dungeon_enter"); }}
+            style={{
+              background: dungeonMode ? "#1a0020" : "none",
+              border:`1px solid ${dungeonMode ? "#880088" : "#1e3060"}`,
+              color: dungeonMode ? "#cc00cc" : "#2a4880",
+              fontFamily:"'Press Start 2P',monospace", fontSize:"6px",
+              padding:"8px 10px", cursor:"pointer", whiteSpace:"nowrap",
+            }}
+            title="Modo Dungeon — Foco total"
+          >
+            {curIcons.dungeon} DUNGEON
+          </button>
+
+          {/* ── SOM ── */}
+          <button
+            onClick={() => { setSoundEnabled(v => !v); }}
+            style={{
+              background:"none", border:"1px solid #1e3060",
+              color: soundEnabled ? "#39ff14" : "#2a4880",
+              fontFamily:"'Press Start 2P',monospace", fontSize:"8px",
+              padding:"8px 10px", cursor:"pointer",
+            }}
+            title={soundEnabled ? "Som ativado — clique para silenciar" : "Som desativado — clique para ativar"}
+          >
+            {soundEnabled ? "🔊" : "🔇"}
+          </button>
+
+          {/* ── TEMA ── */}
+          <ThemeSwitcher currentThemeId={themeId} onSelect={setThemeId} />
+
+          {/* ── NOTIFICAÇÃO MANUAL ── */}
+          <button
+            onClick={() => setToast(RPG_NOTIF_MSGS[Math.floor(Math.random() * RPG_NOTIF_MSGS.length)])}
+            style={{ background:"none", border:"1px solid #1e3060", color:"#2a4880", fontFamily:"'Press Start 2P',monospace", fontSize:"8px", padding:"8px 10px", cursor:"pointer" }}
+            title="Mensagem do reino"
+          >📯</button>
         </div>
       </header>
 
       {/* ══ NAV ══ */}
-      <nav style={{ background:"#06080f", borderBottom:"3px solid #1a3060", boxShadow:"0 3px 0 #04060a", display:"flex", overflowX:"auto", paddingLeft:"8px" }}>
+      <nav style={{ background: curTheme.bg, borderBottom:"3px solid #1a3060", boxShadow:"0 3px 0 #04060a", display:"flex", overflowX:"auto", paddingLeft:"8px" }}>
         <div style={{ maxWidth:"980px", margin:"0 auto", display:"flex", width:"100%" }}>
           {TABS.map(t=>(
             <button key={t.id} className={`px-nav-btn${tab===t.id?" active":""}`} onClick={()=>setTab(t.id)}>{t.label}</button>
@@ -2976,7 +3486,7 @@ export default function App() {
 
       {/* ══ MAIN ══ */}
       <main style={{ maxWidth:"980px", margin:"0 auto", padding:"24px 20px", position:"relative", zIndex:1 }}>
-        {tab==="dashboard"  && <DashboardModule diary={diary} tasks={tasks} goals={goals} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} avatar={avatar} />}
+        {tab==="dashboard"  && <DashboardModule diary={diary} tasks={tasks} goals={goals} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} fotoUrl={fotoUrl} />}
         {tab==="diary"      && <DiaryModule data={diary} setData={setDiary} />}
         {tab==="tasks"      && <QuestLogModule tasks={tasks} setTasks={setTasks} dailyQuests={dailyQuests} setDailyQuests={setDailyQuests} dailyCompletions={dailyCompletions} setDailyCompletions={setDailyCompletions} />}
         {tab==="goals"      && <FacanhasModule goals={goals} setGoals={setGoals} />}
@@ -2984,7 +3494,10 @@ export default function App() {
         {tab==="calendario" && <CalendarioModule />}
         {tab==="skilltree"  && <SkillTreeModule />}
         {tab==="ai"         && <OracleModule diary={diary} tasks={tasks} goals={goals} notes={notes} apiKey={apiKey} setApiKey={setApiKey} nomeHeroi={nomeHeroi} racaDados={racaDados} classeDados={classeDados} />}
+        {tab==="album"      && <AlbumModule memorias={memorias} setMemorias={setMemorias} />}
+        {tab==="raid"       && <RaidFinalModule nomeHeroi={nomeHeroi} />}
       </main>
     </div>
+    </ThemeContext.Provider>
   );
 }

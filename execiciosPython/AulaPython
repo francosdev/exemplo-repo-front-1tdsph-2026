@@ -1,0 +1,15 @@
+inicio = int(input('Inicio: '))
+fim = int(input('Fim: '))   
+
+if inicio == fim:
+    print("IGUAIS!")
+elif inicio < fim:
+    while inicio <= fim:
+        if inicio % 2 == 0:
+            print(f'{inicio} é par!')
+        inicio += 1
+else:
+    while inicio >= fim:
+        if inicio % 2 != 0:
+            print(f'{inicio} é ímpar!')
+        inicio -= 1
